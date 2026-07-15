@@ -1,13 +1,16 @@
 export default function DashboardPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold">
-        Dashboard
-      </h1>
+    <div className="space-y-6">
+      <div className="rounded-2xl border bg-white p-10 shadow-sm">
+        <h2 className="text-xl font-semibold">
+          Dashboard
+        </h2>
 
-      <p className="mt-2 text-slate-500">
-        Welcome to Eventos.
-      </p>
+        <p className="mt-2 text-slate-500">
+          This is where the Eventos dashboard
+          widgets will appear.
+        </p>
+      </div>
     </div>
   );
 }
