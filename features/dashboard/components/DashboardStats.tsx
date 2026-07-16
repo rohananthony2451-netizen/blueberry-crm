@@ -1,41 +1,41 @@
 import {
   Calendar,
   IndianRupee,
+  Clock3,
   Users,
-  TrendingUp,
 } from "lucide-react";
 
-import { StatCard } from "@/components/design-system/StatCard";
+import { KPIStat } from "./KPIStat";
 
 export function DashboardStats() {
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-      <StatCard
-        title="Revenue"
-        value="₹18,40,000"
+      <KPIStat
+        title="Annual Revenue"
+        value="₹1.36 Cr"
+        subtitle="+22% vs last year"
         icon={IndianRupee}
-        change="+18%"
       />
 
-      <StatCard
-        title="Active Events"
-        value="12"
+      <KPIStat
+        title="Events Completed"
+        value="36"
+        subtitle="2 cancelled"
         icon={Calendar}
-        change="+2"
       />
 
-      <StatCard
-        title="Clients"
-        value="84"
+      <KPIStat
+        title="Pending Payments"
+        value="₹9.4 L"
+        subtitle="5 overdue"
+        icon={Clock3}
+      />
+
+      <KPIStat
+        title="Total Clients"
+        value="24"
+        subtitle="+6 this year"
         icon={Users}
-        change="+8"
-      />
-
-      <StatCard
-        title="Profit"
-        value="₹6,20,000"
-        icon={TrendingUp}
-        change="+14%"
       />
     </div>
   );
