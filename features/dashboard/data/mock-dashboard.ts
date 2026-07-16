@@ -39,27 +39,45 @@ export const stats = [
   },
 ];
 
-export const upcomingEvents = [
+
+export const recentActivities = [
   {
-    title: "Sharma Wedding",
-    venue: "Taj Palace",
-    date: "15 Aug",
+    id: 1,
+    title: "Wedding quotation sent",
+    customer: "Rahul & Priya",
+    time: "15 min ago",
   },
   {
-    title: "Corporate Meet",
-    venue: "Marriott",
-    date: "28 Aug",
+    id: 2,
+    title: "Advance payment received",
+    customer: "Corporate Event",
+    time: "1 hour ago",
   },
   {
-    title: "Birthday Event",
-    venue: "Radisson",
-    date: "4 Sep",
+    id: 3,
+    title: "Vendor assigned",
+    customer: "Royal Palace",
+    time: "Today",
   },
 ];
 
-export const recentActivities = [
-  "Quotation approved",
-  "Payment received",
-  "Vendor assigned",
-  "New lead added",
+export const upcomingEvents = [
+  {
+    id: 1,
+    name: "Rahul Wedding",
+    date: "18 Jul",
+    venue: "Imperial Garden",
+  },
+  {
+    id: 2,
+    name: "Corporate Meet",
+    date: "22 Jul",
+    venue: "Hotel Landmark",
+  },
+  {
+    id: 3,
+    name: "Birthday Celebration",
+    date: "27 Jul",
+    venue: "Blue Orchid",
+  },
 ];
