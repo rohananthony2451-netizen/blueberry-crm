@@ -1,6 +1,13 @@
 export const leadStatuses = [
   "New",
-  "Contacted",
+  "Follow Up",
   "Quoted",
   "Booked",
-] as const;
+];
+
+export const leadSources = [
+  "Instagram",
+  "Website",
+  "Reference",
+  "Walk-in",
+];
