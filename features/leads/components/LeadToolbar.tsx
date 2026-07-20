@@ -1,9 +1,9 @@
 "use client";
 
-import { Search, Plus } from "lucide-react";
+import { Search} from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LeadDialog } from "./LeadDialog";
 
 export function LeadToolbar() {
   return (
@@ -22,10 +22,7 @@ export function LeadToolbar() {
         </div>
       </div>
 
-      <Button>
-        <Plus className="mr-2 h-4 w-4" />
-        New Lead
-      </Button>
+     <LeadDialog />
     </div>
   );
 }
