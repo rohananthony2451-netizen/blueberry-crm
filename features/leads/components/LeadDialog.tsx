@@ -31,7 +31,14 @@ export function LeadDialog() {
                     <DialogTitle>Create New Lead</DialogTitle>
                 </DialogHeader>
 
-                <LeadForm />
+                <LeadForm
+    onCancel={() => setOpen(false)}
+    onSave={() => {
+        console.log("Lead Saved");
+
+        setOpen(false);
+    }}
+/>
             </DialogContent>
         </Dialog>
     );

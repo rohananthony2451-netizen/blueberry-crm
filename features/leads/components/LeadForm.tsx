@@ -6,7 +6,15 @@ import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { FormActions } from "@/components/forms/FormActions";
 
-export function LeadForm() {
+interface LeadFormProps {
+  onCancel?: () => void;
+  onSave?: () => void;
+}
+
+export function LeadForm({
+  onCancel,
+  onSave,
+}: LeadFormProps) {
     return (
         <form className="space-y-5">
 
@@ -59,7 +67,11 @@ export function LeadForm() {
                 </FormField>
             </div>
 
-            <FormActions />
+            <FormActions
+    onCancel={onCancel}
+    onSave={onSave}
+    saveText="Save Lead"
+/>
                 
 
         </form>
