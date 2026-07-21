@@ -8,7 +8,7 @@ interface LeadRowProps {
 
 export function LeadRow({ lead }: LeadRowProps) {
   return (
-    <tr className="border-b">
+    <tr  className="transition-colors hover:bg-slate-50">
       <td className="px-4 py-4 font-medium">{lead.clientName}</td>
       <td>{lead.eventType}</td>
       <td>{lead.eventDate}</td>
@@ -20,6 +20,6 @@ export function LeadRow({ lead }: LeadRowProps) {
         <SourceBadge source={lead.source} />
       </td>
       <td>{lead.assignedTo}</td>
-    </tr>
+     </tr >
   );
 }
