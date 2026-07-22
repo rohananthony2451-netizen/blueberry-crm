@@ -1,6 +1,7 @@
 import { Lead } from "../types";
 import { StatusBadge } from "./StatusBadge";
 import { SourceBadge } from "./SourceBadge";
+import { LeadDrawer } from "./LeadDrawer";
 
 interface LeadRowProps {
   lead: Lead;
@@ -8,7 +9,8 @@ interface LeadRowProps {
 
 export function LeadRow({ lead }: LeadRowProps) {
   return (
-    <tr  className="transition-colors hover:bg-slate-50">
+    <LeadDrawer lead={lead}>
+    <tr  className="cursor-pointer transition-colors hover:bg-slate-50">
       <td className="px-4 py-4 font-medium">{lead.clientName}</td>
       <td>{lead.eventType}</td>
       <td>{lead.eventDate}</td>
@@ -21,5 +23,6 @@ export function LeadRow({ lead }: LeadRowProps) {
       </td>
       <td>{lead.assignedTo}</td>
      </tr >
+     </LeadDrawer>
   );
 }
