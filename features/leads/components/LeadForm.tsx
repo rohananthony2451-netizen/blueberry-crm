@@ -5,6 +5,8 @@ import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
 import { FormActions } from "@/components/forms/FormActions";
+import { EVENT_TYPES } from "../constants";
+import { LEAD_SOURCES } from "../constants";
 
 interface LeadFormProps {
   onCancel?: () => void;
@@ -34,13 +36,7 @@ export function LeadForm({
                 <FormField label="Event Type">
   <FormSelect
     placeholder="Select Event Type"
-    options={[
-      "Wedding",
-      "Birthday",
-      "Corporate",
-      "Engagement",
-      "Other",
-    ]}
+    options={EVENT_TYPES}
   />
 </FormField>
             </div>
@@ -57,8 +53,11 @@ export function LeadForm({
 
             <div>
                 <FormField label="Source">
-                <FormInput placeholder="Instagram" />
-                </FormField>
+    <FormSelect
+        placeholder="Select Source"
+        options={LEAD_SOURCES}
+    />
+</FormField>
             </div>
 
             <div>
