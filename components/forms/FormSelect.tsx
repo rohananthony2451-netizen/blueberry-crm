@@ -8,7 +8,7 @@ import {
 
 interface FormSelectProps {
   placeholder: string;
-  options: string[];
+  options: readonly string[];
 }
 
 export function FormSelect({

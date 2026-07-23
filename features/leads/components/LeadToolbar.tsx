@@ -7,7 +7,7 @@ import { LeadDialog } from "./LeadDialog";
 
 export function LeadToolbar() {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
+    <div className="mb -6 flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
       <div className="flex flex-1 items-center gap-3">
         <div className="relative w-full max-w-md">
           <Search

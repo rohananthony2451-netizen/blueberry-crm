@@ -1,20 +1,27 @@
+import { cn } from "@/lib/utils";
+
+const colors = {
+  New: "bg-blue-100 text-blue-700",
+  Contacted: "bg-yellow-100 text-yellow-700",
+  "Meeting Scheduled": "bg-purple-100 text-purple-700",
+  "Quotation Sent": "bg-indigo-100 text-indigo-700",
+  Won: "bg-green-100 text-green-700",
+  Lost: "bg-red-100 text-red-700",
+};
+
+type Status = keyof typeof colors;
+
 interface StatusBadgeProps {
-  status: string;
+  status: Status;
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const colors: Record<string, string> = {
-    New: "bg-blue-100 text-blue-700",
-    "Follow Up": "bg-yellow-100 text-yellow-700",
-    Quoted: "bg-purple-100 text-purple-700",
-    Booked: "bg-green-100 text-green-700",
-  };
-
   return (
     <span
-      className={`rounded-full px-3 py-1 text-xs font-medium ${
-        colors[status] ?? "bg-slate-100 text-slate-700"
-      }`}
+      className={cn(
+        "rounded-full px-3 py-1 text-xs font-medium",
+        colors[status]
+      )}
     >
       {status}
     </span>

@@ -19,8 +19,8 @@ export const mockLeads: Lead[] = [
     eventType: "Birthday",
     eventDate: "22 Aug 2026",
     budget: "₹80,000",
-    source: "Reference",
-    status: "Follow Up",
+    source: "Referral",
+    status: "Contacted",
     assignedTo: "Sneha",
   },
   {
@@ -31,7 +31,7 @@ export const mockLeads: Lead[] = [
     eventDate: "2 Sep 2026",
     budget: "₹4,50,000",
     source: "Website",
-    status: "Quoted",
+    status: "Quotation Sent",
     assignedTo: "Rahul",
   },
   {
@@ -41,8 +41,8 @@ export const mockLeads: Lead[] = [
     eventType: "Wedding",
     eventDate: "10 Sep 2026",
     budget: "₹9,00,000",
-    source: "Walk-in",
-    status: "Booked",
+    source: "Walk In",
+    status: "Won",
     assignedTo: "Sneha",
   },
 ];
