@@ -6,30 +6,42 @@ import { FormSelect } from "@/components/forms/FormSelect";
 
 import { LEAD_STATUS, LEAD_SOURCES } from "../constants";
 
-export function LeadFilters() {
+interface LeadFiltersProps {
+  search: string;
+  status: string;
+  source: string;
+
+  onSearchChange: (value: string) => void;
+  onStatusChange: (value: string) => void;
+  onSourceChange: (value: string) => void;
+}
+
+export function LeadFilters({
+  search,
+  status,
+  source,
+  onSearchChange,
+  onStatusChange,
+  onSourceChange,
+}: LeadFiltersProps) {
     return (
         <div className="mb-6 flex flex-wrap gap-4">
 
-            <div className="relative w-72">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-
-                <Input
-                    placeholder="Search client..."
-                    className="pl-10"
+            <div className="w-56">
+                <FormSelect
+                value={status}
+                onValueChange={onStatusChange}
+                placeholder="All Status"
+                options={[...LEAD_STATUS]}
                 />
             </div>
 
             <div className="w-56">
                 <FormSelect
-                    placeholder="All Status"
-                    options={[...LEAD_STATUS]}
-                />
-            </div>
-
-            <div className="w-56">
-                <FormSelect
-                    placeholder="All Sources"
-                    options={[...LEAD_SOURCES]}
+                value={source}
+                onValueChange={onSourceChange}
+                placeholder="All Sources"
+                options={[...LEAD_SOURCES]}
                 />
             </div>
 

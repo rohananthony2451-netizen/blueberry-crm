@@ -9,14 +9,21 @@ import {
 interface FormSelectProps {
   placeholder: string;
   options: readonly string[];
+   value?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export function FormSelect({
   placeholder,
   options,
+  value,
+  onValueChange,
 }: FormSelectProps) {
   return (
-    <Select>
+    <Select
+  value={value}
+  onValueChange={onValueChange}
+>
       <SelectTrigger>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>

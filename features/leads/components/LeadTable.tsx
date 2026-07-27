@@ -1,12 +1,17 @@
+import { Lead } from "../types";
 import { Card } from "@/components/ui/card";
-
-import { mockLeads } from "../data/mock-leads";
 import { LeadRow } from "./LeadRow";
 import { TableHeader } from "@/components/tables/TableHeader";
 import { TableEmpty } from "@/components/tables/TableEmpty";
 import { TableFooter } from "@/components/tables/TableFooter";
 
-export function LeadTable() {
+interface LeadTableProps {
+    leads: Lead[];
+}
+
+export function LeadTable({
+    leads,
+}: LeadTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
       <table className="w-full">
@@ -23,10 +28,10 @@ export function LeadTable() {
 />
 
         <tbody>
-  {mockLeads.length === 0 ? (
+  {leads.length === 0 ? (
     <TableEmpty message="No leads found." />
   ) : (
-    mockLeads.map(lead => (
+    leads.map(lead => (
       <LeadRow
         key={lead.id}
         lead={lead}
