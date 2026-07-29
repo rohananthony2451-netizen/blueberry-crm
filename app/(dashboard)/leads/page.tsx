@@ -8,11 +8,12 @@ import { LeadFilters } from "@/features/leads/components/LeadFilters";
 import { useState } from "react";
 import { mockLeads } from "@/features/leads/data/mock-leads";
 export default function LeadsPage() {
-
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [source, setSource] = useState("");
-  const filteredLeads = mockLeads.filter((lead) => {
+const [search, setSearch] = useState("");
+const [status, setStatus] = useState("");
+const [source, setSource] = useState("");
+const [sortBy, setSortBy] = useState("");
+ 
+const filteredLeads = mockLeads.filter((lead) => {
     const matchesSearch =
         search === "" ||
         lead.clientName.toLowerCase().includes(search.toLowerCase());
@@ -32,6 +33,28 @@ export default function LeadsPage() {
     );
 });
 
+const sortedLeads = [...filteredLeads];
+
+if (sortBy === "Client Name") {
+    sortedLeads.sort((a, b) =>
+        a.clientName.localeCompare(b.clientName)
+    );
+}
+
+if (sortBy === "Budget") {
+    sortedLeads.sort((a, b) =>
+        Number(b.budget) - Number(a.budget)
+    );
+}
+
+if (sortBy === "Event Date") {
+    sortedLeads.sort(
+        (a, b) =>
+            new Date(a.eventDate).getTime() -
+            new Date(b.eventDate).getTime()
+    );
+}
+
   return (  
     <PageContainer>
          <PageHeader
@@ -43,17 +66,19 @@ export default function LeadsPage() {
   search={search}
   onSearchChange={setSearch}
 />
-    <LeadFilters
+   <LeadFilters
     search={search}
     status={status}
     source={source}
+    sortBy={sortBy}
     onSearchChange={setSearch}
     onStatusChange={setStatus}
     onSourceChange={setSource}
-    />
+    onSortChange={setSortBy}
+/>
 
-    <LeadTable
-    leads={filteredLeads}
+   <LeadTable
+    leads={sortedLeads}
 />
     </PageContainer>
   );

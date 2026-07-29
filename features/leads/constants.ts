@@ -23,3 +23,8 @@ export const EVENT_TYPES = [
   "Engagement",
   "Other",
 ] as const;
+export const LEAD_SORT_OPTIONS = [
+  "Client Name",
+  "Event Date",
+  "Budget",
+] as const;
