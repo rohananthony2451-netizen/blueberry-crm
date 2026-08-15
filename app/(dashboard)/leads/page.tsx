@@ -6,14 +6,14 @@ import { LeadToolbar } from "@/features/leads/components/LeadToolbar";
 import { LeadTable } from "@/features/leads/components/LeadTable";
 import { LeadFilters } from "@/features/leads/components/LeadFilters";
 import { useState } from "react";
-import { mockLeads } from "@/features/leads/data/mock-leads";
+import { useLeads } from "@/features/leads/hooks/useLeads";
 export default function LeadsPage() {
 const [search, setSearch] = useState("");
 const [status, setStatus] = useState("");
 const [source, setSource] = useState("");
 const [sortBy, setSortBy] = useState("");
- 
-const filteredLeads = mockLeads.filter((lead) => {
+const { leads, loading } = useLeads();
+const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
         search === "" ||
         lead.clientName.toLowerCase().includes(search.toLowerCase());
@@ -55,6 +55,20 @@ if (sortBy === "Event Date") {
     );
 }
 
+if (loading) {
+    return (
+        <PageContainer>
+            <PageHeader
+                title="Leads"
+                description="Manage all incoming event enquiries."
+            />
+
+            <p className="text-muted-foreground">
+                Loading leads...
+            </p>
+        </PageContainer>
+    );
+}
   return (  
     <PageContainer>
          <PageHeader

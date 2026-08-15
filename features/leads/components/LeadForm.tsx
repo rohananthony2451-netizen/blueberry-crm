@@ -7,6 +7,7 @@ import { FormTextarea } from "@/components/forms/FormTextarea";
 import { FormActions } from "@/components/forms/FormActions";
 import { EVENT_TYPES } from "../constants";
 import { LEAD_SOURCES } from "../constants";
+import { LeadFormValues } from "../types/lead-form";
 
 interface LeadFormProps {
   onCancel?: () => void;
