@@ -1,15 +1,20 @@
 import { Textarea } from "@/components/ui/textarea";
 
-interface FormTextareaProps {
-  placeholder?: string;
+import type { TextareaHTMLAttributes } from "react";
+
+interface FormTextareaProps
+    extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+    placeholder?: string;
 }
 
 export function FormTextarea({
-  placeholder,
+    placeholder,
+    ...props
 }: FormTextareaProps) {
-  return (
-    <Textarea
-      placeholder={placeholder}
-    />
-  );
+    return (
+        <Textarea
+            placeholder={placeholder}
+            {...props}
+        />
+    );
 }

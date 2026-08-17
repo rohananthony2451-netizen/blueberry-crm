@@ -1,18 +1,20 @@
 import { Input } from "@/components/ui/input";
 
-interface FormInputProps {
-  placeholder?: string;
-  type?: string;
+import type { InputHTMLAttributes } from "react";
+
+interface FormInputProps
+    extends InputHTMLAttributes<HTMLInputElement> {
+    placeholder?: string;
 }
 
 export function FormInput({
-  placeholder,
-  type = "text",
+    placeholder,
+    ...props
 }: FormInputProps) {
-  return (
-    <Input
-      type={type}
-      placeholder={placeholder}
-    />
-  );
+    return (
+        <Input
+            placeholder={placeholder}
+            {...props}
+        />
+    );
 }

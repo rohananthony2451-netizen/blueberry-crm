@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-
+import { useLeadActions } from "../hooks/useLeadActions";
 import { Button } from "@/components/ui/button";
-
+import type { LeadFormValues } from "../types/lead-form";
 import {
     Dialog,
     DialogContent,
@@ -17,6 +17,9 @@ import { LeadForm } from "./LeadForm";
 export function LeadDialog() {
     const [open, setOpen] = useState(false);
 
+    const {
+    createLead,
+} = useLeadActions();
     return (
         <Dialog
             open={open}
@@ -33,11 +36,21 @@ export function LeadDialog() {
 
                 <LeadForm
     onCancel={() => setOpen(false)}
-    onSave={() => {
-        console.log("Lead Saved");
+    onSave={async (data: LeadFormValues) => {
+  await createLead({
+    clientName: data.clientName,
+    phone: data.phone,
+    eventType: data.eventType,
+    eventDate: data.eventDate,
+    budget: data.budget,
+    source: data.source,
+    status: "New",
+    assignedTo: data.assignedTo,
+    notes: data.notes,
+  });
 
-        setOpen(false);
-    }}
+  setOpen(false);
+}}
 />
             </DialogContent>
         </Dialog>

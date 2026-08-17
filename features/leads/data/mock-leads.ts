@@ -2,7 +2,7 @@ import { Lead } from "../types";
 
 export const mockLeads: Lead[] = [
   {
-    id: 1,
+    id: "1",
     clientName: "Rahul Sharma",
     phone: "9876543210",
     eventType: "Wedding",
@@ -11,9 +11,11 @@ export const mockLeads: Lead[] = [
     source: "Instagram",
     status: "New",
     assignedTo: "Rohit",
+    notes: "",
+    
   },
   {
-    id: 2,
+    id: "2",
     clientName: "Amit Jain",
     phone: "9876543211",
     eventType: "Birthday",
@@ -22,9 +24,10 @@ export const mockLeads: Lead[] = [
     source: "Referral",
     status: "Contacted",
     assignedTo: "Sneha",
+  notes: "",
   },
   {
-    id: 3,
+    id: "3",
     clientName: "Priya Verma",
     phone: "9876543212",
     eventType: "Corporate",
@@ -33,9 +36,10 @@ export const mockLeads: Lead[] = [
     source: "Website",
     status: "Quotation Sent",
     assignedTo: "Rahul",
+  notes: "",
   },
   {
-    id: 4,
+    id: "4",
     clientName: "Karan Singh",
     phone: "9876543213",
     eventType: "Wedding",
@@ -44,5 +48,6 @@ export const mockLeads: Lead[] = [
     source: "Walk In",
     status: "Won",
     assignedTo: "Sneha",
+  notes: "",
   },
 ];
