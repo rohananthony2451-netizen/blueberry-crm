@@ -1,19 +1,31 @@
+import type { ReactNode } from "react";
+
 interface FormFieldProps {
-  label: string;
-  children: React.ReactNode;
+    label: string;
+    error?: string;
+    children: ReactNode;
 }
 
 export function FormField({
-  label,
-  children,
+    label,
+    error,
+    children,
 }: FormFieldProps) {
-  return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">
-        {label}
-      </label>
+    return (
+        <div className="space-y-2">
 
-      {children}
-    </div>
-  );
+            <label className="text-sm font-medium">
+                {label}
+            </label>
+
+            {children}
+
+            {error && (
+                <p className="text-sm text-red-500">
+                    {error}
+                </p>
+            )}
+
+        </div>
+    );
 }
