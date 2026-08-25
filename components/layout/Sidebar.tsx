@@ -3,6 +3,7 @@
 import Logo from "./Logo";
 import Navigation from "./Navigation";
 import UserProfile from "./UserProfile";
+import LogoutButton from "@/components/shared/LogoutButton";
 
 export default function Sidebar() {
   return (
@@ -14,6 +15,9 @@ export default function Sidebar() {
       </div>
 
       <UserProfile />
+      <div className="border-t p-3">
+        <LogoutButton />
+        </div>
     </aside>
   );
 }
