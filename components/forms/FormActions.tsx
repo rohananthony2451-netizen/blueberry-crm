@@ -2,13 +2,11 @@ import { Button } from "@/components/ui/button";
 
 interface FormActionsProps {
   onCancel?: () => void;
-  onSave?: () => void;
   saveText?: string;
 }
 
 export function FormActions({
   onCancel,
-  onSave,
   saveText = "Save",
 }: FormActionsProps) {
   return (
@@ -21,10 +19,7 @@ export function FormActions({
         Cancel
       </Button>
 
-      <Button
-        type="submit"
-        onClick={onSave}
-      >
+      <Button type="submit">
         {saveText}
       </Button>
     </div>

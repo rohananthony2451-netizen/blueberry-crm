@@ -12,7 +12,7 @@ const [search, setSearch] = useState("");
 const [status, setStatus] = useState("");
 const [source, setSource] = useState("");
 const [sortBy, setSortBy] = useState("");
-const { leads, loading } = useLeads();
+const { leads, loading, error } = useLeads();
 const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
         search === "" ||
@@ -68,6 +68,20 @@ if (loading) {
             </p>
         </PageContainer>
     );
+}
+if (error) {
+  return (
+    <PageContainer>
+      <PageHeader
+        title="Leads"
+        description="Manage all incoming event enquiries."
+      />
+
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        {error}
+      </div>
+    </PageContainer>
+  );
 }
   return (  
     <PageContainer>

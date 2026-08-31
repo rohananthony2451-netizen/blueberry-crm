@@ -1,9 +1,9 @@
 "use client";
-
+import type { Lead } from "../types";
 import { useState } from "react";
 import { useLeadActions } from "../hooks/useLeadActions";
 import { Button } from "@/components/ui/button";
-import type { LeadFormValues } from "../types/lead-form";
+import { LeadFormValues } from "../validation";
 import {
     Dialog,
     DialogContent,
@@ -43,10 +43,10 @@ export function LeadDialog() {
     eventType: data.eventType,
     eventDate: data.eventDate,
     budget: data.budget,
-    source: data.source,
+    source: data.source as Lead["source"],
     status: "New",
-    assignedTo: data.assignedTo,
-    notes: data.notes,
+    assignedTo: "",
+    notes: data.notes ?? "",
   });
 
   setOpen(false);

@@ -12,20 +12,20 @@ export function useLeadActions() {
   async function createLead(
     lead: Omit<Lead, "id">
   ) {
-    await createLeadService(lead);
+    return await createLeadService(lead);
   }
 
   async function updateLead(
     id: string,
     lead: Partial<Lead>
   ) {
-    await updateLeadService(id, lead);
+    return await updateLeadService(id, lead);
   }
 
   async function deleteLead(
     id: string
   ) {
-    await deleteLeadService(id);
+    return await deleteLeadService(id);
   }
 
   return {

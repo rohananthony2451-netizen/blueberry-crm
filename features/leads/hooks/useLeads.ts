@@ -6,21 +6,37 @@ import { getLeads } from "../services/lead.service";
 import { Lead } from "../types";
 
 export function useLeads() {
-    const [leads, setLeads] = useState<Lead[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    useEffect(() => {
-        async function load() {
-            const data = await getLeads();
-            setLeads(data);
-            setLoading(false);
-        }
+  async function loadLeads() {
+    try {
+      setLoading(true);
+      setError("");
 
-        load();
-    }, []);
+      const data = await getLeads();
 
-    return {
-        leads,
-        loading,
-    };
+      setLeads(data);
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to load leads."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadLeads();
+  }, []);
+
+  return {
+    leads,
+    loading,
+    error,
+    reload: loadLeads,
+  };
 }

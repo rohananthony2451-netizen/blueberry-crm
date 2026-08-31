@@ -21,21 +21,22 @@ export const leadSchema = z.object({
         .min(1, "Please select an event date."),
 
     budget: z
-        .string()
-        .trim()
-        .min(1, "Please enter a budget.")
-        .refine(
-            (value) => !Number.isNaN(Number(value)),
-            "Budget must be a valid number."
-        ),
+    .string()
+    .trim()
+    .min(1, "Please enter a budget.")
+    .refine(
+        (value) => {
+            const normalized = value.replace(/[₹,\s]/g, "");
+            return Number.isFinite(Number(normalized));
+        },
+        "Budget must be a valid number."
+    ),
 
     source: z
         .string()
         .min(1, "Please select a lead source."),
 
-    assignedTo: z
-        .string()
-        .min(1, "Please select a salesperson."),
+    assignedTo: z.string(),
 
     notes: z
         .string()
