@@ -14,11 +14,16 @@ import { LeadDetails } from "./LeadDetails";
 interface LeadDrawerProps {
   lead: Lead;
   children: React.ReactNode;
+  onUpdateLead: (
+    id: string,
+    data: Partial<Lead>
+  ) => Promise<Lead>;
 }
 
 export function LeadDrawer({
   lead,
   children,
+  onUpdateLead,
 }: LeadDrawerProps) {
   const [open, setOpen] = useState(false);
 
@@ -32,7 +37,11 @@ export function LeadDrawer({
       </DrawerTrigger>
 
       <DrawerContent className="mx-auto max-w-xl p-8">
-        <LeadDetails lead={lead} />
+        <LeadDetails
+          lead={lead}
+          onUpdateLead={onUpdateLead}
+          onClose={() => setOpen(false)}
+        />
       </DrawerContent>
     </Drawer>
   );

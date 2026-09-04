@@ -2,41 +2,75 @@
 
 import { useEffect, useState } from "react";
 
-import { getLeads } from "../services/lead.service";
+import {
+  getLeads,
+  createLead as createLeadService,
+  updateLead as updateLeadService,
+  deleteLead as deleteLeadService,
+} from "../services/lead.service";
+
 import { Lead } from "../types";
 
 export function useLeads() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  async function loadLeads() {
-    try {
-      setLoading(true);
-      setError("");
-
-      const data = await getLeads();
-
-      setLeads(data);
-    } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Failed to load leads."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
 
   useEffect(() => {
-    loadLeads();
+    async function load() {
+      try {
+        const data = await getLeads();
+        setLeads(data);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
   }, []);
+
+  async function createLead(lead: Omit<Lead, "id">) {
+    const newLead = await createLeadService(lead);
+
+    setLeads((currentLeads) => [
+      newLead,
+      ...currentLeads,
+    ]);
+
+    return newLead;
+  }
+
+  async function updateLead(
+    id: string,
+    lead: Partial<Lead>
+  ) {
+    const updatedLead = await updateLeadService(id, lead);
+
+    setLeads((currentLeads) =>
+      currentLeads.map((existingLead) =>
+        existingLead.id === id
+          ? updatedLead
+          : existingLead
+      )
+    );
+
+    return updatedLead;
+  }
+
+  async function deleteLead(id: string) {
+    await deleteLeadService(id);
+
+    setLeads((currentLeads) =>
+      currentLeads.filter(
+        (existingLead) => existingLead.id !== id
+      )
+    );
+  }
 
   return {
     leads,
     loading,
-    error,
-    reload: loadLeads,
+    createLead,
+    updateLead,
+    deleteLead,
   };
 }

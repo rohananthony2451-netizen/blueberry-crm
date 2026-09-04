@@ -5,11 +5,16 @@ import { LeadTableHeader } from "./LeadTableHeader";
 import { LeadTableBody } from "./LeadTableBody";
 
 interface LeadTableProps {
-    leads: Lead[];
+  leads: Lead[];
+  onUpdateLead: (
+    id: string,
+    data: Partial<Lead>
+  ) => Promise<Lead>;
 }
 
 export function LeadTable({
-    leads,
+  leads,
+  onUpdateLead,
 }: LeadTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -17,7 +22,8 @@ export function LeadTable({
         <LeadTableHeader />
 
 <LeadTableBody
-    leads={leads}
+  leads={leads}
+  onUpdateLead={onUpdateLead}
 />
       </table>
       <TableFooter />

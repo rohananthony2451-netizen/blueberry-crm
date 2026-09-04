@@ -1,58 +1,65 @@
 "use client";
-import type { Lead } from "../types";
+
 import { useState } from "react";
-import { useLeadActions } from "../hooks/useLeadActions";
+
 import { Button } from "@/components/ui/button";
-import { LeadFormValues } from "../validation";
+
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 
 import { LeadForm } from "./LeadForm";
+import type { Lead } from "../types";
+import type { LeadFormValues } from "../validation";
 
-export function LeadDialog() {
-    const [open, setOpen] = useState(false);
+interface LeadDialogProps {
+  onCreateLead: (
+    lead: Omit<Lead, "id">
+  ) => Promise<Lead>;
+}
 
-    const {
-    createLead,
-} = useLeadActions();
-    return (
-        <Dialog
-            open={open}
-            onOpenChange={setOpen}
-        >
-            <DialogTrigger asChild>
-                <Button>+ New Lead</Button>
-            </DialogTrigger>
+export function LeadDialog({
+  onCreateLead,
+}: LeadDialogProps) {
+  const [open, setOpen] = useState(false);
 
-            <DialogContent className="max-w-xl">
-                <DialogHeader>
-                    <DialogTitle>Create New Lead</DialogTitle>
-                </DialogHeader>
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <DialogTrigger asChild>
+        <Button>+ New Lead</Button>
+      </DialogTrigger>
 
-                <LeadForm
-    onCancel={() => setOpen(false)}
-    onSave={async (data: LeadFormValues) => {
-  await createLead({
-    clientName: data.clientName,
-    phone: data.phone,
-    eventType: data.eventType,
-    eventDate: data.eventDate,
-    budget: data.budget,
-    source: data.source as Lead["source"],
-    status: "New",
-    assignedTo: "",
-    notes: data.notes ?? "",
-  });
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle>Create New Lead</DialogTitle>
+        </DialogHeader>
 
-  setOpen(false);
-}}
-/>
-            </DialogContent>
-        </Dialog>
-    );
+        <LeadForm
+          onCancel={() => setOpen(false)}
+          onSave={async (data: LeadFormValues) => {
+            await onCreateLead({
+              clientName: data.clientName,
+              phone: data.phone,
+              eventType: data.eventType,
+              eventDate: data.eventDate,
+              budget: data.budget,
+              source: data.source as Lead["source"],
+              status: "New",
+              assignedTo: data.assignedTo,
+              notes: data.notes ?? "",
+            });
+
+            setOpen(false);
+          }}
+        />
+      </DialogContent>
+    </Dialog>
+  );
 }

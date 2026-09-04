@@ -13,40 +13,45 @@ import { EVENT_TYPES, LEAD_SOURCES } from "../constants";
 import { leadSchema, LeadFormValues } from "../validation";
 
 interface LeadFormProps {
+  defaultValues?: Partial<LeadFormValues>;
   onCancel?: () => void;
-  onSave?: (data: LeadFormValues) => void;
+  onSave?: (data: LeadFormValues) => void | Promise<void>;
+  saveText?: string;
 }
 
 export function LeadForm({
+  defaultValues,
   onCancel,
   onSave,
+  saveText = "Save Lead",
 }: LeadFormProps) {
- const {
-  register,
-  handleSubmit,
-  setValue,
-  watch,
-  formState: { errors },
-} = useForm<LeadFormValues>({
-  resolver: zodResolver(leadSchema),
-  defaultValues: {
-    clientName: "",
-    phone: "",
-    eventType: "",
-    eventDate: "",
-    budget: "",
-    source: "",
-    assignedTo: "",
-    notes: "",
-  },
-});
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<LeadFormValues>({
+    resolver: zodResolver(leadSchema),
+    defaultValues: {
+      clientName: "",
+      phone: "",
+      eventType: "",
+      eventDate: "",
+      budget: "",
+      source: "",
+      assignedTo: "",
+      notes: "",
+      ...defaultValues,
+    },
+  });
 
   const eventType = watch("eventType");
   const source = watch("source");
   const assignedTo = watch("assignedTo");
 
-  function submitForm(data: LeadFormValues) {
-    onSave?.(data);
+  async function submitForm(data: LeadFormValues) {
+    await onSave?.(data);
   }
 
   return (
@@ -57,31 +62,36 @@ export function LeadForm({
       <div className="grid gap-5 md:grid-cols-2">
 
         <FormField
-  label="Client Name"
-  error={errors.clientName?.message}
->
-  <FormInput
-    placeholder="John Doe"
-    {...register("clientName")}
-  />
-</FormField>
+          label="Client Name"
+          error={errors.clientName?.message}
+        >
+          <FormInput
+            placeholder="John Doe"
+            {...register("clientName")}
+          />
+        </FormField>
 
-        <FormField label="Phone"
-         error={errors.phone?.message}>
+        <FormField
+          label="Phone"
+          error={errors.phone?.message}
+        >
           <FormInput
             placeholder="+91 9876543210"
             {...register("phone")}
           />
         </FormField>
 
-        <FormField label="Event Type"
-         error={errors.eventType?.message}>
+        <FormField
+          label="Event Type"
+          error={errors.eventType?.message}
+        >
           <FormSelect
             value={eventType}
             onValueChange={(value) =>
               setValue(
                 "eventType",
-                value as LeadFormValues["eventType"]
+                value as LeadFormValues["eventType"],
+                { shouldValidate: true }
               )
             }
             placeholder="Select Event Type"
@@ -89,32 +99,37 @@ export function LeadForm({
           />
         </FormField>
 
-        <FormField label="Event Date"
-        error={errors.eventDate?.message}
->
+        <FormField
+          label="Event Date"
+          error={errors.eventDate?.message}
+        >
           <FormInput
             type="date"
             {...register("eventDate")}
           />
         </FormField>
 
-        <FormField label="Budget"
-          error={errors.budget?.message}>
+        <FormField
+          label="Budget"
+          error={errors.budget?.message}
+        >
           <FormInput
             placeholder="₹ 500000"
             {...register("budget")}
           />
         </FormField>
 
-        <FormField label="Source"
-         error={errors.source?.message}
+        <FormField
+          label="Source"
+          error={errors.source?.message}
         >
           <FormSelect
             value={source}
             onValueChange={(value) =>
               setValue(
                 "source",
-                value as LeadFormValues["source"]
+                value as LeadFormValues["source"],
+                { shouldValidate: true }
               )
             }
             placeholder="Select Source"
@@ -122,12 +137,16 @@ export function LeadForm({
           />
         </FormField>
 
-        <FormField label="Assigned To"
-         error={errors.assignedTo?.message}>
+        <FormField
+          label="Assigned To"
+          error={errors.assignedTo?.message}
+        >
           <FormSelect
             value={assignedTo}
             onValueChange={(value) =>
-              setValue("assignedTo", value)
+              setValue("assignedTo", value, {
+                shouldValidate: true,
+              })
             }
             placeholder="Select Salesperson"
             options={[
@@ -149,7 +168,7 @@ export function LeadForm({
 
       <FormActions
         onCancel={onCancel}
-        saveText="Save Lead"
+        saveText={saveText}
       />
     </form>
   );

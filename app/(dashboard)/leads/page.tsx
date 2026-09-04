@@ -1,75 +1,90 @@
 "use client";
 
+import { useState } from "react";
+
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { PageHeader } from "@/components/design-system/PageHeader";
+
 import { LeadToolbar } from "@/features/leads/components/LeadToolbar";
 import { LeadTable } from "@/features/leads/components/LeadTable";
 import { LeadFilters } from "@/features/leads/components/LeadFilters";
-import { useState } from "react";
+
 import { useLeads } from "@/features/leads/hooks/useLeads";
+
 export default function LeadsPage() {
-const [search, setSearch] = useState("");
-const [status, setStatus] = useState("");
-const [source, setSource] = useState("");
-const [sortBy, setSortBy] = useState("");
-const { leads, loading, error } = useLeads();
-const filteredLeads = leads.filter((lead) => {
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [source, setSource] = useState("");
+  const [sortBy, setSortBy] = useState("");
+
+  const {
+    leads,
+    loading,
+    createLead,
+    updateLead,
+    deleteLead,
+  } = useLeads();
+
+  const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
-        search === "" ||
-        lead.clientName.toLowerCase().includes(search.toLowerCase());
+      search === "" ||
+      lead.clientName
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
     const matchesStatus =
-        status === "" ||
-        lead.status === status;
+      status === "" ||
+      lead.status === status;
 
     const matchesSource =
-        source === "" ||
-        lead.source === source;
+      source === "" ||
+      lead.source === source;
 
     return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesSource
+      matchesSearch &&
+      matchesStatus &&
+      matchesSource
     );
-});
+  });
 
-const sortedLeads = [...filteredLeads];
+  const sortedLeads = [...filteredLeads];
 
-if (sortBy === "Client Name") {
+  if (sortBy === "Client Name") {
     sortedLeads.sort((a, b) =>
-        a.clientName.localeCompare(b.clientName)
+      a.clientName.localeCompare(b.clientName)
     );
-}
+  }
 
-if (sortBy === "Budget") {
-    sortedLeads.sort((a, b) =>
+  if (sortBy === "Budget") {
+    sortedLeads.sort(
+      (a, b) =>
         Number(b.budget) - Number(a.budget)
     );
-}
+  }
 
-if (sortBy === "Event Date") {
+  if (sortBy === "Event Date") {
     sortedLeads.sort(
-        (a, b) =>
-            new Date(a.eventDate).getTime() -
-            new Date(b.eventDate).getTime()
+      (a, b) =>
+        new Date(a.eventDate).getTime() -
+        new Date(b.eventDate).getTime()
     );
-}
+  }
 
-if (loading) {
+  if (loading) {
     return (
-        <PageContainer>
-            <PageHeader
-                title="Leads"
-                description="Manage all incoming event enquiries."
-            />
+      <PageContainer>
+        <PageHeader
+          title="Leads"
+          description="Manage all incoming event enquiries."
+        />
 
-            <p className="text-muted-foreground">
-                Loading leads...
-            </p>
-        </PageContainer>
+        <p className="text-muted-foreground">
+          Loading leads...
+        </p>
+      </PageContainer>
     );
-}
-if (error) {
+  }
+
   return (
     <PageContainer>
       <PageHeader
@@ -77,37 +92,27 @@ if (error) {
         description="Manage all incoming event enquiries."
       />
 
-      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
-      </div>
-    </PageContainer>
-  );
-}
-  return (  
-    <PageContainer>
-         <PageHeader
-        title="Leads"
-        description="Manage all incoming event enquiries."
-    />
+      <LeadToolbar
+        search={search}
+        onSearchChange={setSearch}
+        onCreateLead={createLead}
+      />
 
-<LeadToolbar
-  search={search}
-  onSearchChange={setSearch}
-/>
-   <LeadFilters
-    search={search}
-    status={status}
-    source={source}
-    sortBy={sortBy}
-    onSearchChange={setSearch}
-    onStatusChange={setStatus}
-    onSourceChange={setSource}
-    onSortChange={setSortBy}
-/>
+      <LeadFilters
+        search={search}
+        status={status}
+        source={source}
+        sortBy={sortBy}
+        onSearchChange={setSearch}
+        onStatusChange={setStatus}
+        onSourceChange={setSource}
+        onSortChange={setSortBy}
+      />
 
-   <LeadTable
-    leads={sortedLeads}
-/>
+    <LeadTable
+      leads={sortedLeads}
+      onUpdateLead={updateLead}
+      />
     </PageContainer>
   );
 }
