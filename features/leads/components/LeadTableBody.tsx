@@ -4,15 +4,17 @@ import { TableEmpty } from "@/components/tables/TableEmpty";
 
 interface LeadTableBodyProps {
   leads: Lead[];
-  onUpdateLead: (
+  onEdit?: (
     id: string,
     data: Partial<Lead>
-  ) => Promise<Lead>;
+  ) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function LeadTableBody({
   leads,
-  onUpdateLead,
+  onEdit,
+  onDelete,
 }: LeadTableBodyProps) {
   return (
     <tbody>
@@ -23,7 +25,8 @@ export function LeadTableBody({
           <LeadRow
             key={lead.id}
             lead={lead}
-            onUpdateLead={onUpdateLead}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))
       )}

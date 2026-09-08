@@ -5,8 +5,6 @@ import { useEffect, useState } from "react";
 import {
   getLeads,
   createLead as createLeadService,
-  updateLead as updateLeadService,
-  deleteLead as deleteLeadService,
 } from "../services/lead.service";
 
 import { Lead } from "../types";
@@ -28,7 +26,9 @@ export function useLeads() {
     load();
   }, []);
 
-  async function createLead(lead: Omit<Lead, "id">) {
+  async function createLead(
+    lead: Omit<Lead, "id">
+  ): Promise<Lead> {
     const newLead = await createLeadService(lead);
 
     setLeads((currentLeads) => [
@@ -39,29 +39,27 @@ export function useLeads() {
     return newLead;
   }
 
-  async function updateLead(
-    id: string,
-    lead: Partial<Lead>
-  ) {
-    const updatedLead = await updateLeadService(id, lead);
-
-    setLeads((currentLeads) =>
-      currentLeads.map((existingLead) =>
-        existingLead.id === id
-          ? updatedLead
-          : existingLead
-      )
-    );
-
-    return updatedLead;
+  function addLeadToState(lead: Lead) {
+    setLeads((currentLeads) => [
+      lead,
+      ...currentLeads,
+    ]);
   }
 
-  async function deleteLead(id: string) {
-    await deleteLeadService(id);
+  function updateLeadInState(updatedLead: Lead) {
+    setLeads((currentLeads) =>
+      currentLeads.map((lead) =>
+        lead.id === updatedLead.id
+          ? updatedLead
+          : lead
+      )
+    );
+  }
 
+  function removeLeadFromState(id: string) {
     setLeads((currentLeads) =>
       currentLeads.filter(
-        (existingLead) => existingLead.id !== id
+        (lead) => lead.id !== id
       )
     );
   }
@@ -70,7 +68,8 @@ export function useLeads() {
     leads,
     loading,
     createLead,
-    updateLead,
-    deleteLead,
+    addLeadToState,
+    updateLeadInState,
+    removeLeadFromState,
   };
 }

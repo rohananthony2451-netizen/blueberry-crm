@@ -6,27 +6,33 @@ import { LeadTableBody } from "./LeadTableBody";
 
 interface LeadTableProps {
   leads: Lead[];
-  onUpdateLead: (
+  onEdit?: (
     id: string,
     data: Partial<Lead>
-  ) => Promise<Lead>;
+  ) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function LeadTable({
   leads,
-  onUpdateLead,
+  onEdit,
+  onDelete,
 }: LeadTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
       <table className="w-full">
+
         <LeadTableHeader />
 
-<LeadTableBody
-  leads={leads}
-  onUpdateLead={onUpdateLead}
-/>
+        <LeadTableBody
+          leads={leads}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+
       </table>
+
       <TableFooter />
     </Card>
   );
-}
+} 

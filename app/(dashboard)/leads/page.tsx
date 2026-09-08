@@ -10,21 +10,43 @@ import { LeadTable } from "@/features/leads/components/LeadTable";
 import { LeadFilters } from "@/features/leads/components/LeadFilters";
 
 import { useLeads } from "@/features/leads/hooks/useLeads";
-
+import { useLeadActions } from "@/features/leads/hooks/useLeadActions";
+import { Lead } from "@/features/leads/types";
 export default function LeadsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [source, setSource] = useState("");
   const [sortBy, setSortBy] = useState("");
 
-  const {
-    leads,
-    loading,
-    createLead,
-    updateLead,
-    deleteLead,
-  } = useLeads();
+ const {
+  leads,
+  loading,
+  createLead,
+  updateLeadInState,
+  removeLeadFromState,
+} = useLeads();
 
+const {
+  updateLead,
+  deleteLead,
+} = useLeadActions();
+
+async function handleUpdateLead(
+  id: string,
+  data: Partial<Lead>
+) {
+  const updatedLead = await updateLead(
+    id,
+    data
+  );
+
+  updateLeadInState(updatedLead);
+}
+
+async function handleDeleteLead(id: string) {
+  await deleteLead(id);
+  removeLeadFromState(id);
+}
   const filteredLeads = leads.filter((lead) => {
     const matchesSearch =
       search === "" ||
@@ -110,9 +132,10 @@ export default function LeadsPage() {
       />
 
     <LeadTable
-      leads={sortedLeads}
-      onUpdateLead={updateLead}
-      />
+  leads={sortedLeads}
+  onEdit={handleUpdateLead}
+  onDelete={handleDeleteLead}
+/>
     </PageContainer>
   );
 }

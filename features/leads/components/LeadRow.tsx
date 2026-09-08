@@ -5,22 +5,26 @@ import { LeadDrawer } from "./LeadDrawer";
 
 interface LeadRowProps {
   lead: Lead;
-  onUpdateLead: (
+  onEdit?: (
     id: string,
     data: Partial<Lead>
-  ) => Promise<Lead>;
+  ) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function LeadRow({
   lead,
-  onUpdateLead,
+  onEdit,
+  onDelete,
 }: LeadRowProps) {
   return (
     <LeadDrawer
       lead={lead}
-      onUpdateLead={onUpdateLead}
+      onEdit={onEdit}
+      onDelete={onDelete}
     >
       <tr className="cursor-pointer transition-colors hover:bg-slate-50">
+
         <td className="px-4 py-4 font-medium">
           {lead.clientName}
         </td>
@@ -40,6 +44,7 @@ export function LeadRow({
         </td>
 
         <td>{lead.assignedTo}</td>
+
       </tr>
     </LeadDrawer>
   );

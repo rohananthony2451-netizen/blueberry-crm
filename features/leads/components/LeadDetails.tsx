@@ -2,101 +2,48 @@
 
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-
 import { Lead } from "../types";
-import { LeadForm } from "./LeadForm";
+import { StatusBadge } from "./StatusBadge";
+import { SourceBadge } from "./SourceBadge";
+import { Button } from "@/components/ui/button";
 
 interface LeadDetailsProps {
   lead: Lead;
-  onUpdateLead: (
-    id: string,
-    data: Partial<Lead>
-  ) => Promise<Lead>;
-  onClose?: () => void;
+  onEdit?: () => void;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function LeadDetails({
   lead,
-  onUpdateLead,
-  onClose,
+  onEdit,
+  onDelete,
 }: LeadDetailsProps) {
-  const [editing, setEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  if (editing) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold">
-            Edit Lead
-          </h2>
+  async function handleDelete() {
+    if (!onDelete) return;
 
-          <p className="mt-1 text-sm text-slate-500">
-            Update the lead information.
-          </p>
-        </div>
+    setDeleting(true);
 
-        <LeadForm
-          defaultValues={{
-            clientName: lead.clientName,
-            phone: lead.phone,
-            eventType: lead.eventType,
-            eventDate: lead.eventDate,
-            budget: lead.budget.replace(/[₹,]/g, ""),
-            source: lead.source,
-            assignedTo: lead.assignedTo,
-            notes: lead.notes,
-          }}
-          onCancel={() => setEditing(false)}
-          saveText={
-            saving ? "Saving..." : "Save Changes"
-          }
-          onSave={async (data) => {
-            try {
-              setSaving(true);
-
-              await onUpdateLead(lead.id, {
-                clientName: data.clientName,
-                phone: data.phone,
-                eventType: data.eventType,
-                eventDate: data.eventDate,
-                budget: data.budget,
-                source: data.source as Lead["source"],
-                assignedTo: data.assignedTo,
-                notes: data.notes ?? "",
-              });
-
-              setEditing(false);
-            } finally {
-              setSaving(false);
-            }
-          }}
-        />
-      </div>
-    );
+    try {
+      await onDelete(lead.id);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
     <div className="space-y-6">
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold">
-            {lead.clientName}
-          </h2>
+      <div>
+        <h2 className="text-2xl font-bold">
+          {lead.clientName}
+        </h2>
 
-          <p className="text-slate-500">
-            {lead.phone}
-          </p>
-        </div>
-
-        <Button
-          variant="outline"
-          onClick={() => setEditing(true)}
-        >
-          Edit Lead
-        </Button>
+        <p className="text-slate-500">
+          {lead.phone}
+        </p>
       </div>
 
       <div className="space-y-3">
@@ -116,27 +63,98 @@ export function LeadDetails({
           value={lead.budget}
         />
 
-        <Info
-          label="Source"
-          value={lead.source}
-        />
+        <div className="border-b pb-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Source
+          </p>
+
+          <div className="mt-1">
+            <SourceBadge source={lead.source} />
+          </div>
+        </div>
 
         <Info
           label="Assigned"
-          value={lead.assignedTo || "Unassigned"}
+          value={lead.assignedTo || "Not assigned"}
         />
 
-        <Info
-          label="Status"
-          value={lead.status}
-        />
+        <div className="border-b pb-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">
+            Status
+          </p>
+
+          <div className="mt-1">
+            <StatusBadge status={lead.status} />
+          </div>
+        </div>
 
         <Info
           label="Notes"
-          value={lead.notes || "No notes"}
+          value={lead.notes || "No notes added."}
         />
 
       </div>
+
+      {!confirmDelete ? (
+        <div className="flex justify-end gap-3 border-t pt-6">
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onEdit}
+          >
+            Edit Lead
+          </Button>
+
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setConfirmDelete(true)}
+          >
+            Delete Lead
+          </Button>
+
+        </div>
+      ) : (
+        <div className="space-y-4 rounded-xl border border-red-200 bg-red-50 p-4">
+
+          <div>
+            <p className="font-semibold text-red-900">
+              Delete this lead?
+            </p>
+
+            <p className="mt-1 text-sm text-red-700">
+              This action cannot be undone. The lead will be
+              permanently removed from your workspace.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3">
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting
+                ? "Deleting..."
+                : "Yes, Delete Lead"}
+            </Button>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );

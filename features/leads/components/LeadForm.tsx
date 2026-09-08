@@ -13,14 +13,14 @@ import { EVENT_TYPES, LEAD_SOURCES } from "../constants";
 import { leadSchema, LeadFormValues } from "../validation";
 
 interface LeadFormProps {
-  defaultValues?: Partial<LeadFormValues>;
+  initialValues?: Partial<LeadFormValues>;
   onCancel?: () => void;
   onSave?: (data: LeadFormValues) => void | Promise<void>;
   saveText?: string;
 }
 
 export function LeadForm({
-  defaultValues,
+  initialValues,
   onCancel,
   onSave,
   saveText = "Save Lead",
@@ -30,19 +30,18 @@ export function LeadForm({
     handleSubmit,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
     defaultValues: {
-      clientName: "",
-      phone: "",
-      eventType: "",
-      eventDate: "",
-      budget: "",
-      source: "",
-      assignedTo: "",
-      notes: "",
-      ...defaultValues,
+      clientName: initialValues?.clientName ?? "",
+      phone: initialValues?.phone ?? "",
+      eventType: initialValues?.eventType ?? "",
+      eventDate: initialValues?.eventDate ?? "",
+      budget: initialValues?.budget ?? "",
+      source: initialValues?.source ?? "",
+      assignedTo: initialValues?.assignedTo ?? "",
+      notes: initialValues?.notes ?? "",
     },
   });
 
@@ -168,7 +167,9 @@ export function LeadForm({
 
       <FormActions
         onCancel={onCancel}
-        saveText={saveText}
+        saveText={
+          isSubmitting ? "Saving..." : saveText
+        }
       />
     </form>
   );

@@ -11,21 +11,21 @@ import { Lead } from "../types";
 export function useLeadActions() {
   async function createLead(
     lead: Omit<Lead, "id">
-  ) {
+  ): Promise<Lead> {
     return await createLeadService(lead);
   }
 
   async function updateLead(
     id: string,
     lead: Partial<Lead>
-  ) {
+  ): Promise<Lead> {
     return await updateLeadService(id, lead);
   }
 
   async function deleteLead(
     id: string
-  ) {
-    return await deleteLeadService(id);
+  ): Promise<void> {
+    await deleteLeadService(id);
   }
 
   return {
