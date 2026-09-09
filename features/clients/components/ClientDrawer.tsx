@@ -21,12 +21,15 @@ interface ClientDrawerProps {
     id: string,
     data: Partial<Client>
   ) => Promise<void>;
+  onDelete?: (
+    id: string
+  ) => Promise<void>;
 }
-
 export function ClientDrawer({
   client,
   children,
   onEdit,
+  onDelete,
 }: ClientDrawerProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -56,7 +59,12 @@ export function ClientDrawer({
       setEditing(false);
     }
   }
+async function handleDelete(id: string) {
+  if (!onDelete) return;
 
+  await onDelete(id);
+  setOpen(false);
+}
   return (
     <Drawer
       open={open}
@@ -99,11 +107,10 @@ export function ClientDrawer({
           </div>
         ) : (
           <ClientDetails
-            client={client}
-            onEdit={() =>
-              setEditing(true)
-            }
-          />
+           client={client}
+             onEdit={() => setEditing(true) }
+      onDelete={handleDelete}
+/>
         )}
 
       </DrawerContent>

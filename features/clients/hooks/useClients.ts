@@ -6,10 +6,11 @@ import {
   getClients,
   createClientRecord,
   updateClient,
-  deleteClient,
+  deleteClient as deleteClientService,
 } from "../services/client.service";
 
 import { Client } from "../types";
+import type { ClientFormValues } from "../validation";
 
 export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -29,9 +30,15 @@ export function useClients() {
   }, []);
 
   async function createClient(
-    client: Omit<Client, "id" | "createdAt" | "updatedAt">
+    client: ClientFormValues
   ) {
-    const newClient = await createClientRecord(client);
+    const newClient = await createClientRecord({
+      name: client.name,
+      phone: client.phone,
+      email: client.email,
+      address: client.address ?? "",
+      notes: client.notes ?? "",
+    });
 
     setClients((current) => [
       newClient,
@@ -45,22 +52,31 @@ export function useClients() {
     id: string,
     client: Partial<Client>
   ) {
-    const updatedClient = await updateClient(id, client);
+    const updatedClient = await updateClient(
+      id,
+      client
+    );
 
     setClients((current) =>
       current.map((item) =>
-        item.id === id ? updatedClient : item
+        item.id === id
+          ? updatedClient
+          : item
       )
     );
 
     return updatedClient;
   }
 
-  async function removeClient(id: string) {
-    await deleteClient(id);
+  async function removeClient(
+    id: string
+  ): Promise<void> {
+    await deleteClientService(id);
 
     setClients((current) =>
-      current.filter((item) => item.id !== id)
+      current.filter(
+        (item) => item.id !== id
+      )
     );
   }
 

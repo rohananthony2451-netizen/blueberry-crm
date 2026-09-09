@@ -2,21 +2,14 @@
 
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-
+import type { ClientFormValues } from "../validation";
 import { ClientDialog } from "./ClientDialog";
 
 interface ClientToolbarProps {
   search: string;
   onSearchChange: (value: string) => void;
   onCreateClient: (
-    client: {
-      name: string;
-      phone: string;
-      email: string;
-      address: string;
-      notes: string;
-    }
+    client: ClientFormValues
   ) => Promise<unknown>;
 }
 

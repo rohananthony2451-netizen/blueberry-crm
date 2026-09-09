@@ -1,18 +1,36 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 import { Client } from "../types";
+import { Button } from "@/components/ui/button";
 
 interface ClientDetailsProps {
   client: Client;
   onEdit?: () => void;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function ClientDetails({
   client,
   onEdit,
+  onDelete,
 }: ClientDetailsProps) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!onDelete) return;
+
+    setDeleting(true);
+
+    try {
+      await onDelete(client.id);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
 
@@ -30,34 +48,80 @@ export function ClientDetails({
 
         <Info
           label="Email"
-          value={client.email || "No email added."}
-        />
-
-        <Info
-          label="Phone"
-          value={client.phone || "No phone number added."}
+          value={client.email || "No email added"}
         />
 
         <Info
           label="Address"
-          value={client.address || "No address added."}
+          value={client.address || "No address added"}
         />
 
         <Info
           label="Notes"
-          value={client.notes || "No notes added."}
+          value={client.notes || "No notes added"}
         />
 
       </div>
 
-      <div className="flex justify-end border-t pt-6">
-        <Button
-          type="button"
-          onClick={onEdit}
-        >
-          Edit Client
-        </Button>
-      </div>
+      {!confirmDelete ? (
+        <div className="flex justify-end gap-3 border-t pt-6">
+
+          <Button
+            type="button"
+            onClick={onEdit}
+          >
+            Edit Client
+          </Button>
+
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setConfirmDelete(true)}
+          >
+            Delete Client
+          </Button>
+
+        </div>
+      ) : (
+        <div className="space-y-4 rounded-xl border border-red-200 bg-red-50 p-4">
+
+          <div>
+            <p className="font-semibold text-red-900">
+              Delete this client?
+            </p>
+
+            <p className="mt-1 text-sm text-red-700">
+              This action cannot be undone. The client will be
+              permanently removed from your workspace.
+            </p>
+          </div>
+
+          <div className="flex justify-end gap-3">
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setConfirmDelete(false)}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting
+                ? "Deleting..."
+                : "Yes, Delete Client"}
+            </Button>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
@@ -74,6 +138,7 @@ function Info({
 }: InfoProps) {
   return (
     <div className="border-b pb-3">
+
       <p className="text-xs uppercase tracking-wide text-slate-500">
         {label}
       </p>
@@ -81,6 +146,7 @@ function Info({
       <p className="mt-1 font-medium">
         {value}
       </p>
+
     </div>
   );
 }

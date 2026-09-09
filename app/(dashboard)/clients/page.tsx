@@ -9,16 +9,25 @@ import { ClientToolbar } from "@/features/clients/components/ClientToolbar";
 import { ClientTable } from "@/features/clients/components/ClientTable";
 
 import { useClients } from "@/features/clients/hooks/useClients";
+import { Client } from "@/features/clients/types";
 
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
 
- const {
-  clients,
-  loading,
-  createClient,
-  editClient,
-} = useClients();
+  const {
+    clients,
+    loading,
+    createClient,
+    editClient,
+    removeClient,
+  } = useClients();
+
+  async function handleEditClient(
+    id: string,
+    data: Partial<Client>
+  ): Promise<void> {
+    await editClient(id, data);
+  }
 
   const filteredClients = clients.filter(
     (client) =>
@@ -55,15 +64,17 @@ export default function ClientsPage() {
         description="Manage your event clients and their information."
       />
 
-     <ClientToolbar
-  search={search}
-  onSearchChange={setSearch}
-  onCreateClient={createClient}
-/>
+      <ClientToolbar
+        search={search}
+        onSearchChange={setSearch}
+        onCreateClient={createClient}
+      />
+
       <ClientTable
-  clients={filteredClients}
-  onEdit={editClient}
-/>
+        clients={filteredClients}
+        onEdit={handleEditClient}
+        onDelete={removeClient}
+      />
     </PageContainer>
   );
 }
