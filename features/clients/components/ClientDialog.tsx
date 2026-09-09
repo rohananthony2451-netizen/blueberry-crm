@@ -13,13 +13,11 @@ import {
 } from "@/components/ui/dialog";
 
 import { ClientForm } from "./ClientForm";
-
-import type { Client } from "../types";
 import type { ClientFormValues } from "../validation";
 
 interface ClientDialogProps {
   onCreateClient: (
-    client: Omit<Client, "id" | "createdAt" | "updatedAt">
+    client: ClientFormValues
   ) => Promise<unknown>;
 }
 
@@ -28,37 +26,28 @@ export function ClientDialog({
 }: ClientDialogProps) {
   const [open, setOpen] = useState(false);
 
+  async function handleSave(data: ClientFormValues) {
+    await onCreateClient(data);
+    setOpen(false);
+  }
+
   return (
     <Dialog
       open={open}
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <Button type="button">
-          + New Client
-        </Button>
+        <Button>+ New Client</Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>
-            Create New Client
-          </DialogTitle>
+          <DialogTitle>Create New Client</DialogTitle>
         </DialogHeader>
 
         <ClientForm
           onCancel={() => setOpen(false)}
-          onSave={async (data: ClientFormValues) => {
-            await onCreateClient({
-              name: data.name,
-              phone: data.phone,
-              email: data.email,
-              address: data.address ?? "",
-              notes: data.notes ?? "",
-            });
-
-            setOpen(false);
-          }}
+          onSave={handleSave}
         />
       </DialogContent>
     </Dialog>

@@ -13,10 +13,11 @@ import { useClients } from "@/features/clients/hooks/useClients";
 export default function ClientsPage() {
   const [search, setSearch] = useState("");
 
-  const {
+ const {
   clients,
   loading,
   createClient,
+  editClient,
 } = useClients();
 
   const filteredClients = clients.filter(
@@ -60,8 +61,9 @@ export default function ClientsPage() {
   onCreateClient={createClient}
 />
       <ClientTable
-        clients={filteredClients}
-      />
+  clients={filteredClients}
+  onEdit={editClient}
+/>
     </PageContainer>
   );
 }

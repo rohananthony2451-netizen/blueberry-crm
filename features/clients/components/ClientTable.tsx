@@ -6,10 +6,15 @@ import { ClientTableBody } from "./ClientTableBody";
 
 interface ClientTableProps {
   clients: Client[];
+  onEdit?: (
+    id: string,
+    data: Partial<Client>
+  ) => Promise<unknown>;
 }
 
 export function ClientTable({
   clients,
+  onEdit,
 }: ClientTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -18,6 +23,7 @@ export function ClientTable({
 
         <ClientTableBody
           clients={clients}
+          onEdit={onEdit}
         />
       </table>
     </Card>

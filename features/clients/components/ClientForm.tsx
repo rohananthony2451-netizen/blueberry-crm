@@ -14,13 +14,17 @@ import {
 } from "../validation";
 
 interface ClientFormProps {
+  initialValues?: ClientFormValues;
   onCancel?: () => void;
   onSave?: (data: ClientFormValues) => void;
+  saveText?: string;
 }
 
 export function ClientForm({
+  initialValues,
   onCancel,
   onSave,
+  saveText = "Save Client",
 }: ClientFormProps) {
   const {
     register,
@@ -28,7 +32,8 @@ export function ClientForm({
     formState: { errors },
   } = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
-    defaultValues: {
+
+    defaultValues: initialValues ?? {
       name: "",
       phone: "",
       email: "",
@@ -47,6 +52,7 @@ export function ClientForm({
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
+
         <FormField
           label="Client Name"
           error={errors.name?.message}
@@ -87,6 +93,7 @@ export function ClientForm({
             {...register("address")}
           />
         </FormField>
+
       </div>
 
       <FormField label="Notes">
@@ -98,7 +105,7 @@ export function ClientForm({
 
       <FormActions
         onCancel={onCancel}
-        saveText="Save Client"
+        saveText={saveText}
       />
     </form>
   );
