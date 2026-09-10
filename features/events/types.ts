@@ -1,3 +1,9 @@
+export type EventStatus =
+  | "Upcoming"
+  | "In Progress"
+  | "Completed"
+  | "Cancelled";
+
 export interface Event {
   id: string;
   eventName: string;
@@ -9,8 +15,11 @@ export interface Event {
   guestCount: number;
 }
 
-export type EventStatus =
-  | "Upcoming"
-  | "In Progress"
-  | "Completed"
-  | "Cancelled";
+export type EventFormValues = {
+  eventName: string;
+  clientName: string;
+  eventType: string;
+  eventDate: string;
+  venue: string;
+  guestCount: string;
+};
