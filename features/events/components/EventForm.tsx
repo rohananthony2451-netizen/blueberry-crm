@@ -15,13 +15,17 @@ import {
 } from "../validation";
 
 interface EventFormProps {
+  initialValues?: EventFormValues;
   onCancel?: () => void;
   onSave?: (data: EventFormValues) => void;
+  saveText?: string;
 }
 
 export function EventForm({
+  initialValues,
   onCancel,
   onSave,
+  saveText = "Create Event",
 }: EventFormProps) {
   const {
     register,
@@ -30,9 +34,8 @@ export function EventForm({
     watch,
     formState: { errors },
   } = useForm<EventFormValues>({
-    resolver: zodResolver(eventSchema),
-
-    defaultValues: {
+  resolver: zodResolver(eventSchema),
+  defaultValues: initialValues ?? {
       eventName: "",
       clientName: "",
       eventType: "",
@@ -126,7 +129,7 @@ export function EventForm({
 
       <FormActions
         onCancel={onCancel}
-        saveText="Create Event"
+        saveText={saveText}
       />
     </form>
   );

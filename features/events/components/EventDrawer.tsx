@@ -78,9 +78,18 @@ export function EventDrawer({
             </div>
 
             <EventForm
-              onCancel={() => setEditing(false)}
-              onSave={handleEdit}
-             />
+  initialValues={{
+    eventName: event.eventName,
+    clientName: event.clientName,
+    eventType: event.eventType,
+    eventDate: event.eventDate,
+    venue: event.venue,
+    guestCount: event.guestCount.toString(),
+  }}
+  onCancel={() => setEditing(false)}
+  onSave={handleEdit}
+  saveText="Save Changes"
+/>
 
           </div>
         ) : (
