@@ -1,13 +1,16 @@
 import { Event } from "../types";
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventTypeBadge } from "./EventTypeBadge";
+import { Button } from "@/components/ui/button";
 
 interface EventDetailsProps {
   event: Event;
+  onEdit?: () => void;
 }
 
 export function EventDetails({
   event,
+  onEdit,
 }: EventDetailsProps) {
   return (
     <div className="space-y-6">
@@ -59,6 +62,15 @@ export function EventDetails({
           </div>
         </div>
 
+      </div>
+
+      <div className="flex justify-end border-t pt-6">
+        <Button
+          type="button"
+          onClick={onEdit}
+        >
+          Edit Event
+        </Button>
       </div>
 
     </div>
