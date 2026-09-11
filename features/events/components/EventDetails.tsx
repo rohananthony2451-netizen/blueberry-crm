@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 interface EventDetailsProps {
   event: Event;
   onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export function EventDetails({
   event,
   onEdit,
+  onDelete,
 }: EventDetailsProps) {
   return (
     <div className="space-y-6">
@@ -64,13 +66,23 @@ export function EventDetails({
 
       </div>
 
-      <div className="flex justify-end border-t pt-6">
+      <div className="flex justify-between border-t pt-6">
+
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={onDelete}
+        >
+          Delete Event
+        </Button>
+
         <Button
           type="button"
           onClick={onEdit}
         >
           Edit Event
         </Button>
+
       </div>
 
     </div>

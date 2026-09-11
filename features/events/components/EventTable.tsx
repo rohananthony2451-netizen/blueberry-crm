@@ -11,11 +11,14 @@ interface EventTableProps {
     id: string,
     data: Partial<Event>
   ) => void;
+
+  onDelete?: (id: string) => void;
 }
 
 export function EventTable({
   events,
   onEdit,
+  onDelete,
 }: EventTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -26,6 +29,7 @@ export function EventTable({
           <EventTableBody
             events={events}
             onEdit={onEdit}
+            onDelete={onDelete}
           />
         </table>
       </div>

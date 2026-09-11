@@ -10,16 +10,20 @@ interface EventRowProps {
     id: string,
     data: Partial<Event>
   ) => void;
+
+  onDelete?: (id: string) => void;
 }
 
 export function EventRow({
   event,
   onEdit,
+  onDelete,
 }: EventRowProps) {
   return (
     <EventDrawer
       event={event}
       onEdit={onEdit}
+      onDelete={onDelete}
     >
       <tr className="cursor-pointer border-t transition-colors hover:bg-slate-50">
 

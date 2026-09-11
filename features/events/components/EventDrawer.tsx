@@ -20,12 +20,14 @@ interface EventDrawerProps {
     id: string,
     data: Partial<Event>
   ) => void;
+  onDelete?: (id: string) => void;
 }
 
 export function EventDrawer({
   event,
   children,
   onEdit,
+  onDelete,
 }: EventDrawerProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -43,6 +45,19 @@ export function EventDrawer({
     });
 
     setEditing(false);
+  }
+
+  function handleDelete() {
+    if (!onDelete) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${event.eventName}"?`
+    );
+
+    if (!confirmed) return;
+
+    onDelete(event.id);
+    setOpen(false);
   }
 
   function handleDrawerChange(value: boolean) {
@@ -78,24 +93,25 @@ export function EventDrawer({
             </div>
 
             <EventForm
-  initialValues={{
-    eventName: event.eventName,
-    clientName: event.clientName,
-    eventType: event.eventType,
-    eventDate: event.eventDate,
-    venue: event.venue,
-    guestCount: event.guestCount.toString(),
-  }}
-  onCancel={() => setEditing(false)}
-  onSave={handleEdit}
-  saveText="Save Changes"
-/>
+              initialValues={{
+                eventName: event.eventName,
+                clientName: event.clientName,
+                eventType: event.eventType,
+                eventDate: event.eventDate,
+                venue: event.venue,
+                guestCount: event.guestCount.toString(),
+              }}
+              onCancel={() => setEditing(false)}
+              onSave={handleEdit}
+              saveText="Save Changes"
+            />
 
           </div>
         ) : (
           <EventDetails
             event={event}
             onEdit={() => setEditing(true)}
+            onDelete={handleDelete}
           />
         )}
 

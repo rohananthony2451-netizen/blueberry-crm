@@ -9,11 +9,14 @@ interface EventTableBodyProps {
     id: string,
     data: Partial<Event>
   ) => void;
+
+  onDelete?: (id: string) => void;
 }
 
 export function EventTableBody({
   events,
   onEdit,
+  onDelete,
 }: EventTableBodyProps) {
   return (
     <tbody>
@@ -25,6 +28,7 @@ export function EventTableBody({
             key={event.id}
             event={event}
             onEdit={onEdit}
+            onDelete={onDelete}
           />
         ))
       )}

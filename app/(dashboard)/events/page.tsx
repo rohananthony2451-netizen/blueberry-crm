@@ -13,6 +13,7 @@ import { Event } from "@/features/events/types";
 
 export default function EventsPage() {
   const [search, setSearch] = useState("");
+
   const [events, setEvents] =
     useState<Event[]>(mockEvents);
 
@@ -26,20 +27,28 @@ export default function EventsPage() {
   }
 
   function handleEditEvent(
-  id: string,
-  data: Partial<Event>
-) {
-  setEvents((current) =>
-    current.map((event) =>
-      event.id === id
-        ? {
-            ...event,
-            ...data,
-          }
-        : event
-    )
-  );
-}
+    id: string,
+    data: Partial<Event>
+  ) {
+    setEvents((current) =>
+      current.map((event) =>
+        event.id === id
+          ? {
+              ...event,
+              ...data,
+            }
+          : event
+      )
+    );
+  }
+
+  function handleDeleteEvent(id: string) {
+    setEvents((current) =>
+      current.filter(
+        (event) => event.id !== id
+      )
+    );
+  }
 
   const filteredEvents = events.filter(
     (event) =>
@@ -77,11 +86,12 @@ export default function EventsPage() {
         />
 
       </div>
-      
-       <EventTable
-         events={filteredEvents}
-           onEdit={handleEditEvent}
-           /> 
-          </PageContainer>
+
+      <EventTable
+        events={filteredEvents}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
+      />
+    </PageContainer>
   );
 }
