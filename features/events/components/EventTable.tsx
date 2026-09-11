@@ -6,10 +6,16 @@ import { EventTableBody } from "./EventTableBody";
 
 interface EventTableProps {
   events: Event[];
+
+  onEdit?: (
+    id: string,
+    data: Partial<Event>
+  ) => void;
 }
 
 export function EventTable({
   events,
+  onEdit,
 }: EventTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -19,6 +25,7 @@ export function EventTable({
 
           <EventTableBody
             events={events}
+            onEdit={onEdit}
           />
         </table>
       </div>

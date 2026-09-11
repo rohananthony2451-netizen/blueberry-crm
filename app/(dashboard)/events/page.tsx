@@ -25,6 +25,22 @@ export default function EventsPage() {
     ]);
   }
 
+  function handleEditEvent(
+  id: string,
+  data: Partial<Event>
+) {
+  setEvents((current) =>
+    current.map((event) =>
+      event.id === id
+        ? {
+            ...event,
+            ...data,
+          }
+        : event
+    )
+  );
+}
+
   const filteredEvents = events.filter(
     (event) =>
       event.eventName
@@ -61,10 +77,11 @@ export default function EventsPage() {
         />
 
       </div>
-
-      <EventTable
-        events={filteredEvents}
-      />
-    </PageContainer>
+      
+       <EventTable
+         events={filteredEvents}
+           onEdit={handleEditEvent}
+           /> 
+          </PageContainer>
   );
 }

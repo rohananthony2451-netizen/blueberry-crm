@@ -4,10 +4,16 @@ import { TableEmpty } from "@/components/tables/TableEmpty";
 
 interface EventTableBodyProps {
   events: Event[];
+
+  onEdit?: (
+    id: string,
+    data: Partial<Event>
+  ) => void;
 }
 
 export function EventTableBody({
   events,
+  onEdit,
 }: EventTableBodyProps) {
   return (
     <tbody>
@@ -18,6 +24,7 @@ export function EventTableBody({
           <EventRow
             key={event.id}
             event={event}
+            onEdit={onEdit}
           />
         ))
       )}

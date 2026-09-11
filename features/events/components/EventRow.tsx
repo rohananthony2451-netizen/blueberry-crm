@@ -5,13 +5,22 @@ import { EventTypeBadge } from "./EventTypeBadge";
 
 interface EventRowProps {
   event: Event;
+
+  onEdit?: (
+    id: string,
+    data: Partial<Event>
+  ) => void;
 }
 
 export function EventRow({
   event,
+  onEdit,
 }: EventRowProps) {
   return (
-    <EventDrawer event={event}>
+    <EventDrawer
+      event={event}
+      onEdit={onEdit}
+    >
       <tr className="cursor-pointer border-t transition-colors hover:bg-slate-50">
 
         <td className="px-4 py-4 font-medium">
