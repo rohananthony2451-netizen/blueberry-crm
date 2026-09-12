@@ -8,47 +8,17 @@ import { PageHeader } from "@/components/design-system/PageHeader";
 import { EventDialog } from "@/features/events/components/EventDialog";
 import { EventTable } from "@/features/events/components/EventTable";
 
-import { mockEvents } from "@/features/events/data/mock-events";
-import { Event } from "@/features/events/types";
+import { useEvents } from "@/features/events/hooks/useEvents";
 
 export default function EventsPage() {
   const [search, setSearch] = useState("");
 
-  const [events, setEvents] =
-    useState<Event[]>(mockEvents);
-
-  function handleCreateEvent(
-    event: Event
-  ) {
-    setEvents((current) => [
-      event,
-      ...current,
-    ]);
-  }
-
-  function handleEditEvent(
-    id: string,
-    data: Partial<Event>
-  ) {
-    setEvents((current) =>
-      current.map((event) =>
-        event.id === id
-          ? {
-              ...event,
-              ...data,
-            }
-          : event
-      )
-    );
-  }
-
-  function handleDeleteEvent(id: string) {
-    setEvents((current) =>
-      current.filter(
-        (event) => event.id !== id
-      )
-    );
-  }
+  const {
+    events,
+    loading,
+    error,
+  } = useEvents();
+  
 
   const filteredEvents = events.filter(
     (event) =>
@@ -82,16 +52,28 @@ export default function EventsPage() {
         />
 
         <EventDialog
-          onCreateEvent={handleCreateEvent}
+          onCreateEvent={() => {}}
         />
 
       </div>
 
-      <EventTable
-        events={filteredEvents}
-        onEdit={handleEditEvent}
-        onDelete={handleDeleteEvent}
-      />
+      {loading && (
+        <div className="rounded-2xl border bg-white p-8 text-center text-sm text-slate-500">
+          Loading events...
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600">
+          Failed to load events: {error}
+        </div>
+      )}
+
+      {!loading && !error && (
+        <EventTable
+          events={filteredEvents}
+        />
+      )}
     </PageContainer>
   );
 }
