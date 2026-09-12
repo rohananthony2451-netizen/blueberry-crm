@@ -9,16 +9,31 @@ import { EventDialog } from "@/features/events/components/EventDialog";
 import { EventTable } from "@/features/events/components/EventTable";
 
 import { useEvents } from "@/features/events/hooks/useEvents";
-
+import { EventFormValues } from "@/features/events/validation";
 export default function EventsPage() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const {
     events,
     loading,
     error,
+    createEvent,
   } = useEvents();
-  
+
+  async function handleCreateEvent(
+  data: EventFormValues
+) {
+    await createEvent({
+      eventName: data.eventName,
+      clientName: data.clientName,
+      eventType: data.eventType,
+      eventDate: data.eventDate,
+      venue: data.venue,
+      guestCount: Number(data.guestCount),
+      status: "Upcoming",
+    });
+  }
 
   const filteredEvents = events.filter(
     (event) =>
@@ -52,7 +67,7 @@ export default function EventsPage() {
         />
 
         <EventDialog
-          onCreateEvent={() => {}}
+          onCreateEvent={handleCreateEvent}
         />
 
       </div>

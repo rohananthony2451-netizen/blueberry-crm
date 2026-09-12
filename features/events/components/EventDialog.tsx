@@ -12,13 +12,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { Event, EventFormValues } from "../types";
 import { EventForm } from "./EventForm";
+import { EventFormValues } from "../validation";
 
 interface EventDialogProps {
   onCreateEvent: (
-    event: Event
-  ) => void;
+    data: EventFormValues
+  ) => Promise<void>;
 }
 
 export function EventDialog({
@@ -26,22 +26,21 @@ export function EventDialog({
 }: EventDialogProps) {
   const [open, setOpen] = useState(false);
 
-  function handleSave(
+  const [saving, setSaving] =
+    useState(false);
+
+  async function handleSave(
     data: EventFormValues
   ) {
-    const newEvent: Event = {
-      id: crypto.randomUUID(),
-      eventName: data.eventName,
-      clientName: data.clientName,
-      eventType: data.eventType,
-      eventDate: data.eventDate,
-      venue: data.venue,
-      guestCount: Number(data.guestCount),
-      status: "Upcoming",
-    };
+    try {
+      setSaving(true);
 
-    onCreateEvent(newEvent);
-    setOpen(false);
+      await onCreateEvent(data);
+
+      setOpen(false);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -50,7 +49,9 @@ export function EventDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <Button>+ New Event</Button>
+        <Button>
+          + New Event
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-xl">
@@ -63,6 +64,11 @@ export function EventDialog({
         <EventForm
           onCancel={() => setOpen(false)}
           onSave={handleSave}
+          saveText={
+            saving
+              ? "Creating..."
+              : "Create Event"
+          }
         />
       </DialogContent>
     </Dialog>

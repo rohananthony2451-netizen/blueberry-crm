@@ -43,3 +43,56 @@ export async function getEvents(): Promise<Event[]> {
     })
   );
 }
+
+export async function createEvent(
+  event: Omit<Event, "id">
+): Promise<Event> {
+  const supabase = createClient();
+
+  const { data: organizationId, error: organizationError } =
+    await supabase.rpc("get_user_organization_id");
+
+  if (organizationError) {
+    throw new Error(
+      organizationError.message
+    );
+  }
+
+  if (!organizationId) {
+    throw new Error(
+      "No organization found for the current user."
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("events")
+    .insert({
+      organization_id: organizationId,
+      event_name: event.eventName,
+      client_name: event.clientName,
+      event_type: event.eventType,
+      event_date: event.eventDate,
+      venue: event.venue,
+      status: event.status,
+      guest_count: event.guestCount,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const createdEvent = data as EventRow;
+
+  return {
+    id: createdEvent.id,
+    eventName: createdEvent.event_name,
+    clientName: createdEvent.client_name,
+    eventType: createdEvent.event_type,
+    eventDate: createdEvent.event_date,
+    venue: createdEvent.venue,
+    status: createdEvent.status,
+    guestCount: createdEvent.guest_count,
+  };
+}

@@ -2,15 +2,22 @@
 
 import { useEffect, useState } from "react";
 
-import { getEvents } from "../services/event.service";
+import {
+  createEvent as createEventService,
+  getEvents,
+} from "../services/event.service";
+
 import { Event } from "../types";
 
 export function useEvents() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] =
+    useState<Event[]>([]);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] =
+    useState(true);
 
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] =
+    useState<string | null>(null);
 
   useEffect(() => {
     async function loadEvents() {
@@ -20,8 +27,7 @@ export function useEvents() {
 
         const data = await getEvents();
 
-
-setEvents(data);
+        setEvents(data);
       } catch (err) {
         setError(
           err instanceof Error
@@ -36,9 +42,37 @@ setEvents(data);
     loadEvents();
   }, []);
 
+  async function createEvent(
+    event: Omit<Event, "id">
+  ) {
+    try {
+      setError(null);
+
+      const createdEvent =
+        await createEventService(event);
+
+      setEvents((current) => [
+        createdEvent,
+        ...current,
+      ]);
+
+      return createdEvent;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to create event.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     events,
     loading,
     error,
+    createEvent,
   };
 }
