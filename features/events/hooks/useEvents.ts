@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import {
   createEvent as createEventService,
   getEvents,
+  updateEvent as updateEventService,
 } from "../services/event.service";
 
 import { Event } from "../types";
@@ -69,10 +70,45 @@ export function useEvents() {
     }
   }
 
+  async function editEvent(
+    id: string,
+    data: Partial<Omit<Event, "id">>
+  ) {
+    try {
+      setError(null);
+
+      const updatedEvent =
+        await updateEventService(
+          id,
+          data
+        );
+
+      setEvents((current) =>
+        current.map((event) =>
+          event.id === id
+            ? updatedEvent
+            : event
+        )
+      );
+
+      return updatedEvent;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update event.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     events,
     loading,
     error,
     createEvent,
+    editEvent,
   };
 }

@@ -9,21 +9,24 @@ import { EventDialog } from "@/features/events/components/EventDialog";
 import { EventTable } from "@/features/events/components/EventTable";
 
 import { useEvents } from "@/features/events/hooks/useEvents";
+
+import { Event } from "@/features/events/types";
 import { EventFormValues } from "@/features/events/validation";
+
 export default function EventsPage() {
-  const [search, setSearch] =
-    useState("");
+  const [search, setSearch] = useState("");
 
   const {
     events,
     loading,
     error,
     createEvent,
+    editEvent,
   } = useEvents();
 
   async function handleCreateEvent(
-  data: EventFormValues
-) {
+    data: EventFormValues
+  ) {
     await createEvent({
       eventName: data.eventName,
       clientName: data.clientName,
@@ -32,6 +35,21 @@ export default function EventsPage() {
       venue: data.venue,
       guestCount: Number(data.guestCount),
       status: "Upcoming",
+    });
+  }
+
+  async function handleEditEvent(
+    id: string,
+    data: Partial<Event>
+  ) {
+    await editEvent(id, {
+      eventName: data.eventName,
+      clientName: data.clientName,
+      eventType: data.eventType,
+      eventDate: data.eventDate,
+      venue: data.venue,
+      guestCount: data.guestCount,
+      status: data.status,
     });
   }
 
@@ -87,6 +105,7 @@ export default function EventsPage() {
       {!loading && !error && (
         <EventTable
           events={filteredEvents}
+          onEdit={handleEditEvent}
         />
       )}
     </PageContainer>

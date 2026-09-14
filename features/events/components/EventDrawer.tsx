@@ -19,7 +19,7 @@ interface EventDrawerProps {
   onEdit?: (
     id: string,
     data: Partial<Event>
-  ) => void;
+  ) => Promise<void>;
   onDelete?: (id: string) => void;
 }
 
@@ -31,20 +31,29 @@ export function EventDrawer({
 }: EventDrawerProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  function handleEdit(data: EventFormValues) {
+  async function handleEdit(
+    data: EventFormValues
+  ) {
     if (!onEdit) return;
 
-    onEdit(event.id, {
-      eventName: data.eventName,
-      clientName: data.clientName,
-      eventType: data.eventType,
-      eventDate: data.eventDate,
-      venue: data.venue,
-      guestCount: Number(data.guestCount),
-    });
+    try {
+      setSaving(true);
 
-    setEditing(false);
+      await onEdit(event.id, {
+        eventName: data.eventName,
+        clientName: data.clientName,
+        eventType: data.eventType,
+        eventDate: data.eventDate,
+        venue: data.venue,
+        guestCount: Number(data.guestCount),
+      });
+
+      setEditing(false);
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handleDelete() {
@@ -99,11 +108,16 @@ export function EventDrawer({
                 eventType: event.eventType,
                 eventDate: event.eventDate,
                 venue: event.venue,
-                guestCount: event.guestCount.toString(),
+                guestCount:
+                  event.guestCount.toString(),
               }}
               onCancel={() => setEditing(false)}
               onSave={handleEdit}
-              saveText="Save Changes"
+              saveText={
+                saving
+                  ? "Saving..."
+                  : "Save Changes"
+              }
             />
 
           </div>

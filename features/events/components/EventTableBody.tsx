@@ -8,7 +8,7 @@ interface EventTableBodyProps {
   onEdit?: (
     id: string,
     data: Partial<Event>
-  ) => void;
+  ) => Promise<void>;
 
   onDelete?: (id: string) => void;
 }

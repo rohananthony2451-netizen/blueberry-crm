@@ -17,7 +17,9 @@ import {
 interface EventFormProps {
   initialValues?: EventFormValues;
   onCancel?: () => void;
-  onSave?: (data: EventFormValues) => void;
+  onSave?: (
+    data: EventFormValues
+  ) => void | Promise<void>;
   saveText?: string;
 }
 
@@ -34,8 +36,8 @@ export function EventForm({
     watch,
     formState: { errors },
   } = useForm<EventFormValues>({
-  resolver: zodResolver(eventSchema),
-  defaultValues: initialValues ?? {
+    resolver: zodResolver(eventSchema),
+    defaultValues: initialValues ?? {
       eventName: "",
       clientName: "",
       eventType: "",
@@ -47,15 +49,22 @@ export function EventForm({
 
   const eventType = watch("eventType");
 
-  function submitForm(
-    data: EventFormValues
-  ) {
+  function submitForm(data: EventFormValues) {
+    console.log("EVENT FORM SUBMITTED:", data);
+
     onSave?.(data);
+  }
+
+  function handleInvalidForm() {
+    console.log("EVENT FORM VALIDATION ERRORS:", errors);
   }
 
   return (
     <form
-      onSubmit={handleSubmit(submitForm)}
+      onSubmit={handleSubmit(
+        submitForm,
+        handleInvalidForm
+      )}
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
@@ -87,7 +96,10 @@ export function EventForm({
           <FormSelect
             value={eventType}
             onValueChange={(value) =>
-              setValue("eventType", value)
+              setValue("eventType", value, {
+                shouldValidate: true,
+                shouldDirty: true,
+              })
             }
             placeholder="Select Event Type"
             options={[...EVENT_TYPES]}

@@ -16,6 +16,21 @@ interface EventRow {
   updated_at: string;
 }
 
+function mapEventRow(
+  event: EventRow
+): Event {
+  return {
+    id: event.id,
+    eventName: event.event_name,
+    clientName: event.client_name,
+    eventType: event.event_type,
+    eventDate: event.event_date,
+    venue: event.venue,
+    status: event.status,
+    guestCount: event.guest_count,
+  };
+}
+
 export async function getEvents(): Promise<Event[]> {
   const supabase = createClient();
 
@@ -30,18 +45,7 @@ export async function getEvents(): Promise<Event[]> {
     throw new Error(error.message);
   }
 
-  return (data as EventRow[]).map(
-    (event) => ({
-      id: event.id,
-      eventName: event.event_name,
-      clientName: event.client_name,
-      eventType: event.event_type,
-      eventDate: event.event_date,
-      venue: event.venue,
-      status: event.status,
-      guestCount: event.guest_count,
-    })
-  );
+  return (data as EventRow[]).map(mapEventRow);
 }
 
 export async function createEvent(
@@ -49,8 +53,12 @@ export async function createEvent(
 ): Promise<Event> {
   const supabase = createClient();
 
-  const { data: organizationId, error: organizationError } =
-    await supabase.rpc("get_user_organization_id");
+  const {
+    data: organizationId,
+    error: organizationError,
+  } = await supabase.rpc(
+    "get_user_organization_id"
+  );
 
   if (organizationError) {
     throw new Error(
@@ -83,16 +91,68 @@ export async function createEvent(
     throw new Error(error.message);
   }
 
-  const createdEvent = data as EventRow;
+  return mapEventRow(
+    data as EventRow
+  );
+}
 
-  return {
-    id: createdEvent.id,
-    eventName: createdEvent.event_name,
-    clientName: createdEvent.client_name,
-    eventType: createdEvent.event_type,
-    eventDate: createdEvent.event_date,
-    venue: createdEvent.venue,
-    status: createdEvent.status,
-    guestCount: createdEvent.guest_count,
-  };
+export async function updateEvent(
+  id: string,
+  data: Partial<Omit<Event, "id">>
+): Promise<Event> {
+  const supabase = createClient();
+
+  const updateData: Record<
+    string,
+    string | number
+  > = {};
+
+  if (data.eventName !== undefined) {
+    updateData.event_name =
+      data.eventName;
+  }
+
+  if (data.clientName !== undefined) {
+    updateData.client_name =
+      data.clientName;
+  }
+
+  if (data.eventType !== undefined) {
+    updateData.event_type =
+      data.eventType;
+  }
+
+  if (data.eventDate !== undefined) {
+    updateData.event_date =
+      data.eventDate;
+  }
+
+  if (data.venue !== undefined) {
+    updateData.venue = data.venue;
+  }
+
+  if (data.status !== undefined) {
+    updateData.status = data.status;
+  }
+
+  if (data.guestCount !== undefined) {
+    updateData.guest_count =
+      data.guestCount;
+  }
+
+  const { data: updatedData, error } =
+    await supabase
+      .from("events")
+      .update(updateData)
+      .eq("id", id)
+      .select()
+      .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapEventRow(
+    updatedData as EventRow
+  );
 }
