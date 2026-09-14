@@ -14,7 +14,8 @@ import { Event } from "@/features/events/types";
 import { EventFormValues } from "@/features/events/validation";
 
 export default function EventsPage() {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] =
+    useState("");
 
   const {
     events,
@@ -22,6 +23,7 @@ export default function EventsPage() {
     error,
     createEvent,
     editEvent,
+    removeEvent,
   } = useEvents();
 
   async function handleCreateEvent(
@@ -51,6 +53,12 @@ export default function EventsPage() {
       guestCount: data.guestCount,
       status: data.status,
     });
+  }
+
+  async function handleDeleteEvent(
+    id: string
+  ) {
+    await removeEvent(id);
   }
 
   const filteredEvents = events.filter(
@@ -106,6 +114,7 @@ export default function EventsPage() {
         <EventTable
           events={filteredEvents}
           onEdit={handleEditEvent}
+          onDelete={handleDeleteEvent}
         />
       )}
     </PageContainer>

@@ -6,10 +6,10 @@ import { EventTypeBadge } from "./EventTypeBadge";
 interface EventRowProps {
   event: Event;
 
-  onEdit?: (
-    id: string,
-    data: Partial<Event>
-  ) => Promise<void>;
+onEdit?: (
+  id: string,
+  data: Partial<Event>
+) => Promise<void>;
 
   onDelete?: (id: string) => void;
 }

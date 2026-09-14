@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import {
   createEvent as createEventService,
+  deleteEvent as deleteEventService,
   getEvents,
   updateEvent as updateEventService,
 } from "../services/event.service";
@@ -104,11 +105,37 @@ export function useEvents() {
     }
   }
 
+  async function removeEvent(
+    id: string
+  ) {
+    try {
+      setError(null);
+
+      await deleteEventService(id);
+
+      setEvents((current) =>
+        current.filter(
+          (event) => event.id !== id
+        )
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to delete event.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     events,
     loading,
     error,
     createEvent,
     editEvent,
+    removeEvent,
   };
 }
