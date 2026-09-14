@@ -7,17 +7,22 @@ import LogoutButton from "@/components/shared/LogoutButton";
 
 export default function Sidebar() {
   return (
-    <aside className="hidden h-screen w-72 border-r bg-white lg:flex lg:flex-col">
+    <aside className="hidden h-screen w-64 shrink-0 border-r border-slate-200/80 bg-white lg:flex lg:flex-col">
+
       <Logo />
 
-      <div className="flex-1 overflow-y-auto py-4">
+      <div className="flex-1 overflow-y-auto px-3 py-4">
         <Navigation />
       </div>
 
-      <UserProfile />
-      <div className="border-t p-3">
-        <LogoutButton />
+      <div className="border-t border-slate-200/80 p-3">
+        <UserProfile />
+
+        <div className="mt-2">
+          <LogoutButton />
         </div>
+      </div>
+
     </aside>
   );
 }
