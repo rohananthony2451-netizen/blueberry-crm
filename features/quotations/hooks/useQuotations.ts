@@ -6,6 +6,7 @@ import {
 } from "react";
 
 import {
+  createQuotation as createQuotationService,
   getQuotations,
 } from "../services/quotation.service";
 
@@ -53,9 +54,55 @@ export function useQuotations() {
     loadQuotations();
   }, []);
 
+  async function createQuotation(
+    quotation: {
+      clientId: string;
+      eventId: string | null;
+      quotationDate: string;
+      validUntil: string | null;
+      discount: number;
+      tax: number;
+      notes: string;
+      items: {
+        description: string;
+        quantity: number;
+        unitPrice: number;
+        amount: number;
+      }[];
+    }
+  ) {
+    try {
+      setError(null);
+
+      const createdQuotation =
+        await createQuotationService(
+          quotation
+        );
+
+      setQuotations(
+        (current) => [
+          createdQuotation,
+          ...current,
+        ]
+      );
+
+      return createdQuotation;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to create quotation.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     quotations,
     loading,
     error,
+    createQuotation,
   };
 }

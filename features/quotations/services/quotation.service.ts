@@ -135,3 +135,195 @@ export async function getQuotations(): Promise<
     mapQuotation
   );
 }
+
+export async function createQuotation(
+  quotation: {
+    clientId: string;
+    eventId: string | null;
+    quotationDate: string;
+    validUntil: string | null;
+    discount: number;
+    tax: number;
+    notes: string;
+    items: {
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      amount: number;
+    }[];
+  }
+): Promise<Quotation> {
+  const supabase = createClient();
+
+  const {
+    data: organizationId,
+    error: organizationError,
+  } = await supabase.rpc(
+    "get_user_organization_id"
+  );
+
+  if (organizationError) {
+    throw new Error(
+      organizationError.message
+    );
+  }
+
+  if (!organizationId) {
+    throw new Error(
+      "No organization found for the current user."
+    );
+  }
+
+  const {
+    data: quotationNumber,
+    error: quotationNumberError,
+  } = await supabase.rpc(
+    "generate_quotation_number"
+  );
+
+  if (quotationNumberError) {
+    throw new Error(
+      quotationNumberError.message
+    );
+  }
+
+  if (!quotationNumber) {
+    throw new Error(
+      "Failed to generate quotation number."
+    );
+  }
+
+  const subtotal = quotation.items.reduce(
+    (sum, item) =>
+      sum + item.amount,
+    0
+  );
+
+  const total =
+    subtotal -
+    quotation.discount +
+    quotation.tax;
+
+  if (total < 0) {
+    throw new Error(
+      "Quotation total cannot be negative."
+    );
+  }
+
+  const {
+    data: quotationData,
+    error: quotationError,
+  } = await supabase
+    .from("quotations")
+    .insert({
+      organization_id:
+        organizationId,
+
+      quotation_number:
+        quotationNumber,
+
+      client_id:
+        quotation.clientId,
+
+      event_id:
+        quotation.eventId || null,
+
+      quotation_date:
+        quotation.quotationDate,
+
+      valid_until:
+        quotation.validUntil || null,
+
+      status: "Draft",
+
+      subtotal,
+
+      discount:
+        quotation.discount,
+
+      tax:
+        quotation.tax,
+
+      total,
+
+      notes:
+        quotation.notes || null,
+    })
+    .select("*")
+    .single();
+
+  if (quotationError) {
+    throw new Error(
+      quotationError.message
+    );
+  }
+
+  const quotationId =
+    quotationData.id;
+
+  const items = quotation.items.map(
+    (item) => ({
+      quotation_id:
+        quotationId,
+
+      description:
+        item.description,
+
+      quantity:
+        item.quantity,
+
+      unit_price:
+        item.unitPrice,
+
+      amount:
+        item.amount,
+    })
+  );
+
+  const {
+    error: itemsError,
+  } = await supabase
+    .from("quotation_items")
+    .insert(items);
+
+  if (itemsError) {
+    await supabase
+      .from("quotations")
+      .delete()
+      .eq("id", quotationId);
+
+    throw new Error(
+      itemsError.message
+    );
+  }
+
+  const {
+    data: createdData,
+    error: createdError,
+  } = await supabase
+    .from("quotations")
+    .select(`
+      *,
+      clients (
+        name
+      ),
+      events (
+        event_name
+      ),
+      quotation_items (
+        *
+      )
+    `)
+    .eq("id", quotationId)
+    .single();
+
+  if (createdError) {
+    throw new Error(
+      createdError.message
+    );
+  }
+
+  return mapQuotation(
+    createdData as QuotationRow
+  );
+}

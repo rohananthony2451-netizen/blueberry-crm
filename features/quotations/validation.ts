@@ -56,10 +56,7 @@ export const quotationSchema = z.object({
       "Please select a client."
     ),
 
-  eventId: z
-    .string()
-    .optional()
-    .or(z.literal("")),
+eventId: z.string(),
 
   quotationDate: z
     .string()
@@ -68,10 +65,7 @@ export const quotationSchema = z.object({
       "Please select the quotation date."
     ),
 
-  validUntil: z
-    .string()
-    .optional()
-    .or(z.literal("")),
+  validUntil: z.string(),
 
   discount: z
     .string()
@@ -112,9 +106,7 @@ export const quotationSchema = z.object({
     ),
 
   notes: z
-    .string()
-    .optional()
-    .default(""),
+    .string(),
 
   items: z
     .array(quotationItemSchema)
