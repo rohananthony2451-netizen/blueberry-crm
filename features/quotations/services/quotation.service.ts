@@ -32,6 +32,15 @@ interface QuotationRow {
   notes: string | null;
   created_at: string;
   updated_at: string;
+
+  clients: {
+    name: string;
+  } | null;
+
+  events: {
+    event_name: string;
+  } | null;
+
   quotation_items: QuotationItemRow[];
 }
 
@@ -60,7 +69,12 @@ function mapQuotation(
       row.quotation_number,
 
     clientId: row.client_id,
+    clientName:
+      row.clients?.name ?? "Unknown Client",
+
     eventId: row.event_id,
+    eventName:
+      row.events?.event_name ?? null,
 
     quotationDate:
       row.quotation_date,
@@ -99,7 +113,15 @@ export async function getQuotations(): Promise<
     .from("quotations")
     .select(`
       *,
-      quotation_items (*)
+      clients (
+        name
+      ),
+      events (
+        event_name
+      ),
+      quotation_items (
+        *
+      )
     `)
     .order("created_at", {
       ascending: false,

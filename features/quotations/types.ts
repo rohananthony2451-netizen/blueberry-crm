@@ -20,7 +20,10 @@ export interface Quotation {
   quotationNumber: string;
 
   clientId: string;
+  clientName: string;
+
   eventId: string | null;
+  eventName: string | null;
 
   quotationDate: string;
   validUntil: string | null;
@@ -39,6 +42,7 @@ export interface Quotation {
   createdAt: string;
   updatedAt: string;
 }
+
 export interface QuotationItemFormValues {
   description: string;
   quantity: string;
