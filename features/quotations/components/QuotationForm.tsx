@@ -1,10 +1,6 @@
 "use client";
 
 import {
-  useEffect,
-} from "react";
-
-import {
   useFieldArray,
   useForm,
   useWatch,
@@ -111,6 +107,18 @@ export function QuotationForm({
     name: "items",
   });
 
+  const selectedClientId =
+    useWatch({
+      control,
+      name: "clientId",
+    });
+
+  const selectedEventId =
+    useWatch({
+      control,
+      name: "eventId",
+    });
+
   const watchedItems =
     useWatch({
       control,
@@ -162,13 +170,6 @@ export function QuotationForm({
     discountAmount +
     taxAmount;
 
-  useEffect(() => {
-    if (total < 0) {
-      // Validation will prevent
-      // saving a negative total.
-    }
-  }, [total]);
-
   async function submitForm(
     data: QuotationFormValues
   ) {
@@ -182,9 +183,7 @@ export function QuotationForm({
       )}
       className="space-y-6"
     >
-
       <div className="grid gap-5 md:grid-cols-2">
-
         <FormField
           label="Client"
           error={
@@ -193,21 +192,22 @@ export function QuotationForm({
           }
         >
           <FormSelect
-            value={undefined}
+            value={selectedClientId}
             onValueChange={(value) =>
               setValue(
                 "clientId",
                 value,
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
                 }
               )
             }
             placeholder="Select Client"
             options={clients.map(
-              (client) =>
-                client.name
+              (client) => ({
+                label: client.name,
+                value: client.id,
+              })
             )}
           />
         </FormField>
@@ -220,21 +220,22 @@ export function QuotationForm({
           }
         >
           <FormSelect
-            value={undefined}
+            value={selectedEventId}
             onValueChange={(value) =>
               setValue(
                 "eventId",
                 value,
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
                 }
               )
             }
             placeholder="Select Event"
             options={events.map(
-              (event) =>
-                event.eventName
+              (event) => ({
+                label: event.eventName,
+                value: event.id,
+              })
             )}
           />
         </FormField>
@@ -268,11 +269,9 @@ export function QuotationForm({
             )}
           />
         </FormField>
-
       </div>
 
       <div className="space-y-3">
-
         <div>
           <h3 className="text-sm font-semibold">
             Line Items
@@ -289,7 +288,6 @@ export function QuotationForm({
               key={field.id}
               className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]"
             >
-
               <FormField
                 label={
                   index === 0
@@ -377,7 +375,6 @@ export function QuotationForm({
                   Remove
                 </Button>
               </div>
-
             </div>
           )
         )}
@@ -395,11 +392,9 @@ export function QuotationForm({
         >
           + Add Line Item
         </Button>
-
       </div>
 
       <div className="grid gap-5 md:grid-cols-2">
-
         <FormField
           label="Discount"
           error={
@@ -433,13 +428,14 @@ export function QuotationForm({
             )}
           />
         </FormField>
-
       </div>
 
       <div className="rounded-xl border bg-slate-50 p-5">
-
         <div className="flex justify-between text-sm">
-          <span>Subtotal</span>
+          <span>
+            Subtotal
+          </span>
+
           <span>
             ₹
             {subtotal.toLocaleString(
@@ -449,7 +445,10 @@ export function QuotationForm({
         </div>
 
         <div className="mt-2 flex justify-between text-sm">
-          <span>Discount</span>
+          <span>
+            Discount
+          </span>
+
           <span>
             − ₹
             {discountAmount.toLocaleString(
@@ -459,7 +458,10 @@ export function QuotationForm({
         </div>
 
         <div className="mt-2 flex justify-between text-sm">
-          <span>Tax</span>
+          <span>
+            Tax
+          </span>
+
           <span>
             + ₹
             {taxAmount.toLocaleString(
@@ -469,7 +471,10 @@ export function QuotationForm({
         </div>
 
         <div className="mt-4 flex justify-between border-t pt-4 text-lg font-bold">
-          <span>Total</span>
+          <span>
+            Total
+          </span>
+
           <span>
             ₹
             {total.toLocaleString(
@@ -477,13 +482,13 @@ export function QuotationForm({
             )}
           </span>
         </div>
-
       </div>
 
       <FormField
         label="Notes"
         error={
-          errors.notes?.message
+          errors.notes
+            ?.message
         }
       >
         <textarea
@@ -497,7 +502,6 @@ export function QuotationForm({
         onCancel={onCancel}
         saveText={saveText}
       />
-
     </form>
   );
 }

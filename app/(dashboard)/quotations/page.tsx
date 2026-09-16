@@ -1,27 +1,64 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
-import { PageContainer } from "@/components/design-system/PageContainer";
-import { PageHeader } from "@/components/design-system/PageHeader";
+import {
+  PageContainer,
+} from "@/components/design-system/PageContainer";
 
-import { QuotationTable } from "@/features/quotations/components/QuotationTable";
-import { useQuotations } from "@/features/quotations/hooks/useQuotations";
-import { QUOTATION_STATUSES } from "@/features/quotations/constants";
-import { QuotationStatus } from "@/features/quotations/types";
+import {
+  PageHeader,
+} from "@/components/design-system/PageHeader";
+
+import {
+  QuotationTable,
+} from "@/features/quotations/components/QuotationTable";
+
+import {
+  QuotationDialog,
+} from "@/features/quotations/components/QuotationDialog";
+
+import {
+  useQuotations,
+} from "@/features/quotations/hooks/useQuotations";
+
+import {
+  QUOTATION_STATUSES,
+} from "@/features/quotations/constants";
+
+import type {
+  QuotationFormValues,
+} from "@/features/quotations/types";
+
+import type {
+  QuotationStatus,
+} from "@/features/quotations/types";
 
 type FilterStatus =
   | "All"
   | QuotationStatus;
 
 export default function QuotationsPage() {
-  const [filter, setFilter] =
-    useState<FilterStatus>("All");
+  const [
+    filter,
+    setFilter,
+  ] = useState<FilterStatus>(
+    "All"
+  );
+
+  const [
+    dialogOpen,
+    setDialogOpen,
+  ] = useState(false);
 
   const {
     quotations,
     loading,
     error,
+    createQuotation,
   } = useQuotations();
 
   const filteredQuotations =
@@ -34,7 +71,10 @@ export default function QuotationsPage() {
         (quotation) =>
           quotation.status === filter
       );
-    }, [quotations, filter]);
+    }, [
+      quotations,
+      filter,
+    ]);
 
   const statusCount = (
     status: FilterStatus
@@ -49,9 +89,62 @@ export default function QuotationsPage() {
     ).length;
   };
 
+  async function handleCreateQuotation(
+    data: QuotationFormValues
+  ) {
+    await createQuotation({
+      clientId: data.clientId,
+
+      eventId:
+        data.eventId || null,
+
+      quotationDate:
+        data.quotationDate,
+
+      validUntil:
+        data.validUntil || null,
+
+      discount:
+        Number(data.discount),
+
+      tax:
+        Number(data.tax),
+
+      notes:
+        data.notes,
+
+      items:
+        data.items.map(
+          (item) => {
+            const quantity =
+              Number(
+                item.quantity
+              );
+
+            const unitPrice =
+              Number(
+                item.unitPrice
+              );
+
+            return {
+              description:
+                item.description,
+
+              quantity,
+
+              unitPrice,
+
+              amount:
+                quantity *
+                unitPrice,
+            };
+          }
+        ),
+    });
+  }
+
   return (
     <PageContainer>
-
       <PageHeader
         title="Quotations"
         description="Create and manage quotations for your clients."
@@ -60,15 +153,27 @@ export default function QuotationsPage() {
       <div className="mb-6 flex justify-end">
         <button
           type="button"
+          onClick={() =>
+            setDialogOpen(true)
+          }
           className="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
         >
           + New Quotation
         </button>
       </div>
 
+      <QuotationDialog
+        open={dialogOpen}
+        onOpenChange={
+          setDialogOpen
+        }
+        onSave={
+          handleCreateQuotation
+        }
+      />
+
       <div className="mb-4 overflow-x-auto">
         <div className="flex min-w-max gap-2">
-
           <button
             type="button"
             onClick={() =>
@@ -102,12 +207,13 @@ export default function QuotationsPage() {
               >
                 {status}{" "}
                 <span className="ml-1 opacity-70">
-                  {statusCount(status)}
+                  {statusCount(
+                    status
+                  )}
                 </span>
               </button>
             )
           )}
-
         </div>
       </div>
 
@@ -124,14 +230,14 @@ export default function QuotationsPage() {
         </div>
       )}
 
-      {!loading && !error && (
-        <QuotationTable
-          quotations={
-            filteredQuotations
-          }
-        />
-      )}
-
+      {!loading &&
+        !error && (
+          <QuotationTable
+            quotations={
+              filteredQuotations
+            }
+          />
+        )}
     </PageContainer>
   );
 }
