@@ -9,12 +9,14 @@ interface QuotationTableBodyProps {
   onEdit?: (
     quotation: Quotation
   ) => void;
+  onDelete?: (quotation: Quotation) => void;
 }
 
 export function QuotationTableBody({
   quotations,
   onView,
   onEdit,
+  onDelete,
 }: QuotationTableBodyProps) {
   if (quotations.length === 0) {
     return (
@@ -40,6 +42,7 @@ export function QuotationTableBody({
             quotation={quotation}
             onView={onView}
             onEdit={onEdit}
+             onDelete={onDelete}
           />
         )
       )}

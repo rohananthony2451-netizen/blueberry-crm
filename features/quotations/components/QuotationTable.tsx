@@ -3,18 +3,16 @@ import { QuotationTableBody } from "./QuotationTableBody";
 
 interface QuotationTableProps {
   quotations: Quotation[];
-  onView?: (
-    quotation: Quotation
-  ) => void;
-  onEdit?: (
-    quotation: Quotation
-  ) => void;
+  onView?: (quotation: Quotation) => void;
+  onEdit?: (quotation: Quotation) => void;
+  onDelete?: (quotation: Quotation) => void;
 }
 
 export function QuotationTable({
   quotations,
   onView,
   onEdit,
+  onDelete,
 }: QuotationTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-background">
@@ -60,6 +58,7 @@ export function QuotationTable({
             quotations={quotations}
             onView={onView}
             onEdit={onEdit}
+            onDelete={onDelete}
           />
         </table>
       </div>

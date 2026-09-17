@@ -454,3 +454,18 @@ export async function updateQuotation(
 
   return getQuotationById(id);
 }
+
+export async function deleteQuotation(
+  id: string
+): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("quotations")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}

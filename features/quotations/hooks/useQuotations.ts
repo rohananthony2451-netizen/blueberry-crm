@@ -4,17 +4,13 @@ import { useEffect, useState } from "react";
 
 import {
   createQuotation as createQuotationService,
+  deleteQuotation as deleteQuotationService,
   getQuotations,
   updateQuotation as updateQuotationService,
 } from "../services/quotation.service";
 
-import type {
-  Quotation,
-} from "../types";
-
-import type {
-  QuotationInput,
-} from "../services/quotation.service";
+import type { Quotation } from "../types";
+import type { QuotationInput } from "../services/quotation.service";
 
 export function useQuotations() {
   const [
@@ -38,8 +34,7 @@ export function useQuotations() {
         setLoading(true);
         setError(null);
 
-        const data =
-          await getQuotations();
+        const data = await getQuotations();
 
         setQuotations(data);
       } catch (err) {
@@ -67,12 +62,10 @@ export function useQuotations() {
           quotation
         );
 
-      setQuotations(
-        (current) => [
-          createdQuotation,
-          ...current,
-        ]
-      );
+      setQuotations((current) => [
+        createdQuotation,
+        ...current,
+      ]);
 
       return createdQuotation;
     } catch (err) {
@@ -100,14 +93,12 @@ export function useQuotations() {
           quotation
         );
 
-      setQuotations(
-        (current) =>
-          current.map(
-            (item) =>
-              item.id === id
-                ? updatedQuotation
-                : item
-          )
+      setQuotations((current) =>
+        current.map((quotation) =>
+          quotation.id === id
+            ? updatedQuotation
+            : quotation
+        )
       );
 
       return updatedQuotation;
@@ -123,11 +114,36 @@ export function useQuotations() {
     }
   }
 
+  async function deleteQuotation(id: string) {
+    try {
+      setError(null);
+
+      await deleteQuotationService(id);
+
+      setQuotations((current) =>
+        current.filter(
+          (quotation) =>
+            quotation.id !== id
+        )
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to delete quotation.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     quotations,
     loading,
     error,
     createQuotation,
     updateQuotation,
+    deleteQuotation,
   };
 }

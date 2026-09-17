@@ -1,41 +1,19 @@
 "use client";
 
-import {
-  useMemo,
-  useState,
-} from "react";
+import { useMemo, useState } from "react";
 
-import {
-  PageContainer,
-} from "@/components/design-system/PageContainer";
+import { PageContainer } from "@/components/design-system/PageContainer";
+import { PageHeader } from "@/components/design-system/PageHeader";
 
-import {
-  PageHeader,
-} from "@/components/design-system/PageHeader";
+import { QuotationTable } from "@/features/quotations/components/QuotationTable";
+import { QuotationDialog } from "@/features/quotations/components/QuotationDialog";
+import { QuotationViewDialog } from "@/features/quotations/components/QuotationViewDialog";
+import { QuotationEditDialog } from "@/features/quotations/components/QuotationEditDialog";
+import { QuotationDeleteDialog } from "@/features/quotations/components/QuotationDeleteDialog";
 
-import {
-  QuotationTable,
-} from "@/features/quotations/components/QuotationTable";
+import { useQuotations } from "@/features/quotations/hooks/useQuotations";
 
-import {
-  QuotationDialog,
-} from "@/features/quotations/components/QuotationDialog";
-
-import {
-  QuotationViewDialog,
-} from "@/features/quotations/components/QuotationViewDialog";
-
-import {
-  QuotationEditDialog,
-} from "@/features/quotations/components/QuotationEditDialog";
-
-import {
-  useQuotations,
-} from "@/features/quotations/hooks/useQuotations";
-
-import {
-  QUOTATION_STATUSES,
-} from "@/features/quotations/constants";
+import { QUOTATION_STATUSES } from "@/features/quotations/constants";
 
 import type {
   Quotation,
@@ -43,36 +21,26 @@ import type {
   QuotationStatus,
 } from "@/features/quotations/types";
 
-type FilterStatus =
-  | "All"
-  | QuotationStatus;
+type FilterStatus = "All" | QuotationStatus;
 
 export default function QuotationsPage() {
-  const [
-    filter,
-    setFilter,
-  ] = useState<FilterStatus>(
-    "All"
-  );
+  const [filter, setFilter] =
+    useState<FilterStatus>("All");
 
-  const [
-    dialogOpen,
-    setDialogOpen,
-  ] = useState(false);
+  const [dialogOpen, setDialogOpen] =
+    useState(false);
 
-  const [
-    selectedQuotation,
-    setSelectedQuotation,
-  ] = useState<Quotation | null>(
-    null
-  );
+  const [selectedQuotation, setSelectedQuotation] =
+    useState<Quotation | null>(null);
 
-  const [
-    editingQuotation,
-    setEditingQuotation,
-  ] = useState<Quotation | null>(
-    null
-  );
+  const [editingQuotation, setEditingQuotation] =
+    useState<Quotation | null>(null);
+
+  const [deletingQuotation, setDeletingQuotation] =
+    useState<Quotation | null>(null);
+
+  const [deleting, setDeleting] =
+    useState(false);
 
   const {
     quotations,
@@ -80,26 +48,21 @@ export default function QuotationsPage() {
     error,
     createQuotation,
     updateQuotation,
+    deleteQuotation,
   } = useQuotations();
 
-  const filteredQuotations =
-    useMemo(() => {
-      if (filter === "All") {
-        return quotations;
-      }
+  const filteredQuotations = useMemo(() => {
+    if (filter === "All") {
+      return quotations;
+    }
 
-      return quotations.filter(
-        (quotation) =>
-          quotation.status === filter
-      );
-    }, [
-      quotations,
-      filter,
-    ]);
+    return quotations.filter(
+      (quotation) =>
+        quotation.status === filter
+    );
+  }, [quotations, filter]);
 
-  const statusCount = (
-    status: FilterStatus
-  ) => {
+  function statusCount(status: FilterStatus) {
     if (status === "All") {
       return quotations.length;
     }
@@ -108,14 +71,13 @@ export default function QuotationsPage() {
       (quotation) =>
         quotation.status === status
     ).length;
-  };
+  }
 
   async function handleCreateQuotation(
     data: QuotationFormValues
   ) {
     await createQuotation({
-      clientId:
-        data.clientId,
+      clientId: data.clientId,
 
       eventId:
         data.eventId || null,
@@ -124,8 +86,7 @@ export default function QuotationsPage() {
         data.quotationDate,
 
       validUntil:
-        data.validUntil ||
-        null,
+        data.validUntil || null,
 
       discount:
         Number(data.discount),
@@ -136,69 +97,53 @@ export default function QuotationsPage() {
       notes:
         data.notes,
 
-      items:
-        data.items.map(
-          (item) => {
-            const quantity =
-              Number(
-                item.quantity
-              );
+      items: data.items.map((item) => {
+        const quantity =
+          Number(item.quantity);
 
-            const unitPrice =
-              Number(
-                item.unitPrice
-              );
+        const unitPrice =
+          Number(item.unitPrice);
 
-            return {
-              description:
-                item.description,
+        return {
+          description:
+            item.description,
 
-              quantity,
+          quantity,
 
-              unitPrice,
+          unitPrice,
 
-              amount:
-                quantity *
-                unitPrice,
-            };
-          }
-        ),
+          amount:
+            quantity * unitPrice,
+        };
+      }),
     });
   }
 
   function handleViewQuotation(
     quotation: Quotation
   ) {
-    setSelectedQuotation(
-      quotation
-    );
+    setSelectedQuotation(quotation);
   }
 
   function handleViewDialogChange(
     open: boolean
   ) {
     if (!open) {
-      setSelectedQuotation(
-        null
-      );
+      setSelectedQuotation(null);
     }
   }
 
   function handleEditQuotation(
     quotation: Quotation
   ) {
-    setEditingQuotation(
-      quotation
-    );
+    setEditingQuotation(quotation);
   }
 
   function handleEditDialogChange(
     open: boolean
   ) {
     if (!open) {
-      setEditingQuotation(
-        null
-      );
+      setEditingQuotation(null);
     }
   }
 
@@ -206,63 +151,81 @@ export default function QuotationsPage() {
     id: string,
     data: QuotationFormValues
   ) {
-    await updateQuotation(
-      id,
-      {
-        clientId:
-          data.clientId,
+    await updateQuotation(id, {
+      clientId: data.clientId,
 
-        eventId:
-          data.eventId ||
-          null,
+      eventId:
+        data.eventId || null,
 
-        quotationDate:
-          data.quotationDate,
+      quotationDate:
+        data.quotationDate,
 
-        validUntil:
-          data.validUntil ||
-          null,
+      validUntil:
+        data.validUntil || null,
 
-        discount:
-          Number(
-            data.discount
-          ),
+      discount:
+        Number(data.discount),
 
-        tax:
-          Number(data.tax),
+      tax:
+        Number(data.tax),
 
-        notes:
-          data.notes,
+      notes:
+        data.notes,
 
-        items:
-          data.items.map(
-            (item) => {
-              const quantity =
-                Number(
-                  item.quantity
-                );
+      items: data.items.map((item) => {
+        const quantity =
+          Number(item.quantity);
 
-              const unitPrice =
-                Number(
-                  item.unitPrice
-                );
+        const unitPrice =
+          Number(item.unitPrice);
 
-              return {
-                description:
-                  item.description,
+        return {
+          id: item.id,
 
-                quantity,
+          description:
+            item.description,
 
-                unitPrice,
+          quantity,
 
-                amount:
-                  quantity *
-                  unitPrice,
-              };
-            }
-          ),
-      }
-    );
+          unitPrice,
+
+          amount:
+            quantity * unitPrice,
+        };
+      }),
+    });
+  }
+
+  function handleDeleteQuotation(
+    quotation: Quotation
+  ) {
+    setDeletingQuotation(quotation);
+  }
+
+  function handleDeleteDialogChange(
+    open: boolean
+  ) {
+    if (!open && !deleting) {
+      setDeletingQuotation(null);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deletingQuotation) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+
+      await deleteQuotation(
+        deletingQuotation.id
+      );
+
+      setDeletingQuotation(null);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -284,45 +247,44 @@ export default function QuotationsPage() {
         </button>
       </div>
 
+      {/* Create quotation */}
       <QuotationDialog
         open={dialogOpen}
-        onOpenChange={
-          setDialogOpen
-        }
-        onSave={
-          handleCreateQuotation
-        }
+        onOpenChange={setDialogOpen}
+        onSave={handleCreateQuotation}
       />
 
+      {/* View quotation */}
       <QuotationViewDialog
-        quotation={
-          selectedQuotation
-        }
-        open={
-          selectedQuotation !==
-          null
-        }
+        quotation={selectedQuotation}
+        open={selectedQuotation !== null}
         onOpenChange={
           handleViewDialogChange
         }
       />
 
+      {/* Edit quotation */}
       <QuotationEditDialog
-        quotation={
-          editingQuotation
-        }
-        open={
-          editingQuotation !==
-          null
-        }
+        quotation={editingQuotation}
+        open={editingQuotation !== null}
         onOpenChange={
           handleEditDialogChange
         }
-        onSave={
-          handleUpdateQuotation
-        }
+        onSave={handleUpdateQuotation}
       />
 
+      {/* Delete quotation */}
+      <QuotationDeleteDialog
+        quotation={deletingQuotation}
+        open={deletingQuotation !== null}
+        onOpenChange={
+          handleDeleteDialogChange
+        }
+        onConfirm={handleConfirmDelete}
+        deleting={deleting}
+      />
+
+      {/* Status filters */}
       <div className="mb-4 overflow-x-auto">
         <div className="flex min-w-max gap-2">
           <button
@@ -338,9 +300,7 @@ export default function QuotationsPage() {
           >
             All{" "}
             <span className="ml-1 opacity-70">
-              {statusCount(
-                "All"
-              )}
+              {statusCount("All")}
             </span>
           </button>
 
@@ -360,9 +320,7 @@ export default function QuotationsPage() {
               >
                 {status}{" "}
                 <span className="ml-1 opacity-70">
-                  {statusCount(
-                    status
-                  )}
+                  {statusCount(status)}
                 </span>
               </button>
             )
@@ -370,12 +328,14 @@ export default function QuotationsPage() {
         </div>
       </div>
 
+      {/* Loading state */}
       {loading && (
         <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
           Loading quotations...
         </div>
       )}
 
+      {/* Error state */}
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center text-sm text-red-600">
           Failed to load quotations:{" "}
@@ -383,20 +343,15 @@ export default function QuotationsPage() {
         </div>
       )}
 
-      {!loading &&
-        !error && (
-          <QuotationTable
-            quotations={
-              filteredQuotations
-            }
-            onView={
-              handleViewQuotation
-            }
-            onEdit={
-              handleEditQuotation
-            }
-          />
-        )}
+      {/* Quotation table */}
+      {!loading && !error && (
+        <QuotationTable
+          quotations={filteredQuotations}
+          onView={handleViewQuotation}
+          onEdit={handleEditQuotation}
+          onDelete={handleDeleteQuotation}
+        />
+      )}
     </PageContainer>
   );
 }
