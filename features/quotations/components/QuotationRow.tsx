@@ -1,10 +1,23 @@
-import { Eye, Pencil, Download } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  Download,
+} from "lucide-react";
 
-import { Quotation } from "../types";
-import { QuotationStatusBadge } from "./QuotationStatusBadge";
+import {
+  Quotation,
+} from "../types";
+
+import {
+  QuotationStatusBadge,
+} from "./QuotationStatusBadge";
 
 interface QuotationRowProps {
   quotation: Quotation;
+
+  onView?: (
+    quotation: Quotation
+  ) => void;
 }
 
 function formatDate(
@@ -39,10 +52,10 @@ function formatCurrency(
 
 export function QuotationRow({
   quotation,
+  onView,
 }: QuotationRowProps) {
   return (
     <tr className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
-
       <td className="px-5 py-4">
         <span className="font-medium text-blue-600">
           {quotation.quotationNumber}
@@ -83,9 +96,11 @@ export function QuotationRow({
 
       <td className="px-5 py-4">
         <div className="flex items-center gap-1">
-
           <button
             type="button"
+            onClick={() =>
+              onView?.(quotation)
+            }
             className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
             aria-label="View quotation"
           >
@@ -107,10 +122,8 @@ export function QuotationRow({
           >
             <Download size={16} />
           </button>
-
         </div>
       </td>
-
     </tr>
   );
 }

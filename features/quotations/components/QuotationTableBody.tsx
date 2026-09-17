@@ -1,14 +1,26 @@
-import { Quotation } from "../types";
-import { QuotationRow } from "./QuotationRow";
+import {
+  Quotation,
+} from "../types";
 
-import { TableEmpty } from "@/components/tables/TableEmpty";
+import {
+  QuotationRow,
+} from "./QuotationRow";
+
+import {
+  TableEmpty,
+} from "@/components/tables/TableEmpty";
 
 interface QuotationTableBodyProps {
   quotations: Quotation[];
+
+  onView?: (
+    quotation: Quotation
+  ) => void;
 }
 
 export function QuotationTableBody({
   quotations,
+  onView,
 }: QuotationTableBodyProps) {
   return (
     <tbody>
@@ -17,12 +29,15 @@ export function QuotationTableBody({
           message="No quotations found."
         />
       ) : (
-        quotations.map((quotation) => (
-          <QuotationRow
-            key={quotation.id}
-            quotation={quotation}
-          />
-        ))
+        quotations.map(
+          (quotation) => (
+            <QuotationRow
+              key={quotation.id}
+              quotation={quotation}
+              onView={onView}
+            />
+          )
+        )
       )}
     </tbody>
   );

@@ -22,6 +22,10 @@ import {
 } from "@/features/quotations/components/QuotationDialog";
 
 import {
+  QuotationViewDialog,
+} from "@/features/quotations/components/QuotationViewDialog";
+
+import {
   useQuotations,
 } from "@/features/quotations/hooks/useQuotations";
 
@@ -31,10 +35,8 @@ import {
 
 import type {
   QuotationFormValues,
-} from "@/features/quotations/types";
-
-import type {
   QuotationStatus,
+  Quotation,
 } from "@/features/quotations/types";
 
 type FilterStatus =
@@ -53,6 +55,13 @@ export default function QuotationsPage() {
     dialogOpen,
     setDialogOpen,
   ] = useState(false);
+
+  const [
+    selectedQuotation,
+    setSelectedQuotation,
+  ] = useState<Quotation | null>(
+    null
+  );
 
   const {
     quotations,
@@ -93,7 +102,8 @@ export default function QuotationsPage() {
     data: QuotationFormValues
   ) {
     await createQuotation({
-      clientId: data.clientId,
+      clientId:
+        data.clientId,
 
       eventId:
         data.eventId || null,
@@ -143,6 +153,24 @@ export default function QuotationsPage() {
     });
   }
 
+  function handleViewQuotation(
+    quotation: Quotation
+  ) {
+    setSelectedQuotation(
+      quotation
+    );
+  }
+
+  function handleViewDialogChange(
+    open: boolean
+  ) {
+    if (!open) {
+      setSelectedQuotation(
+        null
+      );
+    }
+  }
+
   return (
     <PageContainer>
       <PageHeader
@@ -172,6 +200,19 @@ export default function QuotationsPage() {
         }
       />
 
+      <QuotationViewDialog
+        quotation={
+          selectedQuotation
+        }
+        open={
+          selectedQuotation !==
+          null
+        }
+        onOpenChange={
+          handleViewDialogChange
+        }
+      />
+
       <div className="mb-4 overflow-x-auto">
         <div className="flex min-w-max gap-2">
           <button
@@ -187,7 +228,9 @@ export default function QuotationsPage() {
           >
             All{" "}
             <span className="ml-1 opacity-70">
-              {statusCount("All")}
+              {statusCount(
+                "All"
+              )}
             </span>
           </button>
 
@@ -235,6 +278,9 @@ export default function QuotationsPage() {
           <QuotationTable
             quotations={
               filteredQuotations
+            }
+            onView={
+              handleViewQuotation
             }
           />
         )}
