@@ -16,34 +16,26 @@ export interface QuotationItem {
 export interface Quotation {
   id: string;
   organizationId: string;
-
   quotationNumber: string;
-
   clientId: string;
   clientName: string;
-
   eventId: string | null;
   eventName: string | null;
-
   quotationDate: string;
   validUntil: string | null;
-
   status: QuotationStatus;
-
   subtotal: number;
   discount: number;
   tax: number;
   total: number;
-
   notes: string;
-
   items: QuotationItem[];
-
   createdAt: string;
   updatedAt: string;
 }
 
 export interface QuotationItemFormValues {
+  id?: string;
   description: string;
   quantity: string;
   unitPrice: string;
@@ -52,14 +44,10 @@ export interface QuotationItemFormValues {
 export interface QuotationFormValues {
   clientId: string;
   eventId: string;
-
   quotationDate: string;
   validUntil: string;
-
   discount: string;
   tax: string;
-
   notes: string;
-
   items: QuotationItemFormValues[];
 }

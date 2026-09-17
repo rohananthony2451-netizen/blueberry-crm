@@ -1,54 +1,29 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   useFieldArray,
   useForm,
   useWatch,
 } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { FormActions } from "@/components/forms/FormActions";
+import { FormField } from "@/components/forms/FormField";
+import { FormInput } from "@/components/forms/FormInput";
+import { FormSelect } from "@/components/forms/FormSelect";
 
-import {
-  Button,
-} from "@/components/ui/button";
+import type { QuotationFormValues } from "../types";
+import { quotationSchema } from "../validation";
 
-import {
-  FormActions,
-} from "@/components/forms/FormActions";
-
-import {
-  FormField,
-} from "@/components/forms/FormField";
-
-import {
-  FormInput,
-} from "@/components/forms/FormInput";
-
-import {
-  FormSelect,
-} from "@/components/forms/FormSelect";
-
-import {
-  QuotationFormValues,
-} from "../types";
-
-import {
-  quotationSchema,
-} from "../validation";
-
-import type {
-  Client,
-} from "@/features/clients/types";
-
-import type {
-  Event,
-} from "@/features/events/types";
+import type { Client } from "@/features/clients/types";
+import type { Event } from "@/features/events/types";
 
 interface QuotationFormProps {
   clients: Client[];
   events: Event[];
+  initialValues?: QuotationFormValues;
   onCancel?: () => void;
   onSave?: (
     data: QuotationFormValues
@@ -59,6 +34,7 @@ interface QuotationFormProps {
 export function QuotationForm({
   clients,
   events,
+  initialValues,
   onCancel,
   onSave,
   saveText = "Save as Draft",
@@ -68,22 +44,16 @@ export function QuotationForm({
     control,
     handleSubmit,
     setValue,
-    formState: {
-      errors,
-    },
+    reset,
+    formState: { errors },
   } = useForm<QuotationFormValues>({
-    resolver:
-      zodResolver(
-        quotationSchema
-      ),
-
-    defaultValues: {
+    resolver: zodResolver(quotationSchema),
+    defaultValues: initialValues ?? {
       clientId: "",
       eventId: "",
-      quotationDate:
-        new Date()
-          .toISOString()
-          .split("T")[0],
+      quotationDate: new Date()
+        .toISOString()
+        .split("T")[0],
       validUntil: "",
       discount: "0",
       tax: "0",
@@ -98,66 +68,52 @@ export function QuotationForm({
     },
   });
 
-  const {
-    fields,
-    append,
-    remove,
-  } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
   });
 
-  const selectedClientId =
-    useWatch({
-      control,
-      name: "clientId",
-    });
+  useEffect(() => {
+    if (initialValues) {
+      reset(initialValues);
+    }
+  }, [initialValues, reset]);
 
-  const selectedEventId =
-    useWatch({
-      control,
-      name: "eventId",
-    });
+  const selectedClientId = useWatch({
+    control,
+    name: "clientId",
+  });
 
-  const watchedItems =
-    useWatch({
-      control,
-      name: "items",
-    });
+  const selectedEventId = useWatch({
+    control,
+    name: "eventId",
+  });
 
-  const discount =
-    useWatch({
-      control,
-      name: "discount",
-    });
+  const watchedItems = useWatch({
+    control,
+    name: "items",
+  });
 
-  const tax =
-    useWatch({
-      control,
-      name: "tax",
-    });
+  const discount = useWatch({
+    control,
+    name: "discount",
+  });
+
+  const tax = useWatch({
+    control,
+    name: "tax",
+  });
 
   const subtotal =
-    watchedItems?.reduce(
-      (sum, item) => {
-        const quantity =
-          Number(
-            item?.quantity
-          ) || 0;
+    watchedItems?.reduce((sum, item) => {
+      const quantity =
+        Number(item?.quantity) || 0;
 
-        const unitPrice =
-          Number(
-            item?.unitPrice
-          ) || 0;
+      const unitPrice =
+        Number(item?.unitPrice) || 0;
 
-        return (
-          sum +
-          quantity *
-            unitPrice
-        );
-      },
-      0
-    ) ?? 0;
+      return sum + quantity * unitPrice;
+    }, 0) ?? 0;
 
   const discountAmount =
     Number(discount) || 0;
@@ -178,18 +134,13 @@ export function QuotationForm({
 
   return (
     <form
-      onSubmit={handleSubmit(
-        submitForm
-      )}
+      onSubmit={handleSubmit(submitForm)}
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
         <FormField
           label="Client"
-          error={
-            errors.clientId
-              ?.message
-          }
+          error={errors.clientId?.message}
         >
           <FormSelect
             value={selectedClientId}
@@ -197,27 +148,20 @@ export function QuotationForm({
               setValue(
                 "clientId",
                 value,
-                {
-                  shouldValidate: true,
-                }
+                { shouldValidate: true }
               )
             }
             placeholder="Select Client"
-            options={clients.map(
-              (client) => ({
-                label: client.name,
-                value: client.id,
-              })
-            )}
+            options={clients.map((client) => ({
+              label: client.name,
+              value: client.id,
+            }))}
           />
         </FormField>
 
         <FormField
           label="Event"
-          error={
-            errors.eventId
-              ?.message
-          }
+          error={errors.eventId?.message}
         >
           <FormSelect
             value={selectedEventId}
@@ -225,48 +169,34 @@ export function QuotationForm({
               setValue(
                 "eventId",
                 value,
-                {
-                  shouldValidate: true,
-                }
+                { shouldValidate: true }
               )
             }
             placeholder="Select Event"
-            options={events.map(
-              (event) => ({
-                label: event.eventName,
-                value: event.id,
-              })
-            )}
+            options={events.map((event) => ({
+              label: event.eventName,
+              value: event.id,
+            }))}
           />
         </FormField>
 
         <FormField
           label="Issue Date"
-          error={
-            errors.quotationDate
-              ?.message
-          }
+          error={errors.quotationDate?.message}
         >
           <FormInput
             type="date"
-            {...register(
-              "quotationDate"
-            )}
+            {...register("quotationDate")}
           />
         </FormField>
 
         <FormField
           label="Valid Until"
-          error={
-            errors.validUntil
-              ?.message
-          }
+          error={errors.validUntil?.message}
         >
           <FormInput
             type="date"
-            {...register(
-              "validUntil"
-            )}
+            {...register("validUntil")}
           />
         </FormField>
       </div>
@@ -282,102 +212,90 @@ export function QuotationForm({
           </p>
         </div>
 
-        {fields.map(
-          (field, index) => (
-            <div
-              key={field.id}
-              className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]"
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]"
+          >
+            <FormField
+              label={
+                index === 0
+                  ? "Description"
+                  : ""
+              }
+              error={
+                errors.items?.[index]
+                  ?.description?.message
+              }
             >
-              <FormField
-                label={
-                  index === 0
-                    ? "Description"
-                    : ""
-                }
-                error={
-                  errors.items?.[
-                    index
-                  ]?.description
-                    ?.message
-                }
-              >
-                <FormInput
-                  placeholder="Venue coordination"
-                  {...register(
-                    `items.${index}.description`
-                  )}
-                />
-              </FormField>
+              <FormInput
+                placeholder="Venue coordination"
+                {...register(
+                  `items.${index}.description`
+                )}
+              />
+            </FormField>
 
-              <FormField
-                label={
-                  index === 0
-                    ? "Quantity"
-                    : ""
-                }
-                error={
-                  errors.items?.[
-                    index
-                  ]?.quantity
-                    ?.message
-                }
-              >
-                <FormInput
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  {...register(
-                    `items.${index}.quantity`
-                  )}
-                />
-              </FormField>
+            <FormField
+              label={
+                index === 0
+                  ? "Quantity"
+                  : ""
+              }
+              error={
+                errors.items?.[index]
+                  ?.quantity?.message
+              }
+            >
+              <FormInput
+                type="number"
+                min="0.01"
+                step="0.01"
+                {...register(
+                  `items.${index}.quantity`
+                )}
+              />
+            </FormField>
 
-              <FormField
-                label={
-                  index === 0
-                    ? "Unit Price"
-                    : ""
-                }
-                error={
-                  errors.items?.[
-                    index
-                  ]?.unitPrice
-                    ?.message
-                }
-              >
-                <FormInput
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...register(
-                    `items.${index}.unitPrice`
-                  )}
-                />
-              </FormField>
+            <FormField
+              label={
+                index === 0
+                  ? "Unit Price"
+                  : ""
+              }
+              error={
+                errors.items?.[index]
+                  ?.unitPrice?.message
+              }
+            >
+              <FormInput
+                type="number"
+                min="0"
+                step="0.01"
+                {...register(
+                  `items.${index}.unitPrice`
+                )}
+              />
+            </FormField>
 
-              <div
-                className={
-                  index === 0
-                    ? "pt-6"
-                    : ""
-                }
+            <div
+              className={
+                index === 0
+                  ? "pt-6"
+                  : ""
+              }
+            >
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => remove(index)}
+                disabled={fields.length === 1}
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    remove(index)
-                  }
-                  disabled={
-                    fields.length === 1
-                  }
-                >
-                  Remove
-                </Button>
-              </div>
+                Remove
+              </Button>
             </div>
-          )
-        )}
+          </div>
+        ))}
 
         <Button
           type="button"
@@ -397,45 +315,32 @@ export function QuotationForm({
       <div className="grid gap-5 md:grid-cols-2">
         <FormField
           label="Discount"
-          error={
-            errors.discount
-              ?.message
-          }
+          error={errors.discount?.message}
         >
           <FormInput
             type="number"
             min="0"
             step="0.01"
-            {...register(
-              "discount"
-            )}
+            {...register("discount")}
           />
         </FormField>
 
         <FormField
           label="Tax"
-          error={
-            errors.tax
-              ?.message
-          }
+          error={errors.tax?.message}
         >
           <FormInput
             type="number"
             min="0"
             step="0.01"
-            {...register(
-              "tax"
-            )}
+            {...register("tax")}
           />
         </FormField>
       </div>
 
       <div className="rounded-xl border bg-slate-50 p-5">
         <div className="flex justify-between text-sm">
-          <span>
-            Subtotal
-          </span>
-
+          <span>Subtotal</span>
           <span>
             ₹
             {subtotal.toLocaleString(
@@ -445,10 +350,7 @@ export function QuotationForm({
         </div>
 
         <div className="mt-2 flex justify-between text-sm">
-          <span>
-            Discount
-          </span>
-
+          <span>Discount</span>
           <span>
             − ₹
             {discountAmount.toLocaleString(
@@ -458,10 +360,7 @@ export function QuotationForm({
         </div>
 
         <div className="mt-2 flex justify-between text-sm">
-          <span>
-            Tax
-          </span>
-
+          <span>Tax</span>
           <span>
             + ₹
             {taxAmount.toLocaleString(
@@ -471,10 +370,7 @@ export function QuotationForm({
         </div>
 
         <div className="mt-4 flex justify-between border-t pt-4 text-lg font-bold">
-          <span>
-            Total
-          </span>
-
+          <span>Total</span>
           <span>
             ₹
             {total.toLocaleString(
@@ -486,10 +382,7 @@ export function QuotationForm({
 
       <FormField
         label="Notes"
-        error={
-          errors.notes
-            ?.message
-        }
+        error={errors.notes?.message}
       >
         <textarea
           {...register("notes")}

@@ -26,6 +26,10 @@ import {
 } from "@/features/quotations/components/QuotationViewDialog";
 
 import {
+  QuotationEditDialog,
+} from "@/features/quotations/components/QuotationEditDialog";
+
+import {
   useQuotations,
 } from "@/features/quotations/hooks/useQuotations";
 
@@ -34,9 +38,9 @@ import {
 } from "@/features/quotations/constants";
 
 import type {
+  Quotation,
   QuotationFormValues,
   QuotationStatus,
-  Quotation,
 } from "@/features/quotations/types";
 
 type FilterStatus =
@@ -63,11 +67,19 @@ export default function QuotationsPage() {
     null
   );
 
+  const [
+    editingQuotation,
+    setEditingQuotation,
+  ] = useState<Quotation | null>(
+    null
+  );
+
   const {
     quotations,
     loading,
     error,
     createQuotation,
+    updateQuotation,
   } = useQuotations();
 
   const filteredQuotations =
@@ -112,7 +124,8 @@ export default function QuotationsPage() {
         data.quotationDate,
 
       validUntil:
-        data.validUntil || null,
+        data.validUntil ||
+        null,
 
       discount:
         Number(data.discount),
@@ -171,6 +184,87 @@ export default function QuotationsPage() {
     }
   }
 
+  function handleEditQuotation(
+    quotation: Quotation
+  ) {
+    setEditingQuotation(
+      quotation
+    );
+  }
+
+  function handleEditDialogChange(
+    open: boolean
+  ) {
+    if (!open) {
+      setEditingQuotation(
+        null
+      );
+    }
+  }
+
+  async function handleUpdateQuotation(
+    id: string,
+    data: QuotationFormValues
+  ) {
+    await updateQuotation(
+      id,
+      {
+        clientId:
+          data.clientId,
+
+        eventId:
+          data.eventId ||
+          null,
+
+        quotationDate:
+          data.quotationDate,
+
+        validUntil:
+          data.validUntil ||
+          null,
+
+        discount:
+          Number(
+            data.discount
+          ),
+
+        tax:
+          Number(data.tax),
+
+        notes:
+          data.notes,
+
+        items:
+          data.items.map(
+            (item) => {
+              const quantity =
+                Number(
+                  item.quantity
+                );
+
+              const unitPrice =
+                Number(
+                  item.unitPrice
+                );
+
+              return {
+                description:
+                  item.description,
+
+                quantity,
+
+                unitPrice,
+
+                amount:
+                  quantity *
+                  unitPrice,
+              };
+            }
+          ),
+      }
+    );
+  }
+
   return (
     <PageContainer>
       <PageHeader
@@ -210,6 +304,22 @@ export default function QuotationsPage() {
         }
         onOpenChange={
           handleViewDialogChange
+        }
+      />
+
+      <QuotationEditDialog
+        quotation={
+          editingQuotation
+        }
+        open={
+          editingQuotation !==
+          null
+        }
+        onOpenChange={
+          handleEditDialogChange
+        }
+        onSave={
+          handleUpdateQuotation
         }
       />
 
@@ -281,6 +391,9 @@ export default function QuotationsPage() {
             }
             onView={
               handleViewQuotation
+            }
+            onEdit={
+              handleEditQuotation
             }
           />
         )}
