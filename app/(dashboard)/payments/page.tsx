@@ -15,6 +15,10 @@ import {
 } from "@/features/payments/components/PaymentDialog";
 
 import {
+  PaymentTable,
+} from "@/features/payments/components/PaymentTable";
+
+import {
   usePayments,
 } from "@/features/payments/hooks/usePayments";
 
@@ -135,126 +139,11 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      {!loading &&
-        !error &&
-        payments.length === 0 && (
-          <div className="rounded-2xl border bg-white p-10 text-center">
-            <p className="text-sm font-medium">
-              No payments recorded yet.
-            </p>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Record your first payment to start tracking revenue.
-            </p>
-          </div>
-        )}
-
-      {!loading &&
-        !error &&
-        payments.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border bg-background">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-slate-50/70 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">
-                      Payment No.
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Client
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Event
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Quotation
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Date
-                    </th>
-
-                    <th className="px-4 py-3">
-                      Method
-                    </th>
-
-                    <th className="px-4 py-3 text-right">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {payments.map(
-                    (payment) => (
-                      <tr
-                        key={payment.id}
-                        className="border-t border-slate-100"
-                      >
-                        <td className="px-4 py-4 font-medium text-primary">
-                          {
-                            payment.paymentNumber
-                          }
-                        </td>
-
-                        <td className="px-4 py-4 font-medium">
-                          {
-                            payment.clientName
-                          }
-                        </td>
-
-                        <td className="px-4 py-4 text-slate-600">
-                          {
-                            payment.eventName ??
-                            "—"
-                          }
-                        </td>
-
-                        <td className="px-4 py-4 text-slate-600">
-                          {
-                            payment.quotationNumber ??
-                            "—"
-                          }
-                        </td>
-
-                        <td className="px-4 py-4 text-slate-600">
-                          {new Intl.DateTimeFormat(
-                            "en-IN",
-                            {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            }
-                          ).format(
-                            new Date(
-                              payment.paymentDate
-                            )
-                          )}
-                        </td>
-
-                        <td className="px-4 py-4 text-slate-600">
-                          {
-                            payment.paymentMethod
-                          }
-                        </td>
-
-                        <td className="px-4 py-4 text-right font-semibold">
-                          ₹
-                          {payment.amount.toLocaleString(
-                            "en-IN"
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+      {!loading && !error && (
+        <PaymentTable
+          payments={payments}
+        />
+      )}
     </PageContainer>
   );
 }
