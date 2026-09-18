@@ -267,3 +267,74 @@ export async function createPayment(
 
   return getPaymentById(data.id);
 }
+
+export async function updatePayment(
+  id: string,
+  payment: PaymentInput
+): Promise<Payment> {
+  const supabase = createClient();
+
+  if (payment.amount <= 0) {
+    throw new Error(
+      "Payment amount must be greater than 0."
+    );
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("payments")
+    .update({
+      client_id:
+        payment.clientId,
+
+      event_id:
+        payment.eventId || null,
+
+      quotation_id:
+        payment.quotationId || null,
+
+      payment_date:
+        payment.paymentDate,
+
+      amount:
+        payment.amount,
+
+      payment_method:
+        payment.paymentMethod,
+
+      reference_number:
+        payment.referenceNumber ||
+        null,
+
+      notes:
+        payment.notes || null,
+    })
+    .eq("id", id)
+    .select("id")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return getPaymentById(data.id);
+}
+
+export async function deletePayment(
+  id: string
+): Promise<void> {
+  const supabase = createClient();
+
+  const {
+    error,
+  } = await supabase
+    .from("payments")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}

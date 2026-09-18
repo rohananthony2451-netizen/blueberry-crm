@@ -1,13 +1,35 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  useEffect,
+} from "react";
+
+import {
+  useForm,
+  useWatch,
+} from "react-hook-form";
+
+import {
+  zodResolver,
+} from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
-import { FormActions } from "@/components/forms/FormActions";
-import { FormField } from "@/components/forms/FormField";
-import { FormInput } from "@/components/forms/FormInput";
-import { FormSelect } from "@/components/forms/FormSelect";
+
+import {
+  FormActions,
+} from "@/components/forms/FormActions";
+
+import {
+  FormField,
+} from "@/components/forms/FormField";
+
+import {
+  FormInput,
+} from "@/components/forms/FormInput";
+
+import {
+  FormSelect,
+} from "@/components/forms/FormSelect";
 
 import type { Client } from "@/features/clients/types";
 import type { Event } from "@/features/events/types";
@@ -29,10 +51,15 @@ interface PaymentFormProps {
   clients: Client[];
   events: Event[];
   quotations: Quotation[];
+
+  initialValues?: PaymentFormValues;
+
   onCancel?: () => void;
+
   onSave?: (
     data: PaymentFormValues
   ) => void | Promise<void>;
+
   saveText?: string;
 }
 
@@ -40,6 +67,7 @@ export function PaymentForm({
   clients,
   events,
   quotations,
+  initialValues,
   onCancel,
   onSave,
   saveText = "Record Payment",
@@ -49,23 +77,38 @@ export function PaymentForm({
     control,
     handleSubmit,
     setValue,
-    formState: { errors },
-  } = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema),
-
-    defaultValues: {
-      clientId: "",
-      eventId: "",
-      quotationId: "",
-      paymentDate: new Date()
-        .toISOString()
-        .split("T")[0],
-      amount: "",
-      paymentMethod: "Cash",
-      referenceNumber: "",
-      notes: "",
+    reset,
+    formState: {
+      errors,
     },
+  } = useForm<PaymentFormValues>({
+    resolver:
+      zodResolver(paymentSchema),
+
+    defaultValues:
+      initialValues ?? {
+        clientId: "",
+        eventId: "",
+        quotationId: "",
+        paymentDate:
+          new Date()
+            .toISOString()
+            .split("T")[0],
+        amount: "",
+        paymentMethod: "Cash",
+        referenceNumber: "",
+        notes: "",
+      },
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(initialValues);
+    }
+  }, [
+    initialValues,
+    reset,
+  ]);
 
   const selectedClientId =
     useWatch({
@@ -94,16 +137,16 @@ export function PaymentForm({
   const selectedClient =
     clients.find(
       (client) =>
-        client.id === selectedClientId
+        client.id ===
+        selectedClientId
     );
 
   const clientEvents =
     selectedClientId
       ? events.filter(
-          (event) => {
-            return event.clientName ===
-              selectedClient?.name;
-          }
+          (event) =>
+            event.clientName ===
+            selectedClient?.name
         )
       : events;
 
@@ -124,22 +167,31 @@ export function PaymentForm({
 
   return (
     <form
-      onSubmit={handleSubmit(submitForm)}
+      onSubmit={
+        handleSubmit(submitForm)
+      }
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
         <FormField
           label="Client"
-          error={errors.clientId?.message}
+          error={
+            errors.clientId?.message
+          }
         >
           <FormSelect
-            value={selectedClientId}
-            onValueChange={(value) => {
+            value={
+              selectedClientId
+            }
+            onValueChange={(
+              value
+            ) => {
               setValue(
                 "clientId",
                 value,
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               );
 
@@ -147,7 +199,8 @@ export function PaymentForm({
                 "eventId",
                 "",
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               );
 
@@ -155,15 +208,18 @@ export function PaymentForm({
                 "quotationId",
                 "",
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               );
             }}
             placeholder="Select Client"
             options={clients.map(
               (client) => ({
-                label: client.name,
-                value: client.id,
+                label:
+                  client.name,
+                value:
+                  client.id,
               })
             )}
           />
@@ -171,16 +227,23 @@ export function PaymentForm({
 
         <FormField
           label="Event"
-          error={errors.eventId?.message}
+          error={
+            errors.eventId?.message
+          }
         >
           <FormSelect
-            value={selectedEventId}
-            onValueChange={(value) =>
+            value={
+              selectedEventId
+            }
+            onValueChange={(
+              value
+            ) =>
               setValue(
                 "eventId",
                 value,
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               )
             }
@@ -189,7 +252,8 @@ export function PaymentForm({
               (event) => ({
                 label:
                   event.eventName,
-                value: event.id,
+                value:
+                  event.id,
               })
             )}
           />
@@ -202,25 +266,32 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={selectedQuotationId}
-            onValueChange={(value) =>
+            value={
+              selectedQuotationId
+            }
+            onValueChange={(
+              value
+            ) =>
               setValue(
                 "quotationId",
                 value,
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               )
             }
             placeholder="Select Quotation"
-            options={clientQuotations.map(
-              (quotation) => ({
-                label:
-                  quotation.quotationNumber,
-                value:
-                  quotation.id,
-              })
-            )}
+            options={
+              clientQuotations.map(
+                (quotation) => ({
+                  label:
+                    quotation.quotationNumber,
+                  value:
+                    quotation.id,
+                })
+              )
+            }
           />
         </FormField>
 
@@ -240,7 +311,9 @@ export function PaymentForm({
 
         <FormField
           label="Amount"
-          error={errors.amount?.message}
+          error={
+            errors.amount?.message
+          }
         >
           <FormInput
             type="number"
@@ -258,25 +331,33 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={selectedPaymentMethod}
-            onValueChange={(value) =>
+            value={
+              selectedPaymentMethod
+            }
+            onValueChange={(
+              value
+            ) =>
               setValue(
                 "paymentMethod",
                 value as PaymentFormValues["paymentMethod"],
                 {
-                  shouldValidate: true,
+                  shouldValidate:
+                    true,
                 }
               )
             }
             placeholder="Select Payment Method"
-            options={PAYMENT_METHODS}
+            options={
+              PAYMENT_METHODS
+            }
           />
         </FormField>
 
         <FormField
           label="Reference Number"
           error={
-            errors.referenceNumber?.message
+            errors.referenceNumber
+              ?.message
           }
         >
           <FormInput
@@ -290,7 +371,9 @@ export function PaymentForm({
 
       <FormField
         label="Notes"
-        error={errors.notes?.message}
+        error={
+          errors.notes?.message
+        }
       >
         <textarea
           {...register("notes")}

@@ -1,12 +1,27 @@
-import type { Payment } from "../types";
-import { PaymentTableBody } from "./PaymentTableBody";
+import type {
+  Payment,
+} from "../types";
+
+import {
+  PaymentTableBody,
+} from "./PaymentTableBody";
 
 interface PaymentTableProps {
   payments: Payment[];
+
+  onEdit?: (
+    payment: Payment
+  ) => void;
+
+  onDelete?: (
+    payment: Payment
+  ) => void;
 }
 
 export function PaymentTable({
   payments,
+  onEdit,
+  onDelete,
 }: PaymentTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-background">
@@ -45,11 +60,17 @@ export function PaymentTable({
               <th className="px-4 py-3">
                 Notes
               </th>
+
+              <th className="px-4 py-3 text-right">
+                Actions
+              </th>
             </tr>
           </thead>
 
           <PaymentTableBody
             payments={payments}
+            onEdit={onEdit}
+            onDelete={onDelete}
           />
         </table>
       </div>

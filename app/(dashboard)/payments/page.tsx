@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
 import {
   PageContainer,
@@ -15,6 +17,14 @@ import {
 } from "@/features/payments/components/PaymentDialog";
 
 import {
+  PaymentEditDialog,
+} from "@/features/payments/components/PaymentEditDialog";
+
+import {
+  PaymentDeleteDialog,
+} from "@/features/payments/components/PaymentDeleteDialog";
+
+import {
   PaymentTable,
 } from "@/features/payments/components/PaymentTable";
 
@@ -23,6 +33,7 @@ import {
 } from "@/features/payments/hooks/usePayments";
 
 import type {
+  Payment,
   PaymentFormValues,
 } from "@/features/payments/types";
 
@@ -32,11 +43,32 @@ export default function PaymentsPage() {
     setDialogOpen,
   ] = useState(false);
 
+  const [
+    editingPayment,
+    setEditingPayment,
+  ] = useState<Payment | null>(
+    null
+  );
+
+  const [
+    deletingPayment,
+    setDeletingPayment,
+  ] = useState<Payment | null>(
+    null
+  );
+
+  const [
+    deleting,
+    setDeleting,
+  ] = useState(false);
+
   const {
     payments,
     loading,
     error,
     createPayment,
+    updatePayment,
+    deletePayment,
   } = usePayments();
 
   async function handleCreatePayment(
@@ -50,7 +82,8 @@ export default function PaymentsPage() {
         data.eventId || null,
 
       quotationId:
-        data.quotationId || null,
+        data.quotationId ||
+        null,
 
       paymentDate:
         data.paymentDate,
@@ -67,6 +100,96 @@ export default function PaymentsPage() {
       notes:
         data.notes,
     });
+  }
+
+  function handleEditPayment(
+    payment: Payment
+  ) {
+    setEditingPayment(
+      payment
+    );
+  }
+
+  function handleEditDialogChange(
+    open: boolean
+  ) {
+    if (!open) {
+      setEditingPayment(
+        null
+      );
+    }
+  }
+
+  async function handleUpdatePayment(
+    id: string,
+    data: PaymentFormValues
+  ) {
+    await updatePayment(
+      id,
+      {
+        clientId:
+          data.clientId,
+
+        eventId:
+          data.eventId ||
+          null,
+
+        quotationId:
+          data.quotationId ||
+          null,
+
+        paymentDate:
+          data.paymentDate,
+
+        amount:
+          Number(data.amount),
+
+        paymentMethod:
+          data.paymentMethod,
+
+        referenceNumber:
+          data.referenceNumber,
+
+        notes:
+          data.notes,
+      }
+    );
+  }
+
+  function handleDeletePayment(
+    payment: Payment
+  ) {
+    setDeletingPayment(
+      payment
+    );
+  }
+
+  function handleDeleteDialogChange(
+    open: boolean
+  ) {
+    if (!open && !deleting) {
+      setDeletingPayment(
+        null
+      );
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deletingPayment) {
+      return;
+    }
+
+    try {
+      setDeleting(true);
+
+      await deletePayment(
+        deletingPayment.id
+      );
+
+      setDeletingPayment(null);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   const totalReceived =
@@ -97,8 +220,47 @@ export default function PaymentsPage() {
 
       <PaymentDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSave={handleCreatePayment}
+        onOpenChange={
+          setDialogOpen
+        }
+        onSave={
+          handleCreatePayment
+        }
+      />
+
+      <PaymentEditDialog
+        payment={
+          editingPayment
+        }
+        open={
+          editingPayment !==
+          null
+        }
+        onOpenChange={
+          handleEditDialogChange
+        }
+        onSave={
+          handleUpdatePayment
+        }
+      />
+
+      <PaymentDeleteDialog
+        payment={
+          deletingPayment
+        }
+        open={
+          deletingPayment !==
+          null
+        }
+        onOpenChange={
+          handleDeleteDialogChange
+        }
+        onConfirm={
+          handleConfirmDelete
+        }
+        deleting={
+          deleting
+        }
       />
 
       <div className="mb-6 grid gap-4 md:grid-cols-2">
@@ -139,11 +301,18 @@ export default function PaymentsPage() {
         </div>
       )}
 
-      {!loading && !error && (
-        <PaymentTable
-          payments={payments}
-        />
-      )}
+      {!loading &&
+        !error && (
+          <PaymentTable
+            payments={payments}
+            onEdit={
+              handleEditPayment
+            }
+            onDelete={
+              handleDeletePayment
+            }
+          />
+        )}
     </PageContainer>
   );
 }

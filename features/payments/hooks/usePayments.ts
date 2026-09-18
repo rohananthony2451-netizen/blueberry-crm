@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 
 import {
   createPayment as createPaymentService,
+  deletePayment as deletePaymentService,
   getPayments,
+  updatePayment as updatePaymentService,
 } from "../services/payment.service";
 
-import type { Payment } from "../types";
-
 import type { PaymentInput } from "../services/payment.service";
+import type { Payment } from "../types";
 
 export function usePayments() {
   const [
@@ -80,10 +81,72 @@ export function usePayments() {
     }
   }
 
+  async function updatePayment(
+    id: string,
+    payment: PaymentInput
+  ) {
+    try {
+      setError(null);
+
+      const updatedPayment =
+        await updatePaymentService(
+          id,
+          payment
+        );
+
+      setPayments((current) =>
+        current.map((item) =>
+          item.id === id
+            ? updatedPayment
+            : item
+        )
+      );
+
+      return updatedPayment;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update payment.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
+  async function deletePayment(
+    id: string
+  ) {
+    try {
+      setError(null);
+
+      await deletePaymentService(id);
+
+      setPayments((current) =>
+        current.filter(
+          (payment) =>
+            payment.id !== id
+        )
+      );
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to delete payment.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
   return {
     payments,
     loading,
     error,
     createPayment,
+    updatePayment,
+    deletePayment,
   };
 }
