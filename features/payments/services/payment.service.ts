@@ -338,3 +338,107 @@ export async function deletePayment(
     throw new Error(error.message);
   }
 }
+
+export async function getPaymentSummary(): Promise<{
+  totalReceived: number;
+  thisMonthReceived: number;
+  pendingAmount: number;
+}> {
+  const supabase = createClient();
+
+  const { data: payments, error: paymentsError } =
+    await supabase
+      .from("payments")
+      .select("amount, payment_date, quotation_id");
+
+  if (paymentsError) {
+    throw new Error(paymentsError.message);
+  }
+
+  const { data: quotations, error: quotationsError } =
+    await supabase
+      .from("quotations")
+      .select("id, total");
+
+  if (quotationsError) {
+    throw new Error(quotationsError.message);
+  }
+
+  const paymentRows =
+    (payments ?? []) as Array<{
+      amount: number | string;
+      payment_date: string;
+      quotation_id: string | null;
+    }>;
+
+  const quotationRows =
+    (quotations ?? []) as Array<{
+      id: string;
+      total: number | string;
+    }>;
+
+  const totalReceived = paymentRows.reduce(
+    (sum, payment) => sum + Number(payment.amount),
+    0
+  );
+
+  const now = new Date();
+
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+
+  const thisMonthReceived = paymentRows.reduce(
+    (sum, payment) => {
+      const paymentDate = new Date(
+        `${payment.payment_date}T00:00:00`
+      );
+
+      if (
+        paymentDate.getFullYear() === currentYear &&
+        paymentDate.getMonth() === currentMonth
+      ) {
+        return sum + Number(payment.amount);
+      }
+
+      return sum;
+    },
+    0
+  );
+
+  const paymentsByQuotation = new Map<string, number>();
+
+  for (const payment of paymentRows) {
+    if (!payment.quotation_id) continue;
+
+    const current =
+      paymentsByQuotation.get(payment.quotation_id) ?? 0;
+
+    paymentsByQuotation.set(
+      payment.quotation_id,
+      current + Number(payment.amount)
+    );
+  }
+
+  const pendingAmount = quotationRows.reduce(
+    (sum, quotation) => {
+      const quotationTotal = Number(quotation.total);
+
+      const received =
+        paymentsByQuotation.get(quotation.id) ?? 0;
+
+      const outstanding = Math.max(
+        quotationTotal - received,
+        0
+      );
+
+      return sum + outstanding;
+    },
+    0
+  );
+
+  return {
+    totalReceived,
+    thisMonthReceived,
+    pendingAmount,
+  };
+}

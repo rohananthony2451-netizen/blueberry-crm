@@ -1,122 +1,70 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
-import {
-  PageContainer,
-} from "@/components/design-system/PageContainer";
+import { Button } from "@/components/ui/button";
 
-import {
-  PageHeader,
-} from "@/components/design-system/PageHeader";
+import { PaymentDialog } from "@/features/payments/components/PaymentDialog";
+import { PaymentDeleteDialog } from "@/features/payments/components/PaymentDeleteDialog";
+import { PaymentEditDialog } from "@/features/payments/components/PaymentEditDialog";
+import { PaymentTable } from "@/features/payments/components/PaymentTable";
 
-import {
-  PaymentDialog,
-} from "@/features/payments/components/PaymentDialog";
+import { usePayments } from "@/features/payments/hooks/usePayments";
 
-import {
-  PaymentEditDialog,
-} from "@/features/payments/components/PaymentEditDialog";
+import type { PaymentFormValues } from "@/features/payments/types";
 
-import {
-  PaymentDeleteDialog,
-} from "@/features/payments/components/PaymentDeleteDialog";
-
-import {
-  PaymentTable,
-} from "@/features/payments/components/PaymentTable";
-
-import {
-  usePayments,
-} from "@/features/payments/hooks/usePayments";
-
-import type {
-  Payment,
-  PaymentFormValues,
-} from "@/features/payments/types";
+import type { Payment } from "@/features/payments/types";
 
 export default function PaymentsPage() {
-  const [
-    dialogOpen,
-    setDialogOpen,
-  ] = useState(false);
-
-  const [
-    editingPayment,
-    setEditingPayment,
-  ] = useState<Payment | null>(
-    null
-  );
-
-  const [
-    deletingPayment,
-    setDeletingPayment,
-  ] = useState<Payment | null>(
-    null
-  );
-
-  const [
-    deleting,
-    setDeleting,
-  ] = useState(false);
-
   const {
     payments,
+    summary,
     loading,
+    summaryLoading,
     error,
     createPayment,
     updatePayment,
     deletePayment,
   } = usePayments();
 
+  const [dialogOpen, setDialogOpen] =
+    useState(false);
+
+  const [editingPayment, setEditingPayment] =
+    useState<Payment | null>(null);
+
+  const [deletingPayment, setDeletingPayment] =
+    useState<Payment | null>(null);
+
+  const [deleting, setDeleting] =
+    useState(false);
+
   async function handleCreatePayment(
     data: PaymentFormValues
   ) {
     await createPayment({
-      clientId:
-        data.clientId,
-
-      eventId:
-        data.eventId || null,
-
-      quotationId:
-        data.quotationId ||
-        null,
-
-      paymentDate:
-        data.paymentDate,
-
-      amount:
-        Number(data.amount),
-
-      paymentMethod:
-        data.paymentMethod,
-
-      referenceNumber:
-        data.referenceNumber,
-
-      notes:
-        data.notes,
+      clientId: data.clientId,
+      eventId: data.eventId || null,
+      quotationId: data.quotationId || null,
+      paymentDate: data.paymentDate,
+      amount: Number(data.amount),
+      paymentMethod: data.paymentMethod,
+      referenceNumber: data.referenceNumber,
+      notes: data.notes,
     });
   }
 
   function handleEditPayment(
     payment: Payment
   ) {
-    setEditingPayment(
-      payment
-    );
+    setEditingPayment(payment);
   }
 
   function handleEditDialogChange(
     open: boolean
   ) {
     if (!open) {
-      setEditingPayment(
-        null
-      );
+      setEditingPayment(null);
     }
   }
 
@@ -124,60 +72,34 @@ export default function PaymentsPage() {
     id: string,
     data: PaymentFormValues
   ) {
-    await updatePayment(
-      id,
-      {
-        clientId:
-          data.clientId,
-
-        eventId:
-          data.eventId ||
-          null,
-
-        quotationId:
-          data.quotationId ||
-          null,
-
-        paymentDate:
-          data.paymentDate,
-
-        amount:
-          Number(data.amount),
-
-        paymentMethod:
-          data.paymentMethod,
-
-        referenceNumber:
-          data.referenceNumber,
-
-        notes:
-          data.notes,
-      }
-    );
+    await updatePayment(id, {
+      clientId: data.clientId,
+      eventId: data.eventId || null,
+      quotationId: data.quotationId || null,
+      paymentDate: data.paymentDate,
+      amount: Number(data.amount),
+      paymentMethod: data.paymentMethod,
+      referenceNumber: data.referenceNumber,
+      notes: data.notes,
+    });
   }
 
   function handleDeletePayment(
     payment: Payment
   ) {
-    setDeletingPayment(
-      payment
-    );
+    setDeletingPayment(payment);
   }
 
   function handleDeleteDialogChange(
     open: boolean
   ) {
-    if (!open && !deleting) {
-      setDeletingPayment(
-        null
-      );
+    if (!open) {
+      setDeletingPayment(null);
     }
   }
 
   async function handleConfirmDelete() {
-    if (!deletingPayment) {
-      return;
-    }
+    if (!deletingPayment) return;
 
     try {
       setDeleting(true);
@@ -192,127 +114,176 @@ export default function PaymentsPage() {
     }
   }
 
-  const totalReceived =
-    payments.reduce(
-      (sum, payment) =>
-        sum + payment.amount,
-      0
-    );
+  function formatCurrency(
+    value: number
+  ) {
+    return `₹${value.toLocaleString("en-IN", {
+      maximumFractionDigits: 2,
+    })}`;
+  }
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="Payments"
-        description="Track payments received from your clients."
-      />
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Payments
+          </h1>
 
-      <div className="mb-6 flex justify-end">
-        <button
-          type="button"
-          onClick={() =>
-            setDialogOpen(true)
-          }
-          className="rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90"
+          <p className="mt-1 text-sm text-slate-500">
+            Track payments received from your
+            clients and monitor outstanding amounts.
+          </p>
+        </div>
+
+        <Button
+          onClick={() => setDialogOpen(true)}
         >
-          + Record Payment
-        </button>
+          Record Payment
+        </Button>
       </div>
 
-      <PaymentDialog
-        open={dialogOpen}
-        onOpenChange={
-          setDialogOpen
-        }
-        onSave={
-          handleCreatePayment
-        }
-      />
-
-      <PaymentEditDialog
-        payment={
-          editingPayment
-        }
-        open={
-          editingPayment !==
-          null
-        }
-        onOpenChange={
-          handleEditDialogChange
-        }
-        onSave={
-          handleUpdatePayment
-        }
-      />
-
-      <PaymentDeleteDialog
-        payment={
-          deletingPayment
-        }
-        open={
-          deletingPayment !==
-          null
-        }
-        onOpenChange={
-          handleDeleteDialogChange
-        }
-        onConfirm={
-          handleConfirmDelete
-        }
-        deleting={
-          deleting
-        }
-      />
-
-      <div className="mb-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border bg-background p-5">
-          <p className="text-sm text-slate-500">
-            Total Received
-          </p>
-
-          <p className="mt-2 text-2xl font-bold">
-            ₹
-            {totalReceived.toLocaleString(
-              "en-IN"
-            )}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border bg-background p-5">
-          <p className="text-sm text-slate-500">
-            Transactions
-          </p>
-
-          <p className="mt-2 text-2xl font-bold">
-            {payments.length}
-          </p>
-        </div>
-      </div>
-
-      {loading && (
-        <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
-          Loading payments...
-        </div>
-      )}
-
+      {/* Error */}
       {error && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center text-sm text-red-600">
-          Failed to load payments:{" "}
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {!loading &&
-        !error && (
+      {/* Financial Summary */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Total Received
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
+            {summaryLoading
+              ? "Loading..."
+              : formatCurrency(
+                  summary.totalReceived
+                )}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-400">
+            Total payments recorded
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            Pending Amount
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
+            {summaryLoading
+              ? "Loading..."
+              : formatCurrency(
+                  summary.pendingAmount
+                )}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-400">
+            Outstanding against quotations
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+          <p className="text-sm font-medium text-slate-500">
+            This Month
+          </p>
+
+          <p className="mt-2 text-2xl font-semibold tracking-tight">
+            {summaryLoading
+              ? "Loading..."
+              : formatCurrency(
+                  summary.thisMonthReceived
+                )}
+          </p>
+
+          <p className="mt-1 text-xs text-slate-400">
+            Payments received this month
+          </p>
+        </div>
+      </div>
+
+      {/* Transactions */}
+      <div className="rounded-2xl border bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b px-5 py-4">
+          <div>
+            <h2 className="font-semibold">
+              Transactions
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-500">
+              {loading
+                ? "Loading payments..."
+                : `${payments.length} payment${
+                    payments.length === 1
+                      ? ""
+                      : "s"
+                  } recorded`}
+            </p>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="px-5 py-12 text-center text-sm text-slate-500">
+            Loading payments...
+          </div>
+        ) : payments.length === 0 ? (
+          <div className="px-5 py-12 text-center">
+            <p className="text-sm font-medium text-slate-700">
+              No payments recorded yet.
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Record your first payment to start
+              tracking your revenue.
+            </p>
+
+            <Button
+              className="mt-4"
+              onClick={() =>
+                setDialogOpen(true)
+              }
+            >
+              Record Payment
+            </Button>
+          </div>
+        ) : (
           <PaymentTable
             payments={payments}
-            onEdit={
-              handleEditPayment
-            }
-            onDelete={
-              handleDeletePayment
-            }
+            onEdit={handleEditPayment}
+            onDelete={handleDeletePayment}
           />
         )}
-    </PageContainer>
+      </div>
+
+      {/* Create */}
+      <PaymentDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSave={handleCreatePayment}
+      />
+
+      {/* Edit */}
+      <PaymentEditDialog
+        payment={editingPayment}
+        open={Boolean(editingPayment)}
+        onOpenChange={handleEditDialogChange}
+        onSave={handleUpdatePayment}
+      />
+
+      {/* Delete */}
+      <PaymentDeleteDialog
+        payment={deletingPayment}
+        open={Boolean(deletingPayment)}
+        onOpenChange={handleDeleteDialogChange}
+        onConfirm={handleConfirmDelete}
+        deleting={deleting}
+      />
+    </div>
   );
 }

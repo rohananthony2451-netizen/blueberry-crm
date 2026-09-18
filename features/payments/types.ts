@@ -39,3 +39,9 @@ export interface PaymentFormValues {
   referenceNumber: string;
   notes: string;
 }
+
+export interface PaymentSummary {
+  totalReceived: number;
+  thisMonthReceived: number;
+  pendingAmount: number;
+}

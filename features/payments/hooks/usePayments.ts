@@ -5,39 +5,45 @@ import { useEffect, useState } from "react";
 import {
   createPayment as createPaymentService,
   deletePayment as deletePaymentService,
+  getPaymentSummary,
   getPayments,
   updatePayment as updatePaymentService,
 } from "../services/payment.service";
 
 import type { PaymentInput } from "../services/payment.service";
-import type { Payment } from "../types";
+import type { Payment, PaymentSummary } from "../types";
+
+const EMPTY_SUMMARY: PaymentSummary = {
+  totalReceived: 0,
+  thisMonthReceived: 0,
+  pendingAmount: 0,
+};
 
 export function usePayments() {
-  const [
-    payments,
-    setPayments,
-  ] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [summary, setSummary] =
+    useState<PaymentSummary>(EMPTY_SUMMARY);
 
-  const [
-    loading,
-    setLoading,
-  ] = useState(true);
-
-  const [
-    error,
-    setError,
-  ] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] =
+    useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadPayments() {
       try {
         setLoading(true);
+        setSummaryLoading(true);
         setError(null);
 
-        const data =
-          await getPayments();
+        const [paymentsData, summaryData] =
+          await Promise.all([
+            getPayments(),
+            getPaymentSummary(),
+          ]);
 
-        setPayments(data);
+        setPayments(paymentsData);
+        setSummary(summaryData);
       } catch (err) {
         setError(
           err instanceof Error
@@ -46,27 +52,29 @@ export function usePayments() {
         );
       } finally {
         setLoading(false);
+        setSummaryLoading(false);
       }
     }
 
     loadPayments();
   }, []);
 
-  async function createPayment(
-    payment: PaymentInput
-  ) {
+  async function createPayment(payment: PaymentInput) {
     try {
       setError(null);
 
       const createdPayment =
-        await createPaymentService(
-          payment
-        );
+        await createPaymentService(payment);
 
       setPayments((current) => [
         createdPayment,
         ...current,
       ]);
+
+      const updatedSummary =
+        await getPaymentSummary();
+
+      setSummary(updatedSummary);
 
       return createdPayment;
     } catch (err) {
@@ -76,7 +84,6 @@ export function usePayments() {
           : "Failed to create payment.";
 
       setError(message);
-
       throw new Error(message);
     }
   }
@@ -89,18 +96,18 @@ export function usePayments() {
       setError(null);
 
       const updatedPayment =
-        await updatePaymentService(
-          id,
-          payment
-        );
+        await updatePaymentService(id, payment);
 
       setPayments((current) =>
         current.map((item) =>
-          item.id === id
-            ? updatedPayment
-            : item
+          item.id === id ? updatedPayment : item
         )
       );
+
+      const updatedSummary =
+        await getPaymentSummary();
+
+      setSummary(updatedSummary);
 
       return updatedPayment;
     } catch (err) {
@@ -110,14 +117,11 @@ export function usePayments() {
           : "Failed to update payment.";
 
       setError(message);
-
       throw new Error(message);
     }
   }
 
-  async function deletePayment(
-    id: string
-  ) {
+  async function deletePayment(id: string) {
     try {
       setError(null);
 
@@ -125,10 +129,14 @@ export function usePayments() {
 
       setPayments((current) =>
         current.filter(
-          (payment) =>
-            payment.id !== id
+          (payment) => payment.id !== id
         )
       );
+
+      const updatedSummary =
+        await getPaymentSummary();
+
+      setSummary(updatedSummary);
     } catch (err) {
       const message =
         err instanceof Error
@@ -136,14 +144,15 @@ export function usePayments() {
           : "Failed to delete payment.";
 
       setError(message);
-
       throw new Error(message);
     }
   }
 
   return {
     payments,
+    summary,
     loading,
+    summaryLoading,
     error,
     createPayment,
     updatePayment,
