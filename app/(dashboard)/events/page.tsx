@@ -10,8 +10,8 @@ import { EventTable } from "@/features/events/components/EventTable";
 
 import { useEvents } from "@/features/events/hooks/useEvents";
 
-import { Event } from "@/features/events/types";
-import { EventFormValues } from "@/features/events/validation";
+import type { Event } from "@/features/events/types";
+import type { EventFormValues } from "@/features/events/validation";
 
 export default function EventsPage() {
   const [search, setSearch] =
@@ -31,11 +31,13 @@ export default function EventsPage() {
   ) {
     await createEvent({
       eventName: data.eventName,
-      clientName: data.clientName,
+      clientId: data.clientId,
       eventType: data.eventType,
       eventDate: data.eventDate,
       venue: data.venue,
-      guestCount: Number(data.guestCount),
+      guestCount: Number(
+        data.guestCount
+      ),
       status: "Upcoming",
     });
   }
@@ -46,7 +48,8 @@ export default function EventsPage() {
   ) {
     await editEvent(id, {
       eventName: data.eventName,
-      clientName: data.clientName,
+      clientId:
+        data.clientId ?? undefined,
       eventType: data.eventType,
       eventDate: data.eventDate,
       venue: data.venue,
@@ -61,18 +64,24 @@ export default function EventsPage() {
     await removeEvent(id);
   }
 
-  const filteredEvents = events.filter(
-    (event) =>
+  const filteredEvents =
+    events.filter((event) =>
       event.eventName
         .toLowerCase()
-        .includes(search.toLowerCase()) ||
+        .includes(
+          search.toLowerCase()
+        ) ||
       event.clientName
         .toLowerCase()
-        .includes(search.toLowerCase()) ||
+        .includes(
+          search.toLowerCase()
+        ) ||
       event.venue
         .toLowerCase()
-        .includes(search.toLowerCase())
-  );
+        .includes(
+          search.toLowerCase()
+        )
+    );
 
   return (
     <PageContainer>
@@ -82,20 +91,22 @@ export default function EventsPage() {
       />
 
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
-
         <input
           value={search}
           onChange={(event) =>
-            setSearch(event.target.value)
+            setSearch(
+              event.target.value
+            )
           }
           placeholder="Search events..."
           className="w-full max-w-md rounded-lg border px-4 py-2 text-sm outline-none focus:ring-2"
         />
 
         <EventDialog
-          onCreateEvent={handleCreateEvent}
+          onCreateEvent={
+            handleCreateEvent
+          }
         />
-
       </div>
 
       {loading && (
@@ -106,7 +117,8 @@ export default function EventsPage() {
 
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-sm text-red-600">
-          Failed to load events: {error}
+          Failed to load events:{" "}
+          {error}
         </div>
       )}
 
@@ -114,7 +126,9 @@ export default function EventsPage() {
         <EventTable
           events={filteredEvents}
           onEdit={handleEditEvent}
-          onDelete={handleDeleteEvent}
+          onDelete={
+            handleDeleteEvent
+          }
         />
       )}
     </PageContainer>

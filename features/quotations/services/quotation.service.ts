@@ -99,6 +99,66 @@ function mapQuotation(
   };
 }
 
+async function validateQuotationRelationships(
+  quotation: QuotationInput
+): Promise<void> {
+  const supabase = createClient();
+
+  const {
+    data: client,
+    error: clientError,
+  } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("id", quotation.clientId)
+    .single();
+
+  if (
+    clientError ||
+    !client
+  ) {
+    throw new Error(
+      "The selected client could not be found."
+    );
+  }
+
+  if (!quotation.eventId) {
+    return;
+  }
+
+  const {
+    data: event,
+    error: eventError,
+  } = await supabase
+    .from("events")
+    .select(
+      "id, client_id"
+    )
+    .eq(
+      "id",
+      quotation.eventId
+    )
+    .single();
+
+  if (
+    eventError ||
+    !event
+  ) {
+    throw new Error(
+      "The selected event could not be found."
+    );
+  }
+
+  if (
+    event.client_id !==
+    quotation.clientId
+  ) {
+    throw new Error(
+      "The selected event does not belong to the selected client."
+    );
+  }
+}
+
 async function getQuotationById(
   id: string
 ): Promise<Quotation> {
@@ -185,6 +245,10 @@ export async function createQuotation(
       "No organization found for the current user."
     );
   }
+
+await validateQuotationRelationships(
+  quotation
+);
 
   const {
     data: quotationNumber,
@@ -312,6 +376,10 @@ export async function updateQuotation(
         sum + item.amount,
       0
     );
+
+await validateQuotationRelationships(
+  quotation
+);
 
   const total =
     subtotal -

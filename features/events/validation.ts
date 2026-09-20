@@ -4,12 +4,14 @@ export const eventSchema = z.object({
   eventName: z
     .string()
     .trim()
-    .min(2, "Event name must be at least 2 characters."),
+    .min(
+      2,
+      "Event name must be at least 2 characters."
+    ),
 
-  clientName: z
+  clientId: z
     .string()
-    .trim()
-    .min(2, "Client name must be at least 2 characters."),
+    .min(1, "Please select a client."),
 
   eventType: z
     .string()
@@ -22,12 +24,18 @@ export const eventSchema = z.object({
   venue: z
     .string()
     .trim()
-    .min(2, "Venue must be at least 2 characters."),
+    .min(
+      2,
+      "Venue must be at least 2 characters."
+    ),
 
   guestCount: z
     .string()
     .trim()
-    .min(1, "Please enter the guest count.")
+    .min(
+      1,
+      "Please enter the guest count."
+    )
     .refine(
       (value) => {
         const number = Number(value);

@@ -9,7 +9,8 @@ import {
   updateEvent as updateEventService,
 } from "../services/event.service";
 
-import { Event } from "../types";
+import type { EventInput } from "../services/event.service";
+import type { Event } from "../types";
 
 export function useEvents() {
   const [events, setEvents] =
@@ -45,7 +46,7 @@ export function useEvents() {
   }, []);
 
   async function createEvent(
-    event: Omit<Event, "id">
+    event: EventInput
   ) {
     try {
       setError(null);
@@ -66,14 +67,13 @@ export function useEvents() {
           : "Failed to create event.";
 
       setError(message);
-
       throw new Error(message);
     }
   }
 
   async function editEvent(
     id: string,
-    data: Partial<Omit<Event, "id">>
+    data: Partial<EventInput>
   ) {
     try {
       setError(null);
@@ -100,7 +100,6 @@ export function useEvents() {
           : "Failed to update event.";
 
       setError(message);
-
       throw new Error(message);
     }
   }
@@ -125,7 +124,6 @@ export function useEvents() {
           : "Failed to delete event.";
 
       setError(message);
-
       throw new Error(message);
     }
   }

@@ -49,7 +49,6 @@ function mapPayment(
 ): Payment {
   return {
     id: row.id,
-
     organizationId:
       row.organization_id,
 
@@ -71,7 +70,8 @@ function mapPayment(
       row.quotation_id,
 
     quotationNumber:
-      row.quotations?.quotation_number ??
+      row.quotations
+        ?.quotation_number ??
       null,
 
     paymentNumber:
@@ -87,7 +87,8 @@ function mapPayment(
       row.payment_method as PaymentMethod,
 
     referenceNumber:
-      row.reference_number ?? "",
+      row.reference_number ??
+      "",
 
     notes:
       row.notes ?? "",
@@ -103,7 +104,8 @@ function mapPayment(
 async function getPaymentById(
   id: string
 ): Promise<Payment> {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
   const {
     data,
@@ -112,21 +114,17 @@ async function getPaymentById(
     .from("payments")
     .select(`
       *,
-      clients (
-        name
-      ),
-      events (
-        event_name
-      ),
-      quotations (
-        quotation_number
-      )
+      clients ( name ),
+      events ( event_name ),
+      quotations ( quotation_number )
     `)
     .eq("id", id)
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
   return mapPayment(
@@ -137,7 +135,8 @@ async function getPaymentById(
 export async function getPayments(): Promise<
   Payment[]
 > {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
   const {
     data,
@@ -146,36 +145,156 @@ export async function getPayments(): Promise<
     .from("payments")
     .select(`
       *,
-      clients (
-        name
-      ),
-      events (
-        event_name
-      ),
-      quotations (
-        quotation_number
-      )
+      clients ( name ),
+      events ( event_name ),
+      quotations ( quotation_number )
     `)
-    .order("payment_date", {
-      ascending: false,
-    })
-    .order("created_at", {
-      ascending: false,
-    });
+    .order(
+      "payment_date",
+      {
+        ascending: false,
+      }
+    )
+    .order(
+      "created_at",
+      {
+        ascending: false,
+      }
+    );
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
-  return (data as PaymentRow[]).map(
-    mapPayment
-  );
+  return (
+    data as PaymentRow[]
+  ).map(mapPayment);
+}
+
+/*
+ * Validate the relationships between
+ * Client, Event and Quotation before
+ * a payment is written.
+ *
+ * Foreign keys guarantee that the UUIDs
+ * exist. These checks guarantee that
+ * they belong together.
+ */
+async function validatePaymentRelationships(
+  payment: PaymentInput
+): Promise<void> {
+  const supabase =
+    createClient();
+
+  const {
+    data: client,
+    error: clientError,
+  } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("id", payment.clientId)
+    .single();
+
+  if (
+    clientError ||
+    !client
+  ) {
+    throw new Error(
+      "The selected client could not be found."
+    );
+  }
+
+  if (payment.eventId) {
+    const {
+      data: event,
+      error: eventError,
+    } = await supabase
+      .from("events")
+      .select(
+        "id, client_id"
+      )
+      .eq(
+        "id",
+        payment.eventId
+      )
+      .single();
+
+    if (
+      eventError ||
+      !event
+    ) {
+      throw new Error(
+        "The selected event could not be found."
+      );
+    }
+
+    if (
+      event.client_id !==
+      payment.clientId
+    ) {
+      throw new Error(
+        "The selected event does not belong to the selected client."
+      );
+    }
+  }
+
+  if (payment.quotationId) {
+    const {
+      data: quotation,
+      error: quotationError,
+    } = await supabase
+      .from("quotations")
+      .select(
+        "id, client_id, event_id"
+      )
+      .eq(
+        "id",
+        payment.quotationId
+      )
+      .single();
+
+    if (
+      quotationError ||
+      !quotation
+    ) {
+      throw new Error(
+        "The selected quotation could not be found."
+      );
+    }
+
+    if (
+      quotation.client_id !==
+      payment.clientId
+    ) {
+      throw new Error(
+        "The selected quotation does not belong to the selected client."
+      );
+    }
+
+    /*
+     * If the quotation itself is
+     * attached to an event, the payment
+     * cannot point to a different event.
+     */
+    if (
+      quotation.event_id &&
+      payment.eventId !==
+        quotation.event_id
+    ) {
+      throw new Error(
+        "The selected event does not match the quotation event."
+      );
+    }
+  }
 }
 
 export async function createPayment(
   payment: PaymentInput
 ): Promise<Payment> {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
   const {
     data: organizationId,
@@ -201,6 +320,10 @@ export async function createPayment(
       "Payment amount must be greater than 0."
     );
   }
+
+  await validatePaymentRelationships(
+    payment
+  );
 
   const {
     data: paymentNumber,
@@ -234,10 +357,12 @@ export async function createPayment(
         payment.clientId,
 
       event_id:
-        payment.eventId || null,
+        payment.eventId ||
+        null,
 
       quotation_id:
-        payment.quotationId || null,
+        payment.quotationId ||
+        null,
 
       payment_number:
         paymentNumber,
@@ -256,29 +381,39 @@ export async function createPayment(
         null,
 
       notes:
-        payment.notes || null,
+        payment.notes ||
+        null,
     })
     .select("*")
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
-  return getPaymentById(data.id);
+  return getPaymentById(
+    data.id
+  );
 }
 
 export async function updatePayment(
   id: string,
   payment: PaymentInput
 ): Promise<Payment> {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
   if (payment.amount <= 0) {
     throw new Error(
       "Payment amount must be greater than 0."
     );
   }
+
+  await validatePaymentRelationships(
+    payment
+  );
 
   const {
     data,
@@ -290,10 +425,12 @@ export async function updatePayment(
         payment.clientId,
 
       event_id:
-        payment.eventId || null,
+        payment.eventId ||
+        null,
 
       quotation_id:
-        payment.quotationId || null,
+        payment.quotationId ||
+        null,
 
       payment_date:
         payment.paymentDate,
@@ -309,23 +446,29 @@ export async function updatePayment(
         null,
 
       notes:
-        payment.notes || null,
+        payment.notes ||
+        null,
     })
     .eq("id", id)
     .select("id")
     .single();
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 
-  return getPaymentById(data.id);
+  return getPaymentById(
+    data.id
+  );
 }
 
 export async function deletePayment(
   id: string
 ): Promise<void> {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
   const {
     error,
@@ -335,7 +478,9 @@ export async function deletePayment(
     .eq("id", id);
 
   if (error) {
-    throw new Error(error.message);
+    throw new Error(
+      error.message
+    );
   }
 }
 
@@ -344,31 +489,44 @@ export async function getPaymentSummary(): Promise<{
   thisMonthReceived: number;
   pendingAmount: number;
 }> {
-  const supabase = createClient();
+  const supabase =
+    createClient();
 
-  const { data: payments, error: paymentsError } =
-    await supabase
-      .from("payments")
-      .select("amount, payment_date, quotation_id");
+  const {
+    data: payments,
+    error: paymentsError,
+  } = await supabase
+    .from("payments")
+    .select(
+      "amount, payment_date, quotation_id"
+    );
 
   if (paymentsError) {
-    throw new Error(paymentsError.message);
+    throw new Error(
+      paymentsError.message
+    );
   }
 
-  const { data: quotations, error: quotationsError } =
-    await supabase
-      .from("quotations")
-      .select("id, total");
+  const {
+    data: quotations,
+    error: quotationsError,
+  } = await supabase
+    .from("quotations")
+    .select("id, total");
 
   if (quotationsError) {
-    throw new Error(quotationsError.message);
+    throw new Error(
+      quotationsError.message
+    );
   }
 
   const paymentRows =
     (payments ?? []) as Array<{
       amount: number | string;
       payment_date: string;
-      quotation_id: string | null;
+      quotation_id:
+        | string
+        | null;
     }>;
 
   const quotationRows =
@@ -377,68 +535,109 @@ export async function getPaymentSummary(): Promise<{
       total: number | string;
     }>;
 
-  const totalReceived = paymentRows.reduce(
-    (sum, payment) => sum + Number(payment.amount),
-    0
-  );
+  const totalReceived =
+    paymentRows.reduce(
+      (sum, payment) =>
+        sum +
+        Number(payment.amount),
+      0
+    );
 
   const now = new Date();
 
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth();
+  const currentYear =
+    now.getFullYear();
 
-  const thisMonthReceived = paymentRows.reduce(
-    (sum, payment) => {
-      const paymentDate = new Date(
-        `${payment.payment_date}T00:00:00`
-      );
+  const currentMonth =
+    now.getMonth();
 
-      if (
-        paymentDate.getFullYear() === currentYear &&
-        paymentDate.getMonth() === currentMonth
-      ) {
-        return sum + Number(payment.amount);
-      }
+  const thisMonthReceived =
+    paymentRows.reduce(
+      (sum, payment) => {
+        const paymentDate =
+          new Date(
+            `${payment.payment_date}T00:00:00`
+          );
 
-      return sum;
-    },
-    0
-  );
+        if (
+          paymentDate.getFullYear() ===
+            currentYear &&
+          paymentDate.getMonth() ===
+            currentMonth
+        ) {
+          return (
+            sum +
+            Number(
+              payment.amount
+            )
+          );
+        }
 
-  const paymentsByQuotation = new Map<string, number>();
+        return sum;
+      },
+      0
+    );
 
-  for (const payment of paymentRows) {
-    if (!payment.quotation_id) continue;
+  const paymentsByQuotation =
+    new Map<
+      string,
+      number
+    >();
+
+  for (
+    const payment of paymentRows
+  ) {
+    if (
+      !payment.quotation_id
+    ) {
+      continue;
+    }
 
     const current =
-      paymentsByQuotation.get(payment.quotation_id) ?? 0;
+      paymentsByQuotation.get(
+        payment.quotation_id
+      ) ?? 0;
 
     paymentsByQuotation.set(
       payment.quotation_id,
-      current + Number(payment.amount)
+      current +
+        Number(
+          payment.amount
+        )
     );
   }
 
-  const pendingAmount = quotationRows.reduce(
-    (sum, quotation) => {
-      const quotationTotal = Number(quotation.total);
+  const pendingAmount =
+    quotationRows.reduce(
+      (sum, quotation) => {
+        const quotationTotal =
+          Number(
+            quotation.total
+          );
 
-      const received =
-        paymentsByQuotation.get(quotation.id) ?? 0;
+        const received =
+          paymentsByQuotation.get(
+            quotation.id
+          ) ?? 0;
 
-      const outstanding = Math.max(
-        quotationTotal - received,
-        0
-      );
+        const outstanding =
+          Math.max(
+            quotationTotal -
+              received,
+            0
+          );
 
-      return sum + outstanding;
-    },
-    0
-  );
+        return (
+          sum +
+          outstanding
+        );
+      },
+      0
+    );
 
   return {
     totalReceived,
     thisMonthReceived,
     pendingAmount,
   };
-}
+} 

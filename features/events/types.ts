@@ -6,8 +6,9 @@ export type EventStatus =
 
 export interface Event {
   id: string;
-  eventName: string;
+  clientId: string | null;
   clientName: string;
+  eventName: string;
   eventType: string;
   eventDate: string;
   venue: string;
@@ -17,7 +18,7 @@ export interface Event {
 
 export type EventFormValues = {
   eventName: string;
-  clientName: string;
+  clientId: string;
   eventType: string;
   eventDate: string;
   venue: string;

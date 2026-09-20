@@ -1,51 +1,30 @@
 "use client";
 
-import {
-  useEffect,
-} from "react";
+import { useEffect } from "react";
 
 import {
   useForm,
   useWatch,
 } from "react-hook-form";
 
-import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-import { Button } from "@/components/ui/button";
-
-import {
-  FormActions,
-} from "@/components/forms/FormActions";
-
-import {
-  FormField,
-} from "@/components/forms/FormField";
-
-import {
-  FormInput,
-} from "@/components/forms/FormInput";
-
-import {
-  FormSelect,
-} from "@/components/forms/FormSelect";
+import { FormActions } from "@/components/forms/FormActions";
+import { FormField } from "@/components/forms/FormField";
+import { FormInput } from "@/components/forms/FormInput";
+import { FormSelect } from "@/components/forms/FormSelect";
 
 import type { Client } from "@/features/clients/types";
 import type { Event } from "@/features/events/types";
 import type { Quotation } from "@/features/quotations/types";
 
-import {
-  PAYMENT_METHODS,
-} from "../constants";
+import { PAYMENT_METHODS } from "../constants";
 
 import type {
   PaymentFormValues,
 } from "../types";
 
-import {
-  paymentSchema,
-} from "../validation";
+import { paymentSchema } from "../validation";
 
 interface PaymentFormProps {
   clients: Client[];
@@ -78,22 +57,18 @@ export function PaymentForm({
     handleSubmit,
     setValue,
     reset,
-    formState: {
-      errors,
-    },
+    formState: { errors },
   } = useForm<PaymentFormValues>({
-    resolver:
-      zodResolver(paymentSchema),
+    resolver: zodResolver(paymentSchema),
 
     defaultValues:
       initialValues ?? {
         clientId: "",
         eventId: "",
         quotationId: "",
-        paymentDate:
-          new Date()
-            .toISOString()
-            .split("T")[0],
+        paymentDate: new Date()
+          .toISOString()
+          .split("T")[0],
         amount: "",
         paymentMethod: "Cash",
         referenceNumber: "",
@@ -105,59 +80,215 @@ export function PaymentForm({
     if (initialValues) {
       reset(initialValues);
     }
-  }, [
-    initialValues,
-    reset,
-  ]);
+  }, [initialValues, reset]);
 
-  const selectedClientId =
-    useWatch({
-      control,
-      name: "clientId",
-    });
+  const selectedClientId = useWatch({
+    control,
+    name: "clientId",
+  });
 
-  const selectedEventId =
-    useWatch({
-      control,
-      name: "eventId",
-    });
+  const selectedEventId = useWatch({
+    control,
+    name: "eventId",
+  });
 
-  const selectedQuotationId =
-    useWatch({
-      control,
-      name: "quotationId",
-    });
+  const selectedQuotationId = useWatch({
+    control,
+    name: "quotationId",
+  });
 
-  const selectedPaymentMethod =
-    useWatch({
-      control,
-      name: "paymentMethod",
-    });
+  const selectedPaymentMethod = useWatch({
+    control,
+    name: "paymentMethod",
+  });
 
-  const selectedClient =
-    clients.find(
-      (client) =>
-        client.id ===
-        selectedClientId
+  /*
+   * --------------------------------------------------
+   * CLIENT → EVENTS
+   * --------------------------------------------------
+   */
+
+  const clientEvents = selectedClientId
+    ? events.filter(
+        (event) =>
+          event.clientId === selectedClientId
+      )
+    : [];
+
+  /*
+   * --------------------------------------------------
+   * CLIENT → QUOTATIONS
+   * --------------------------------------------------
+   *
+   * Without an event selected:
+   * show all quotations for the client.
+   *
+   * With an event selected:
+   * show only quotations belonging to that event.
+   */
+
+  const clientQuotations = selectedClientId
+    ? quotations.filter(
+        (quotation) =>
+          quotation.clientId === selectedClientId
+      )
+    : [];
+
+  const availableQuotations = selectedEventId
+    ? clientQuotations.filter(
+        (quotation) =>
+          quotation.eventId === selectedEventId
+      )
+    : clientQuotations;
+
+  /*
+   * --------------------------------------------------
+   * QUOTATION → CLIENT + EVENT
+   * --------------------------------------------------
+   *
+   * Selecting a quotation establishes its
+   * relationships automatically.
+   */
+
+  useEffect(() => {
+    if (!selectedQuotationId) {
+      return;
+    }
+
+    const quotation = quotations.find(
+      (item) =>
+        item.id === selectedQuotationId
     );
 
-  const clientEvents =
-    selectedClientId
-      ? events.filter(
-          (event) =>
-            event.clientName ===
-            selectedClient?.name
-        )
-      : events;
+    if (!quotation) {
+      return;
+    }
 
-  const clientQuotations =
-    selectedClientId
-      ? quotations.filter(
-          (quotation) =>
-            quotation.clientId ===
-            selectedClientId
-        )
-      : quotations;
+    if (
+      quotation.clientId !==
+      selectedClientId
+    ) {
+      setValue(
+        "clientId",
+        quotation.clientId,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
+    }
+
+    const quotationEventId =
+      quotation.eventId ?? "";
+
+    if (
+      quotationEventId !==
+      selectedEventId
+    ) {
+      setValue(
+        "eventId",
+        quotationEventId,
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
+    }
+  }, [
+    selectedQuotationId,
+    selectedClientId,
+    selectedEventId,
+    quotations,
+    setValue,
+  ]);
+
+  /*
+   * --------------------------------------------------
+   * EVENT → QUOTATION
+   * --------------------------------------------------
+   *
+   * When an event is selected:
+   *
+   * 0 quotations:
+   *   keep quotation empty.
+   *
+   * 1 quotation:
+   *   automatically select it.
+   *
+   * Multiple quotations:
+   *   let the user choose.
+   */
+
+  useEffect(() => {
+    if (!selectedEventId) {
+      return;
+    }
+
+    const matchingQuotations =
+      clientQuotations.filter(
+        (quotation) =>
+          quotation.eventId ===
+          selectedEventId
+      );
+
+    if (
+      matchingQuotations.length === 1
+    ) {
+      const onlyQuotation =
+        matchingQuotations[0];
+
+      if (
+        selectedQuotationId !==
+        onlyQuotation.id
+      ) {
+        setValue(
+          "quotationId",
+          onlyQuotation.id,
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+          }
+        );
+      }
+
+      return;
+    }
+
+    /*
+     * If there are multiple quotations,
+     * only keep the current selection if
+     * it still belongs to this event.
+     */
+
+    if (
+      selectedQuotationId &&
+      !matchingQuotations.some(
+        (quotation) =>
+          quotation.id ===
+          selectedQuotationId
+      )
+    ) {
+      setValue(
+        "quotationId",
+        "",
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
+    }
+  }, [
+    selectedEventId,
+    selectedQuotationId,
+    clientQuotations,
+    setValue,
+  ]);
+
+  /*
+   * --------------------------------------------------
+   * FORM SUBMISSION
+   * --------------------------------------------------
+   */
 
   async function submitForm(
     data: PaymentFormValues
@@ -167,12 +298,12 @@ export function PaymentForm({
 
   return (
     <form
-      onSubmit={
-        handleSubmit(submitForm)
-      }
+      onSubmit={handleSubmit(submitForm)}
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
+        {/* CLIENT */}
+
         <FormField
           label="Client"
           error={
@@ -180,18 +311,14 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={
-              selectedClientId
-            }
-            onValueChange={(
-              value
-            ) => {
+            value={selectedClientId}
+            onValueChange={(value) => {
               setValue(
                 "clientId",
                 value,
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
               );
 
@@ -199,8 +326,8 @@ export function PaymentForm({
                 "eventId",
                 "",
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
               );
 
@@ -208,22 +335,22 @@ export function PaymentForm({
                 "quotationId",
                 "",
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
               );
             }}
             placeholder="Select Client"
             options={clients.map(
               (client) => ({
-                label:
-                  client.name,
-                value:
-                  client.id,
+                label: client.name,
+                value: client.id,
               })
             )}
           />
         </FormField>
+
+        {/* EVENT */}
 
         <FormField
           label="Event"
@@ -232,32 +359,32 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={
-              selectedEventId
-            }
-            onValueChange={(
-              value
-            ) =>
+            value={selectedEventId}
+            onValueChange={(value) => {
               setValue(
                 "eventId",
                 value,
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
-              )
+              );
+            }}
+            placeholder={
+              selectedClientId
+                ? "Select Event"
+                : "Select Client First"
             }
-            placeholder="Select Event"
             options={clientEvents.map(
               (event) => ({
-                label:
-                  event.eventName,
-                value:
-                  event.id,
+                label: event.eventName,
+                value: event.id,
               })
             )}
           />
         </FormField>
+
+        {/* QUOTATION */}
 
         <FormField
           label="Quotation"
@@ -266,34 +393,33 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={
-              selectedQuotationId
-            }
-            onValueChange={(
-              value
-            ) =>
+            value={selectedQuotationId}
+            onValueChange={(value) => {
               setValue(
                 "quotationId",
                 value,
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
-              )
+              );
+            }}
+            placeholder={
+              selectedClientId
+                ? "Select Quotation"
+                : "Select Client First"
             }
-            placeholder="Select Quotation"
-            options={
-              clientQuotations.map(
-                (quotation) => ({
-                  label:
-                    quotation.quotationNumber,
-                  value:
-                    quotation.id,
-                })
-              )
-            }
+            options={availableQuotations.map(
+              (quotation) => ({
+                label:
+                  `${quotation.quotationNumber} — ${quotation.clientName}${quotation.eventName ? ` — ${quotation.eventName}` : ""}`,
+                value: quotation.id,
+              })
+            )}
           />
         </FormField>
+
+        {/* PAYMENT DATE */}
 
         <FormField
           label="Payment Date"
@@ -303,11 +429,11 @@ export function PaymentForm({
         >
           <FormInput
             type="date"
-            {...register(
-              "paymentDate"
-            )}
+            {...register("paymentDate")}
           />
         </FormField>
+
+        {/* AMOUNT */}
 
         <FormField
           label="Amount"
@@ -324,6 +450,8 @@ export function PaymentForm({
           />
         </FormField>
 
+        {/* PAYMENT METHOD */}
+
         <FormField
           label="Payment Method"
           error={
@@ -331,33 +459,28 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={
-              selectedPaymentMethod
-            }
-            onValueChange={(
-              value
-            ) =>
+            value={selectedPaymentMethod}
+            onValueChange={(value) =>
               setValue(
                 "paymentMethod",
                 value as PaymentFormValues["paymentMethod"],
                 {
-                  shouldValidate:
-                    true,
+                  shouldValidate: true,
+                  shouldDirty: true,
                 }
               )
             }
             placeholder="Select Payment Method"
-            options={
-              PAYMENT_METHODS
-            }
+            options={PAYMENT_METHODS}
           />
         </FormField>
+
+        {/* REFERENCE */}
 
         <FormField
           label="Reference Number"
           error={
-            errors.referenceNumber
-              ?.message
+            errors.referenceNumber?.message
           }
         >
           <FormInput
@@ -368,6 +491,8 @@ export function PaymentForm({
           />
         </FormField>
       </div>
+
+      {/* NOTES */}
 
       <FormField
         label="Notes"

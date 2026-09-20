@@ -1,8 +1,7 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
+import type { ComponentProps } from "react";
 
 import {
   Dialog,
@@ -12,21 +11,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import {
-  PaymentForm,
-} from "./PaymentForm";
+import { PaymentForm } from "./PaymentForm";
 
-import {
-  useClients,
-} from "@/features/clients/hooks/useClients";
-
-import {
-  useEvents,
-} from "@/features/events/hooks/useEvents";
-
-import {
-  useQuotations,
-} from "@/features/quotations/hooks/useQuotations";
+import { useClients } from "@/features/clients/hooks/useClients";
+import { useEvents } from "@/features/events/hooks/useEvents";
+import { useQuotations } from "@/features/quotations/hooks/useQuotations";
 
 import type {
   Payment,
@@ -93,6 +82,21 @@ export function PaymentEditDialog({
     }
   }
 
+  const handlePointerDownOutside: ComponentProps<
+    typeof DialogContent
+  >["onPointerDownOutside"] = (event) => {
+    const target =
+      event.target as HTMLElement | null;
+
+    if (
+      target?.closest(
+        '[data-slot="select-content"]'
+      )
+    ) {
+      event.preventDefault();
+    }
+  };
+
   const loading =
     clientsLoading ||
     eventsLoading ||
@@ -136,7 +140,12 @@ export function PaymentEditDialog({
         onOpenChange
       }
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-3xl"
+        onPointerDownOutside={
+          handlePointerDownOutside
+        }
+      >
         <DialogHeader>
           <DialogTitle className="text-xl">
             Edit Payment

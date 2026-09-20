@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { ComponentProps } from "react";
 
 import {
   Dialog,
@@ -68,12 +69,40 @@ export function PaymentDialog({
     eventsLoading ||
     quotationsLoading;
 
+  const handlePointerDownOutside: ComponentProps<
+    typeof DialogContent
+  >["onPointerDownOutside"] = (event) => {
+    const target =
+      event.target as HTMLElement | null;
+
+    /*
+     * Radix Select renders its dropdown
+     * through a Portal.
+     *
+     * Prevent the Payment Dialog from
+     * treating a click on Select content
+     * as an outside-dialog click.
+     */
+    if (
+      target?.closest(
+        '[data-slot="select-content"]'
+      )
+    ) {
+      event.preventDefault();
+    }
+  };
+
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
+      <DialogContent
+        className="max-h-[90vh] overflow-y-auto sm:max-w-3xl"
+        onPointerDownOutside={
+          handlePointerDownOutside
+        }
+      >
         <DialogHeader>
           <DialogTitle className="text-xl">
             Record Payment
