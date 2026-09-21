@@ -7,6 +7,7 @@ const colors = {
   "Quotation Sent": "bg-indigo-100 text-indigo-700",
   Won: "bg-green-100 text-green-700",
   Lost: "bg-red-100 text-red-700",
+  Converted: "bg-emerald-100 text-emerald-700",
 };
 
 type Status = keyof typeof colors;

@@ -5,6 +5,7 @@ export const LEAD_STATUS = [
   "Quotation Sent",
   "Won",
   "Lost",
+  "Converted",
 ] as const;
 
 export const LEAD_SOURCES = [
@@ -23,6 +24,7 @@ export const EVENT_TYPES = [
   "Engagement",
   "Other",
 ] as const;
+
 export const LEAD_SORT_OPTIONS = [
   "Client Name",
   "Event Date",

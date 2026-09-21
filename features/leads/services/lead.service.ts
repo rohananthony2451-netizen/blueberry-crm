@@ -13,9 +13,11 @@ type LeadRow = {
   status: string;
   assigned_to: string | null;
   notes: string | null;
+  converted_client_id: string | null;
   created_at: string;
   updated_at: string;
 };
+
 function parseBudget(value: string): number | null {
   if (!value.trim()) {
     return null;
@@ -39,6 +41,7 @@ function mapLead(row: LeadRow): Lead {
     status: row.status as Lead["status"],
     assignedTo: row.assigned_to ?? "",
     notes: row.notes ?? "",
+    convertedClientId: row.converted_client_id ?? null,
   };
 }
 
@@ -86,6 +89,7 @@ export async function createLead(
       status: lead.status,
       assigned_to: lead.assignedTo || null,
       notes: lead.notes || null,
+      converted_client_id: null,
     })
     .select("*")
     .single();
@@ -153,6 +157,29 @@ export async function updateLead(
   }
 
   return mapLead(data);
+}
+
+export async function convertLeadToClient(
+  leadId: string
+): Promise<string> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.rpc(
+    "convert_lead_to_client",
+    {
+      p_lead_id: leadId,
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error("Client conversion failed.");
+  }
+
+  return data;
 }
 
 export async function deleteLead(id: string): Promise<void> {

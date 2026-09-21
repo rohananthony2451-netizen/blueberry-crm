@@ -1,5 +1,5 @@
-import { LEAD_STATUS } from "./constants";
-import { LEAD_SOURCES } from "./constants";
+import { LEAD_STATUS, LEAD_SOURCES } from "./constants";
+
 export interface Lead {
   id: string;
   clientName: string;
@@ -11,4 +11,5 @@ export interface Lead {
   status: (typeof LEAD_STATUS)[number];
   assignedTo: string;
   notes: string;
+  convertedClientId: string | null;
 }

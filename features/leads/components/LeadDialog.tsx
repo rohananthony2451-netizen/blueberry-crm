@@ -54,6 +54,7 @@ export function LeadDialog({
               status: "New",
               assignedTo: data.assignedTo,
               notes: data.notes ?? "",
+              convertedClientId: null,
             });
 
             setOpen(false);
