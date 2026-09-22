@@ -1,22 +1,52 @@
-import { Event } from "../types";
+"use client";
+
+import {
+  Check,
+  Play,
+  RotateCcw,
+  X,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+import type { Event } from "../types";
+
 import { EventStatusBadge } from "./EventStatusBadge";
 import { EventTypeBadge } from "./EventTypeBadge";
-import { Button } from "@/components/ui/button";
 
 interface EventDetailsProps {
   event: Event;
+
   onEdit?: () => void;
+
   onDelete?: () => void;
+
+  onStatusChange?: (
+    status: Event["status"]
+  ) => Promise<void>;
+
+  statusUpdating?: boolean;
 }
 
 export function EventDetails({
   event,
   onEdit,
   onDelete,
+  onStatusChange,
+  statusUpdating = false,
 }: EventDetailsProps) {
+  async function handleStatusChange(
+    status: Event["status"]
+  ) {
+    if (!onStatusChange) {
+      return;
+    }
+
+    await onStatusChange(status);
+  }
+
   return (
     <div className="space-y-6">
-
       <div>
         <h2 className="text-2xl font-bold">
           {event.eventName}
@@ -28,14 +58,15 @@ export function EventDetails({
       </div>
 
       <div className="space-y-3">
-
         <div className="border-b pb-3">
           <p className="text-xs uppercase tracking-wide text-slate-500">
             Event Type
           </p>
 
           <div className="mt-1">
-            <EventTypeBadge type={event.eventType} />
+            <EventTypeBadge
+              type={event.eventType}
+            />
           </div>
         </div>
 
@@ -60,14 +91,149 @@ export function EventDetails({
           </p>
 
           <div className="mt-1">
-            <EventStatusBadge status={event.status} />
+            <EventStatusBadge
+              status={event.status}
+            />
           </div>
         </div>
+      </div>
 
+      {/* Lifecycle actions */}
+      <div className="rounded-2xl border bg-slate-50/70 p-4">
+        <div>
+          <p className="text-sm font-semibold">
+            Event Status
+          </p>
+
+          <p className="mt-1 text-xs text-slate-500">
+            Update the operational status of this event.
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {event.status ===
+            "Upcoming" && (
+            <>
+              <Button
+                type="button"
+                disabled={
+                  statusUpdating
+                }
+                onClick={() =>
+                  handleStatusChange(
+                    "In Progress"
+                  )
+                }
+              >
+                <Play size={15} />
+                {statusUpdating
+                  ? "Updating..."
+                  : "Start Event"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  statusUpdating
+                }
+                onClick={() =>
+                  handleStatusChange(
+                    "Cancelled"
+                  )
+                }
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <X size={15} />
+                Cancel Event
+              </Button>
+            </>
+          )}
+
+          {event.status ===
+            "In Progress" && (
+            <>
+              <Button
+                type="button"
+                disabled={
+                  statusUpdating
+                }
+                onClick={() =>
+                  handleStatusChange(
+                    "Completed"
+                  )
+                }
+              >
+                <Check size={15} />
+                {statusUpdating
+                  ? "Updating..."
+                  : "Mark Completed"}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  statusUpdating
+                }
+                onClick={() =>
+                  handleStatusChange(
+                    "Cancelled"
+                  )
+                }
+                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <X size={15} />
+                Cancel Event
+              </Button>
+            </>
+          )}
+
+          {event.status ===
+            "Completed" && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={
+                statusUpdating
+              }
+              onClick={() =>
+                handleStatusChange(
+                  "In Progress"
+                )
+              }
+            >
+              <RotateCcw size={15} />
+              {statusUpdating
+                ? "Updating..."
+                : "Reopen Event"}
+            </Button>
+          )}
+
+          {event.status ===
+            "Cancelled" && (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={
+                statusUpdating
+              }
+              onClick={() =>
+                handleStatusChange(
+                  "Upcoming"
+                )
+              }
+            >
+              <RotateCcw size={15} />
+              {statusUpdating
+                ? "Updating..."
+                : "Reopen Event"}
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex justify-between border-t pt-6">
-
         <Button
           type="button"
           variant="destructive"
@@ -82,9 +248,7 @@ export function EventDetails({
         >
           Edit Event
         </Button>
-
       </div>
-
     </div>
   );
 }

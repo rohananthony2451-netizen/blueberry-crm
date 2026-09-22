@@ -7,6 +7,7 @@ import {
   deleteEvent as deleteEventService,
   getEvents,
   updateEvent as updateEventService,
+  updateEventStatus as updateEventStatusService,
 } from "../services/event.service";
 
 import type { EventInput } from "../services/event.service";
@@ -28,7 +29,8 @@ export function useEvents() {
         setLoading(true);
         setError(null);
 
-        const data = await getEvents();
+        const data =
+          await getEvents();
 
         setEvents(data);
       } catch (err) {
@@ -67,6 +69,7 @@ export function useEvents() {
           : "Failed to create event.";
 
       setError(message);
+
       throw new Error(message);
     }
   }
@@ -100,6 +103,41 @@ export function useEvents() {
           : "Failed to update event.";
 
       setError(message);
+
+      throw new Error(message);
+    }
+  }
+
+  async function updateEventStatus(
+    id: string,
+    status: Event["status"]
+  ) {
+    try {
+      setError(null);
+
+      const updatedEvent =
+        await updateEventStatusService(
+          id,
+          status
+        );
+
+      setEvents((current) =>
+        current.map((event) =>
+          event.id === id
+            ? updatedEvent
+            : event
+        )
+      );
+
+      return updatedEvent;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update event status.";
+
+      setError(message);
+
       throw new Error(message);
     }
   }
@@ -124,6 +162,7 @@ export function useEvents() {
           : "Failed to delete event.";
 
       setError(message);
+
       throw new Error(message);
     }
   }
@@ -134,6 +173,7 @@ export function useEvents() {
     error,
     createEvent,
     editEvent,
+    updateEventStatus,
     removeEvent,
   };
 }

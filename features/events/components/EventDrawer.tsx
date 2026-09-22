@@ -24,6 +24,11 @@ interface EventDrawerProps {
   ) => Promise<void>;
 
   onDelete?: (id: string) => void;
+
+  onStatusChange?: (
+    id: string,
+    status: Event["status"]
+  ) => Promise<void>;
 }
 
 export function EventDrawer({
@@ -31,12 +36,21 @@ export function EventDrawer({
   children,
   onEdit,
   onDelete,
+  onStatusChange,
 }: EventDrawerProps) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] =
+    useState(false);
+
   const [editing, setEditing] =
     useState(false);
+
   const [saving, setSaving] =
     useState(false);
+
+  const [
+    statusUpdating,
+    setStatusUpdating,
+  ] = useState(false);
 
   async function handleEdit(
     data: EventFormValues
@@ -47,14 +61,25 @@ export function EventDrawer({
       setSaving(true);
 
       await onEdit(event.id, {
-        eventName: data.eventName,
-        clientId: data.clientId,
-        eventType: data.eventType,
-        eventDate: data.eventDate,
-        venue: data.venue,
-        guestCount: Number(
-          data.guestCount
-        ),
+        eventName:
+          data.eventName,
+
+        clientId:
+          data.clientId,
+
+        eventType:
+          data.eventType,
+
+        eventDate:
+          data.eventDate,
+
+        venue:
+          data.venue,
+
+        guestCount:
+          Number(
+            data.guestCount
+          ),
       });
 
       setEditing(false);
@@ -63,12 +88,32 @@ export function EventDrawer({
     }
   }
 
+  async function handleStatusChange(
+    status: Event["status"]
+  ) {
+    if (!onStatusChange) {
+      return;
+    }
+
+    try {
+      setStatusUpdating(true);
+
+      await onStatusChange(
+        event.id,
+        status
+      );
+    } finally {
+      setStatusUpdating(false);
+    }
+  }
+
   function handleDelete() {
     if (!onDelete) return;
 
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${event.eventName}"?`
-    );
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to delete "${event.eventName}"?`
+      );
 
     if (!confirmed) return;
 
@@ -83,6 +128,7 @@ export function EventDrawer({
 
     if (!value) {
       setEditing(false);
+      setStatusUpdating(false);
     }
   }
 
@@ -97,60 +143,73 @@ export function EventDrawer({
         {children}
       </DrawerTrigger>
 
-      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-xl overflow-y-auto p-8">
-        {editing ? (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold">
-                Edit Event
-              </h2>
+      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-xl overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto p-8">
+          {editing ? (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">
+                  Edit Event
+                </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Update the information for{" "}
-                {event.eventName}.
-              </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Update the information for{" "}
+                  {event.eventName}.
+                </p>
+              </div>
+
+              <EventForm
+                initialValues={{
+                  eventName:
+                    event.eventName,
+
+                  clientId:
+                    event.clientId ??
+                    "",
+
+                  eventType:
+                    event.eventType,
+
+                  eventDate:
+                    event.eventDate,
+
+                  venue:
+                    event.venue,
+
+                  guestCount:
+                    event.guestCount.toString(),
+                }}
+                onCancel={() =>
+                  setEditing(false)
+                }
+                onSave={
+                  handleEdit
+                }
+                saveText={
+                  saving
+                    ? "Saving..."
+                    : "Save Changes"
+                }
+              />
             </div>
-
-            <EventForm
-              initialValues={{
-                eventName:
-                  event.eventName,
-
-                clientId:
-                  event.clientId ?? "",
-
-                eventType:
-                  event.eventType,
-
-                eventDate:
-                  event.eventDate,
-
-                venue:
-                  event.venue,
-
-                guestCount:
-                  event.guestCount.toString(),
-              }}
-              onCancel={() =>
-                setEditing(false)
+          ) : (
+            <EventDetails
+              event={event}
+              onEdit={() =>
+                setEditing(true)
               }
-              onSave={handleEdit}
-              saveText={
-                saving
-                  ? "Saving..."
-                  : "Save Changes"
+              onDelete={
+                handleDelete
+              }
+              onStatusChange={
+                handleStatusChange
+              }
+              statusUpdating={
+                statusUpdating
               }
             />
-          </div>
-        ) : (
-          <EventDetails
-            event={event}
-            onEdit={() =>
-              setEditing(true)
-            }
-            onDelete={handleDelete}
-          />
-        )}
+          )}
+        </div>
       </DrawerContent>
     </Drawer>
   );

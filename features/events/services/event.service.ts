@@ -224,6 +224,114 @@ export async function updateEvent(
   );
 }
 
+/**
+ * Change only the operational status of an event.
+ *
+ * The workflow is intentionally reversible:
+ *
+ * Upcoming -> In Progress
+ * Upcoming -> Cancelled
+ *
+ * In Progress -> Completed
+ * In Progress -> Cancelled
+ *
+ * Completed -> In Progress
+ *
+ * Cancelled -> Upcoming
+ */
+export async function updateEventStatus(
+  id: string,
+  nextStatus: Event["status"]
+): Promise<Event> {
+  const supabase = createClient();
+
+  const {
+    data: currentData,
+    error: currentError,
+  } = await supabase
+    .from("events")
+    .select("status")
+    .eq("id", id)
+    .single();
+
+  if (currentError) {
+    throw new Error(
+      currentError.message
+    );
+  }
+
+  const currentStatus =
+    currentData.status as Event["status"];
+
+  const allowedTransitions: Record<
+    Event["status"],
+    Event["status"][]
+  > = {
+    Upcoming: [
+      "In Progress",
+      "Cancelled",
+    ],
+    "In Progress": [
+      "Completed",
+      "Cancelled",
+    ],
+    Completed: [
+      "In Progress",
+    ],
+    Cancelled: [
+      "Upcoming",
+    ],
+  };
+
+  const allowedNextStatuses =
+    allowedTransitions[
+      currentStatus
+    ];
+
+  if (
+    !allowedNextStatuses.includes(
+      nextStatus
+    )
+  ) {
+    throw new Error(
+      `Event cannot move from ${currentStatus} to ${nextStatus}.`
+    );
+  }
+
+  const {
+    error: updateError,
+  } = await supabase
+    .from("events")
+    .update({
+      status: nextStatus,
+    })
+    .eq("id", id)
+    .eq("status", currentStatus);
+
+  if (updateError) {
+    throw new Error(
+      updateError.message
+    );
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("events")
+    .select(EVENT_SELECT)
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return mapEventRow(
+    data as EventRow
+  );
+}
+
 export async function deleteEvent(
   id: string
 ): Promise<void> {

@@ -13,12 +13,18 @@ interface EventTableProps {
   ) => Promise<void>;
 
   onDelete?: (id: string) => void;
+
+  onStatusChange?: (
+    id: string,
+    status: Event["status"]
+  ) => Promise<void>;
 }
 
 export function EventTable({
   events,
   onEdit,
   onDelete,
+  onStatusChange,
 }: EventTableProps) {
   return (
     <Card className="overflow-hidden rounded-2xl">
@@ -30,6 +36,9 @@ export function EventTable({
             events={events}
             onEdit={onEdit}
             onDelete={onDelete}
+            onStatusChange={
+              onStatusChange
+            }
           />
         </table>
       </div>

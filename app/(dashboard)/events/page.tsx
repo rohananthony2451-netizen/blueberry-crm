@@ -17,14 +17,15 @@ export default function EventsPage() {
   const [search, setSearch] =
     useState("");
 
-  const {
-    events,
-    loading,
-    error,
-    createEvent,
-    editEvent,
-    removeEvent,
-  } = useEvents();
+ const {
+  events,
+  loading,
+  error,
+  createEvent,
+  editEvent,
+  updateEventStatus,
+  removeEvent,
+} = useEvents();
 
   async function handleCreateEvent(
     data: EventFormValues
@@ -63,6 +64,13 @@ export default function EventsPage() {
   ) {
     await removeEvent(id);
   }
+
+  async function handleStatusChange(
+  id: string,
+  status: Event["status"]
+): Promise<void> {
+  await updateEventStatus(id, status);
+}
 
   const filteredEvents =
     events.filter((event) =>
@@ -124,12 +132,13 @@ export default function EventsPage() {
 
       {!loading && !error && (
         <EventTable
-          events={filteredEvents}
-          onEdit={handleEditEvent}
-          onDelete={
-            handleDeleteEvent
-          }
-        />
+  events={filteredEvents}
+  onEdit={handleEditEvent}
+  onDelete={handleDeleteEvent}
+  onStatusChange={
+    handleStatusChange
+  }
+/>
       )}
     </PageContainer>
   );

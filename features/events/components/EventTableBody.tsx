@@ -1,6 +1,5 @@
 import { Event } from "../types";
 import { EventRow } from "./EventRow";
-import { TableEmpty } from "@/components/tables/TableEmpty";
 
 interface EventTableBodyProps {
   events: Event[];
@@ -11,27 +10,47 @@ interface EventTableBodyProps {
   ) => Promise<void>;
 
   onDelete?: (id: string) => void;
+
+  onStatusChange?: (
+    id: string,
+    status: Event["status"]
+  ) => Promise<void>;
 }
 
 export function EventTableBody({
   events,
   onEdit,
   onDelete,
+  onStatusChange,
 }: EventTableBodyProps) {
+  if (events.length === 0) {
+    return (
+      <tbody>
+        <tr>
+          <td
+            colSpan={7}
+            className="px-6 py-12 text-center text-sm text-slate-500"
+          >
+            No events found.
+          </td>
+        </tr>
+      </tbody>
+    );
+  }
+
   return (
     <tbody>
-      {events.length === 0 ? (
-        <TableEmpty message="No events found." />
-      ) : (
-        events.map((event) => (
-          <EventRow
-            key={event.id}
-            event={event}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))
-      )}
+      {events.map((event) => (
+        <EventRow
+          key={event.id}
+          event={event}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onStatusChange={
+            onStatusChange
+          }
+        />
+      ))}
     </tbody>
   );
 }
