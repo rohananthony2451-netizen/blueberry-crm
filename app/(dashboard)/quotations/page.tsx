@@ -21,7 +21,9 @@ import type {
   QuotationStatus,
 } from "@/features/quotations/types";
 
-type FilterStatus = "All" | QuotationStatus;
+type FilterStatus =
+  | "All"
+  | QuotationStatus;
 
 export default function QuotationsPage() {
   const [filter, setFilter] =
@@ -42,27 +44,36 @@ export default function QuotationsPage() {
   const [deleting, setDeleting] =
     useState(false);
 
+  const [
+    statusActionLoadingId,
+    setStatusActionLoadingId,
+  ] = useState<string | null>(null);
+
   const {
     quotations,
     loading,
     error,
     createQuotation,
     updateQuotation,
+    updateQuotationStatus,
     deleteQuotation,
   } = useQuotations();
 
-  const filteredQuotations = useMemo(() => {
-    if (filter === "All") {
-      return quotations;
-    }
+  const filteredQuotations =
+    useMemo(() => {
+      if (filter === "All") {
+        return quotations;
+      }
 
-    return quotations.filter(
-      (quotation) =>
-        quotation.status === filter
-    );
-  }, [quotations, filter]);
+      return quotations.filter(
+        (quotation) =>
+          quotation.status === filter
+      );
+    }, [quotations, filter]);
 
-  function statusCount(status: FilterStatus) {
+  function statusCount(
+    status: FilterStatus
+  ) {
     if (status === "All") {
       return quotations.length;
     }
@@ -97,32 +108,63 @@ export default function QuotationsPage() {
       notes:
         data.notes,
 
-      items: data.items.map((item) => {
-        const quantity =
-          Number(item.quantity);
+      items: data.items.map(
+        (item) => {
+          const quantity =
+            Number(item.quantity);
 
-        const unitPrice =
-          Number(item.unitPrice);
+          const unitPrice =
+            Number(item.unitPrice);
 
-        return {
-          description:
-            item.description,
+          return {
+            description:
+              item.description,
 
-          quantity,
+            quantity,
 
-          unitPrice,
+            unitPrice,
 
-          amount:
-            quantity * unitPrice,
-        };
-      }),
+            amount:
+              quantity *
+              unitPrice,
+          };
+        }
+      ),
     });
+  }
+
+  async function handleStatusChange(
+    quotation: Quotation,
+    status: QuotationStatus
+  ) {
+    try {
+      setStatusActionLoadingId(
+        quotation.id
+      );
+
+      await updateQuotationStatus(
+        quotation.id,
+        status
+      );
+    } catch (err) {
+      /*
+       * The hook stores the error so it is
+       * displayed by the page.
+       *
+       * We intentionally do not close or
+       * modify any dialogs here.
+       */
+    } finally {
+      setStatusActionLoadingId(null);
+    }
   }
 
   function handleViewQuotation(
     quotation: Quotation
   ) {
-    setSelectedQuotation(quotation);
+    setSelectedQuotation(
+      quotation
+    );
   }
 
   function handleViewDialogChange(
@@ -136,7 +178,9 @@ export default function QuotationsPage() {
   function handleEditQuotation(
     quotation: Quotation
   ) {
-    setEditingQuotation(quotation);
+    setEditingQuotation(
+      quotation
+    );
   }
 
   function handleEditDialogChange(
@@ -172,34 +216,39 @@ export default function QuotationsPage() {
       notes:
         data.notes,
 
-      items: data.items.map((item) => {
-        const quantity =
-          Number(item.quantity);
+      items: data.items.map(
+        (item) => {
+          const quantity =
+            Number(item.quantity);
 
-        const unitPrice =
-          Number(item.unitPrice);
+          const unitPrice =
+            Number(item.unitPrice);
 
-        return {
-          id: item.id,
+          return {
+            id: item.id,
 
-          description:
-            item.description,
+            description:
+              item.description,
 
-          quantity,
+            quantity,
 
-          unitPrice,
+            unitPrice,
 
-          amount:
-            quantity * unitPrice,
-        };
-      }),
+            amount:
+              quantity *
+              unitPrice,
+          };
+        }
+      ),
     });
   }
 
   function handleDeleteQuotation(
     quotation: Quotation
   ) {
-    setDeletingQuotation(quotation);
+    setDeletingQuotation(
+      quotation
+    );
   }
 
   function handleDeleteDialogChange(
@@ -247,44 +296,47 @@ export default function QuotationsPage() {
         </button>
       </div>
 
-      {/* Create quotation */}
       <QuotationDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleCreateQuotation}
       />
 
-      {/* View quotation */}
       <QuotationViewDialog
         quotation={selectedQuotation}
-        open={selectedQuotation !== null}
+        open={
+          selectedQuotation !== null
+        }
         onOpenChange={
           handleViewDialogChange
         }
       />
 
-      {/* Edit quotation */}
       <QuotationEditDialog
         quotation={editingQuotation}
-        open={editingQuotation !== null}
+        open={
+          editingQuotation !== null
+        }
         onOpenChange={
           handleEditDialogChange
         }
         onSave={handleUpdateQuotation}
       />
 
-      {/* Delete quotation */}
       <QuotationDeleteDialog
         quotation={deletingQuotation}
-        open={deletingQuotation !== null}
+        open={
+          deletingQuotation !== null
+        }
         onOpenChange={
           handleDeleteDialogChange
         }
-        onConfirm={handleConfirmDelete}
+        onConfirm={
+          handleConfirmDelete
+        }
         deleting={deleting}
       />
 
-      {/* Status filters */}
       <div className="mb-4 overflow-x-auto">
         <div className="flex min-w-max gap-2">
           <button
@@ -328,14 +380,12 @@ export default function QuotationsPage() {
         </div>
       </div>
 
-      {/* Loading state */}
       {loading && (
         <div className="rounded-2xl border bg-white p-10 text-center text-sm text-slate-500">
           Loading quotations...
         </div>
       )}
 
-      {/* Error state */}
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center text-sm text-red-600">
           Failed to load quotations:{" "}
@@ -343,13 +393,26 @@ export default function QuotationsPage() {
         </div>
       )}
 
-      {/* Quotation table */}
       {!loading && !error && (
         <QuotationTable
-          quotations={filteredQuotations}
-          onView={handleViewQuotation}
-          onEdit={handleEditQuotation}
-          onDelete={handleDeleteQuotation}
+          quotations={
+            filteredQuotations
+          }
+          onView={
+            handleViewQuotation
+          }
+          onEdit={
+            handleEditQuotation
+          }
+          onDelete={
+            handleDeleteQuotation
+          }
+          onStatusChange={
+            handleStatusChange
+          }
+          statusActionLoadingId={
+            statusActionLoadingId
+          }
         />
       )}
     </PageContainer>

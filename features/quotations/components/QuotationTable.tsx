@@ -1,4 +1,8 @@
-import type { Quotation } from "../types";
+import type {
+  Quotation,
+  QuotationStatus,
+} from "../types";
+
 import { QuotationTableBody } from "./QuotationTableBody";
 
 interface QuotationTableProps {
@@ -6,6 +10,11 @@ interface QuotationTableProps {
   onView?: (quotation: Quotation) => void;
   onEdit?: (quotation: Quotation) => void;
   onDelete?: (quotation: Quotation) => void;
+  onStatusChange?: (
+    quotation: Quotation,
+    status: QuotationStatus
+  ) => void | Promise<void>;
+  statusActionLoadingId?: string | null;
 }
 
 export function QuotationTable({
@@ -13,6 +22,8 @@ export function QuotationTable({
   onView,
   onEdit,
   onDelete,
+  onStatusChange,
+  statusActionLoadingId,
 }: QuotationTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border bg-background">
@@ -59,6 +70,12 @@ export function QuotationTable({
             onView={onView}
             onEdit={onEdit}
             onDelete={onDelete}
+            onStatusChange={
+              onStatusChange
+            }
+            statusActionLoadingId={
+              statusActionLoadingId
+            }
           />
         </table>
       </div>

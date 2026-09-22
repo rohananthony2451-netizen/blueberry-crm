@@ -113,10 +113,7 @@ async function validateQuotationRelationships(
     .eq("id", quotation.clientId)
     .single();
 
-  if (
-    clientError ||
-    !client
-  ) {
+  if (clientError || !client) {
     throw new Error(
       "The selected client could not be found."
     );
@@ -131,19 +128,11 @@ async function validateQuotationRelationships(
     error: eventError,
   } = await supabase
     .from("events")
-    .select(
-      "id, client_id"
-    )
-    .eq(
-      "id",
-      quotation.eventId
-    )
+    .select("id, client_id")
+    .eq("id", quotation.eventId)
     .single();
 
-  if (
-    eventError ||
-    !event
-  ) {
+  if (eventError || !event) {
     throw new Error(
       "The selected event could not be found."
     );
@@ -246,9 +235,9 @@ export async function createQuotation(
     );
   }
 
-await validateQuotationRelationships(
-  quotation
-);
+  await validateQuotationRelationships(
+    quotation
+  );
 
   const {
     data: quotationNumber,
@@ -377,9 +366,9 @@ export async function updateQuotation(
       0
     );
 
-await validateQuotationRelationships(
-  quotation
-);
+  await validateQuotationRelationships(
+    quotation
+  );
 
   const total =
     subtotal -
@@ -421,16 +410,6 @@ await validateQuotationRelationships(
     );
   }
 
-  /*
-   * IMPORTANT:
-   *
-   * We do NOT delete all quotation items.
-   *
-   * Existing items keep their IDs.
-   * Only items manually removed from the form
-   * are deleted from the database.
-   */
-
   const existingQuotation =
     await getQuotationById(id);
 
@@ -442,7 +421,9 @@ await validateQuotationRelationships(
   const submittedExistingItemIds =
     quotation.items
       .filter((item) => item.id)
-      .map((item) => item.id as string);
+      .map(
+        (item) => item.id as string
+      );
 
   const removedItemIds =
     existingItemIds.filter(
@@ -518,6 +499,71 @@ await validateQuotationRelationships(
         );
       }
     }
+  }
+
+  return getQuotationById(id);
+}
+
+/**
+ * Updates only the quotation lifecycle status.
+ *
+ * Allowed transitions:
+ * Draft -> Sent
+ * Sent -> Accepted
+ * Sent -> Rejected
+ *
+ * This function intentionally does not allow
+ * arbitrary status changes.
+ */
+export async function updateQuotationStatus(
+  id: string,
+  nextStatus: QuotationStatus
+): Promise<Quotation> {
+  const supabase = createClient();
+
+  const currentQuotation =
+    await getQuotationById(id);
+
+  const currentStatus =
+    currentQuotation.status;
+
+  const allowedTransitions: Record<
+    QuotationStatus,
+    QuotationStatus[]
+  > = {
+    Draft: ["Sent"],
+    Sent: ["Accepted", "Rejected"],
+    Accepted: [],
+    Rejected: [],
+  };
+
+  const allowedNextStatuses =
+    allowedTransitions[
+      currentStatus
+    ];
+
+  if (
+    !allowedNextStatuses.includes(
+      nextStatus
+    )
+  ) {
+    throw new Error(
+      `Quotation cannot move from ${currentStatus} to ${nextStatus}.`
+    );
+  }
+
+  const {
+    error,
+  } = await supabase
+    .from("quotations")
+    .update({
+      status: nextStatus,
+    })
+    .eq("id", id)
+    .eq("status", currentStatus);
+
+  if (error) {
+    throw new Error(error.message);
   }
 
   return getQuotationById(id);

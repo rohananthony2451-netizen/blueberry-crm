@@ -7,10 +7,12 @@ import {
   deleteQuotation as deleteQuotationService,
   getQuotations,
   updateQuotation as updateQuotationService,
+  updateQuotationStatus as updateQuotationStatusService,
 } from "../services/quotation.service";
 
 import type { Quotation } from "../types";
 import type { QuotationInput } from "../services/quotation.service";
+import type { QuotationStatus } from "../types";
 
 export function useQuotations() {
   const [
@@ -34,7 +36,8 @@ export function useQuotations() {
         setLoading(true);
         setError(null);
 
-        const data = await getQuotations();
+        const data =
+          await getQuotations();
 
         setQuotations(data);
       } catch (err) {
@@ -114,7 +117,43 @@ export function useQuotations() {
     }
   }
 
-  async function deleteQuotation(id: string) {
+  async function updateQuotationStatus(
+    id: string,
+    status: QuotationStatus
+  ) {
+    try {
+      setError(null);
+
+      const updatedQuotation =
+        await updateQuotationStatusService(
+          id,
+          status
+        );
+
+      setQuotations((current) =>
+        current.map((quotation) =>
+          quotation.id === id
+            ? updatedQuotation
+            : quotation
+        )
+      );
+
+      return updatedQuotation;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to update quotation status.";
+
+      setError(message);
+
+      throw new Error(message);
+    }
+  }
+
+  async function deleteQuotation(
+    id: string
+  ) {
     try {
       setError(null);
 
@@ -144,6 +183,7 @@ export function useQuotations() {
     error,
     createQuotation,
     updateQuotation,
+    updateQuotationStatus,
     deleteQuotation,
   };
 }
