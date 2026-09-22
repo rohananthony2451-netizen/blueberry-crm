@@ -17,22 +17,28 @@ import type { ClientFormValues } from "../validation";
 interface ClientDrawerProps {
   client: Client;
   children: React.ReactNode;
+
   onEdit?: (
     id: string,
     data: Partial<Client>
   ) => Promise<void>;
+
   onDelete?: (
     id: string
   ) => Promise<void>;
 }
+
 export function ClientDrawer({
   client,
   children,
   onEdit,
   onDelete,
 }: ClientDrawerProps) {
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [open, setOpen] =
+    useState(false);
+
+  const [editing, setEditing] =
+    useState(false);
 
   async function handleEdit(
     data: ClientFormValues
@@ -50,6 +56,15 @@ export function ClientDrawer({
     setEditing(false);
   }
 
+  async function handleDelete(
+    id: string
+  ) {
+    if (!onDelete) return;
+
+    await onDelete(id);
+    setOpen(false);
+  }
+
   function handleDrawerChange(
     value: boolean
   ) {
@@ -59,12 +74,7 @@ export function ClientDrawer({
       setEditing(false);
     }
   }
-async function handleDelete(id: string) {
-  if (!onDelete) return;
 
-  await onDelete(id);
-  setOpen(false);
-}
   return (
     <Drawer
       open={open}
@@ -74,45 +84,46 @@ async function handleDelete(id: string) {
         {children}
       </DrawerTrigger>
 
-      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-xl overflow-y-auto p-8">
+      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-2xl overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto p-8">
+          {editing ? (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold">
+                  Edit Client
+                </h2>
 
-        {editing ? (
-          <div className="space-y-6">
+                <p className="mt-1 text-sm text-slate-500">
+                  Update the information for{" "}
+                  {client.name}.
+                </p>
+              </div>
 
-            <div>
-              <h2 className="text-2xl font-bold">
-                Edit Client
-              </h2>
-
-              <p className="mt-1 text-sm text-slate-500">
-                Update the information for {client.name}.
-              </p>
+              <ClientForm
+                initialValues={{
+                  name: client.name,
+                  phone: client.phone,
+                  email: client.email,
+                  address: client.address,
+                  notes: client.notes,
+                }}
+                onCancel={() =>
+                  setEditing(false)
+                }
+                onSave={handleEdit}
+                saveText="Save Changes"
+              />
             </div>
-
-            <ClientForm
-              initialValues={{
-                name: client.name,
-                phone: client.phone,
-                email: client.email,
-                address: client.address,
-                notes: client.notes,
-              }}
-              onCancel={() =>
-                setEditing(false)
+          ) : (
+            <ClientDetails
+              client={client}
+              onEdit={() =>
+                setEditing(true)
               }
-              onSave={handleEdit}
-              saveText="Save Changes"
+              onDelete={handleDelete}
             />
-
-          </div>
-        ) : (
-          <ClientDetails
-           client={client}
-             onEdit={() => setEditing(true) }
-      onDelete={handleDelete}
-/>
-        )}
-
+          )}
+        </div>
       </DrawerContent>
     </Drawer>
   );

@@ -17,20 +17,26 @@ import { useClients } from "@/features/clients/hooks/useClients";
 import { useEvents } from "@/features/events/hooks/useEvents";
 import { useQuotations } from "@/features/quotations/hooks/useQuotations";
 
-import type { PaymentFormValues } from "../types";
+import type {
+  PaymentFormValues,
+} from "../types";
 
 interface PaymentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+
   onSave: (
     data: PaymentFormValues
   ) => Promise<void>;
+
+  initialValues?: PaymentFormValues;
 }
 
 export function PaymentDialog({
   open,
   onOpenChange,
   onSave,
+  initialValues,
 }: PaymentDialogProps) {
   const {
     clients,
@@ -75,14 +81,6 @@ export function PaymentDialog({
     const target =
       event.target as HTMLElement | null;
 
-    /*
-     * Radix Select renders its dropdown
-     * through a Portal.
-     *
-     * Prevent the Payment Dialog from
-     * treating a click on Select content
-     * as an outside-dialog click.
-     */
     if (
       target?.closest(
         '[data-slot="select-content"]'
@@ -123,9 +121,14 @@ export function PaymentDialog({
           </div>
         ) : (
           <PaymentForm
+            key={
+              initialValues?.clientId ??
+              "new-payment"
+            }
             clients={clients}
             events={events}
             quotations={quotations}
+            initialValues={initialValues}
             onCancel={() =>
               onOpenChange(false)
             }

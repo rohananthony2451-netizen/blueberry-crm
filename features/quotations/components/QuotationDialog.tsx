@@ -15,20 +15,26 @@ import { QuotationForm } from "./QuotationForm";
 import { useClients } from "@/features/clients/hooks/useClients";
 import { useEvents } from "@/features/events/hooks/useEvents";
 
-import type { QuotationFormValues } from "../types";
+import type {
+  QuotationFormValues,
+} from "../types";
 
 interface QuotationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+
   onSave: (
     data: QuotationFormValues
   ) => Promise<void>;
+
+  initialValues?: QuotationFormValues;
 }
 
 export function QuotationDialog({
   open,
   onOpenChange,
   onSave,
+  initialValues,
 }: QuotationDialogProps) {
   const {
     clients,
@@ -89,8 +95,13 @@ export function QuotationDialog({
           </div>
         ) : (
           <QuotationForm
+            key={
+              initialValues?.clientId ??
+              "new-quotation"
+            }
             clients={clients}
             events={events}
+            initialValues={initialValues}
             onCancel={() =>
               onOpenChange(false)
             }

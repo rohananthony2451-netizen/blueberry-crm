@@ -13,48 +13,72 @@ import {
 } from "@/components/ui/dialog";
 
 import { EventForm } from "./EventForm";
-import { EventFormValues } from "../validation";
+import type { EventFormValues } from "../validation";
 
 interface EventDialogProps {
   onCreateEvent: (
     data: EventFormValues
   ) => Promise<void>;
+
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+
+  initialValues?: Partial<EventFormValues>;
+
+  showTrigger?: boolean;
 }
 
 export function EventDialog({
   onCreateEvent,
+  open,
+  onOpenChange,
+  initialValues,
+  showTrigger = true,
 }: EventDialogProps) {
-  const [open, setOpen] = useState(false);
-
-  const [saving, setSaving] =
+  const [internalOpen, setInternalOpen] =
     useState(false);
 
-  async function handleSave(
-    data: EventFormValues
+  const controlled =
+    open !== undefined;
+
+  const dialogOpen = controlled
+    ? open
+    : internalOpen;
+
+  function handleOpenChange(
+    value: boolean
   ) {
-    try {
-      setSaving(true);
-
-      await onCreateEvent(data);
-
-      setOpen(false);
-    } finally {
-      setSaving(false);
+    if (!controlled) {
+      setInternalOpen(value);
     }
+
+    onOpenChange?.(value);
   }
+
+  const initialFormValues =
+    initialValues ?? {
+      eventName: "",
+      clientId: "",
+      eventType: "",
+      eventDate: "",
+      venue: "",
+      guestCount: "",
+    };
 
   return (
     <Dialog
-      open={open}
-      onOpenChange={setOpen}
+      open={dialogOpen}
+      onOpenChange={handleOpenChange}
     >
-      <DialogTrigger asChild>
-        <Button>
-          + New Event
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button>
+            + New Event
+          </Button>
+        </DialogTrigger>
+      )}
 
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             Create New Event
@@ -62,13 +86,12 @@ export function EventDialog({
         </DialogHeader>
 
         <EventForm
-          onCancel={() => setOpen(false)}
-          onSave={handleSave}
-          saveText={
-            saving
-              ? "Creating..."
-              : "Create Event"
+          initialValues={initialFormValues}
+          onCancel={() =>
+            handleOpenChange(false)
           }
+          onSave={onCreateEvent}
+          saveText="Create Event"
         />
       </DialogContent>
     </Dialog>
