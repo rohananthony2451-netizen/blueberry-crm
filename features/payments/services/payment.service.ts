@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/client";
 import type {
   Payment,
   PaymentMethod,
+  PendingPaymentItem,
+  QuotationPaymentSummary,
 } from "../types";
 
 export interface PaymentInput {
@@ -44,11 +46,36 @@ interface PaymentRow {
   } | null;
 }
 
+interface PaymentFinancialRow {
+  id: string;
+  amount: number | string;
+  quotation_id: string | null;
+}
+
+interface FinancialQuotationRow {
+  id: string;
+  organization_id: string;
+  quotation_number: string;
+  client_id: string;
+  event_id: string | null;
+  status: string;
+  total: number | string;
+
+clients: {
+  name: string;
+}[] | null;
+
+events: {
+  event_name: string;
+}[] | null;
+}
+
 function mapPayment(
   row: PaymentRow
 ): Payment {
   return {
     id: row.id,
+
     organizationId:
       row.organization_id,
 
@@ -56,15 +83,15 @@ function mapPayment(
       row.client_id,
 
     clientName:
-      row.clients?.name ??
-      "Unknown Client",
+  row.clients?.name ??
+  "Unknown Client",
 
     eventId:
       row.event_id,
 
-    eventName:
-      row.events?.event_name ??
-      null,
+   eventName:
+  row.events?.event_name ??
+  null,
 
     quotationId:
       row.quotation_id,
@@ -101,11 +128,40 @@ function mapPayment(
   };
 }
 
+async function getOrganizationId(): Promise<string> {
+  const supabase =
+    createClient();
+
+  const {
+    data,
+    error,
+  } = await supabase.rpc(
+    "get_user_organization_id"
+  );
+
+  if (error) {
+    throw new Error(
+      error.message
+    );
+  }
+
+  if (!data) {
+    throw new Error(
+      "No organization found for the current user."
+    );
+  }
+
+  return data;
+}
+
 async function getPaymentById(
   id: string
 ): Promise<Payment> {
   const supabase =
     createClient();
+
+  const organizationId =
+    await getOrganizationId();
 
   const {
     data,
@@ -119,6 +175,10 @@ async function getPaymentById(
       quotations ( quotation_number )
     `)
     .eq("id", id)
+    .eq(
+      "organization_id",
+      organizationId
+    )
     .single();
 
   if (error) {
@@ -138,6 +198,9 @@ export async function getPayments(): Promise<
   const supabase =
     createClient();
 
+  const organizationId =
+    await getOrganizationId();
+
   const {
     data,
     error,
@@ -149,6 +212,10 @@ export async function getPayments(): Promise<
       events ( event_name ),
       quotations ( quotation_number )
     `)
+    .eq(
+      "organization_id",
+      organizationId
+    )
     .order(
       "payment_date",
       {
@@ -173,20 +240,14 @@ export async function getPayments(): Promise<
   ).map(mapPayment);
 }
 
-/*
- * Validate the relationships between
- * Client, Event and Quotation before
- * a payment is written.
- *
- * Foreign keys guarantee that the UUIDs
- * exist. These checks guarantee that
- * they belong together.
- */
 async function validatePaymentRelationships(
   payment: PaymentInput
 ): Promise<void> {
   const supabase =
     createClient();
+
+  const organizationId =
+    await getOrganizationId();
 
   const {
     data: client,
@@ -194,7 +255,14 @@ async function validatePaymentRelationships(
   } = await supabase
     .from("clients")
     .select("id")
-    .eq("id", payment.clientId)
+    .eq(
+      "id",
+      payment.clientId
+    )
+    .eq(
+      "organization_id",
+      organizationId
+    )
     .single();
 
   if (
@@ -218,6 +286,10 @@ async function validatePaymentRelationships(
       .eq(
         "id",
         payment.eventId
+      )
+      .eq(
+        "organization_id",
+        organizationId
       )
       .single();
 
@@ -253,6 +325,10 @@ async function validatePaymentRelationships(
         "id",
         payment.quotationId
       )
+      .eq(
+        "organization_id",
+        organizationId
+      )
       .single();
 
     if (
@@ -273,11 +349,6 @@ async function validatePaymentRelationships(
       );
     }
 
-    /*
-     * If the quotation itself is
-     * attached to an event, the payment
-     * cannot point to a different event.
-     */
     if (
       quotation.event_id &&
       payment.eventId !==
@@ -296,24 +367,8 @@ export async function createPayment(
   const supabase =
     createClient();
 
-  const {
-    data: organizationId,
-    error: organizationError,
-  } = await supabase.rpc(
-    "get_user_organization_id"
-  );
-
-  if (organizationError) {
-    throw new Error(
-      organizationError.message
-    );
-  }
-
-  if (!organizationId) {
-    throw new Error(
-      "No organization found for the current user."
-    );
-  }
+  const organizationId =
+    await getOrganizationId();
 
   if (payment.amount <= 0) {
     throw new Error(
@@ -384,7 +439,7 @@ export async function createPayment(
         payment.notes ||
         null,
     })
-    .select("*")
+    .select("id")
     .single();
 
   if (error) {
@@ -404,6 +459,9 @@ export async function updatePayment(
 ): Promise<Payment> {
   const supabase =
     createClient();
+
+  const organizationId =
+    await getOrganizationId();
 
   if (payment.amount <= 0) {
     throw new Error(
@@ -450,6 +508,10 @@ export async function updatePayment(
         null,
     })
     .eq("id", id)
+    .eq(
+      "organization_id",
+      organizationId
+    )
     .select("id")
     .single();
 
@@ -470,18 +532,348 @@ export async function deletePayment(
   const supabase =
     createClient();
 
+  const organizationId =
+    await getOrganizationId();
+
   const {
     error,
   } = await supabase
     .from("payments")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq(
+      "organization_id",
+      organizationId
+    );
 
   if (error) {
     throw new Error(
       error.message
     );
   }
+}
+
+export async function getQuotationPaymentSummary(
+  quotationId: string,
+  excludePaymentId?: string
+): Promise<QuotationPaymentSummary | null> {
+  const supabase =
+    createClient();
+
+  const organizationId =
+    await getOrganizationId();
+
+  const {
+    data: quotation,
+    error: quotationError,
+  } = await supabase
+    .from("quotations")
+    .select(`
+      id,
+      organization_id,
+      quotation_number,
+      client_id,
+      event_id,
+      status,
+      total,
+      clients ( name ),
+      events ( event_name )
+    `)
+    .eq("id", quotationId)
+    .eq(
+      "organization_id",
+      organizationId
+    )
+    .single();
+
+  if (quotationError) {
+    throw new Error(
+      quotationError.message
+    );
+  }
+
+  if (!quotation) {
+    return null;
+  }
+
+  if (
+    quotation.status !==
+      "Sent" &&
+    quotation.status !==
+      "Accepted"
+  ) {
+    return null;
+  }
+
+  let paymentQuery =
+    supabase
+      .from("payments")
+      .select(
+        "id, amount, quotation_id"
+      )
+      .eq(
+        "quotation_id",
+        quotationId
+      )
+      .eq(
+        "organization_id",
+        organizationId
+      );
+
+  if (excludePaymentId) {
+    paymentQuery =
+      paymentQuery.neq(
+        "id",
+        excludePaymentId
+      );
+  }
+
+  const {
+    data: payments,
+    error: paymentsError,
+  } = await paymentQuery;
+
+  if (paymentsError) {
+    throw new Error(
+      paymentsError.message
+    );
+  }
+
+  const receivedAmount =
+    (
+      (payments ??
+        []) as PaymentFinancialRow[]
+    ).reduce(
+      (sum, payment) =>
+        sum +
+        Number(payment.amount),
+      0
+    );
+
+  const quotationTotal =
+    Number(quotation.total);
+
+  const remainingAmount =
+    Math.max(
+      quotationTotal -
+        receivedAmount,
+      0
+    );
+
+  const overpaidAmount =
+    Math.max(
+      receivedAmount -
+        quotationTotal,
+      0
+    );
+
+  return {
+    quotationId:
+      quotation.id,
+
+    quotationNumber:
+      quotation.quotation_number,
+
+    clientId:
+      quotation.client_id,
+
+    clientName:
+  quotation.clients?.[0]?.name ??
+  "Unknown Client",
+
+    eventId:
+      quotation.event_id,
+
+    eventName:
+  quotation.events?.[0]?.event_name ??
+  null,
+
+    quotationTotal,
+
+    receivedAmount,
+
+    remainingAmount,
+
+    overpaidAmount,
+
+    status:
+      quotation.status as
+        | "Sent"
+        | "Accepted",
+  };
+}
+
+export async function getPendingPayments(): Promise<
+  PendingPaymentItem[]
+> {
+  const supabase =
+    createClient();
+
+  const organizationId =
+    await getOrganizationId();
+
+  const {
+    data: quotations,
+    error: quotationsError,
+  } = await supabase
+    .from("quotations")
+    .select(`
+      id,
+      organization_id,
+      quotation_number,
+      client_id,
+      event_id,
+      status,
+      total,
+      clients ( name ),
+      events ( event_name )
+    `)
+    .eq(
+      "organization_id",
+      organizationId
+    )
+    .in(
+      "status",
+      ["Sent", "Accepted"]
+    )
+    .order(
+      "quotation_date",
+      {
+        ascending: true,
+      }
+    );
+
+  if (quotationsError) {
+    throw new Error(
+      quotationsError.message
+    );
+  }
+
+  const quotationRows =
+    (quotations ??
+      []) as FinancialQuotationRow[];
+
+  if (
+    quotationRows.length === 0
+  ) {
+    return [];
+  }
+
+  const quotationIds =
+    quotationRows.map(
+      (quotation) =>
+        quotation.id
+    );
+
+  const {
+    data: payments,
+    error: paymentsError,
+  } = await supabase
+    .from("payments")
+    .select(
+      "id, amount, quotation_id"
+    )
+    .eq(
+      "organization_id",
+      organizationId
+    )
+    .in(
+      "quotation_id",
+      quotationIds
+    );
+
+  if (paymentsError) {
+    throw new Error(
+      paymentsError.message
+    );
+  }
+
+  const paymentsByQuotation =
+    new Map<
+      string,
+      number
+    >();
+
+  for (
+    const payment of
+      (payments ??
+        []) as PaymentFinancialRow[]
+  ) {
+    if (
+      !payment.quotation_id
+    ) {
+      continue;
+    }
+
+    const current =
+      paymentsByQuotation.get(
+        payment.quotation_id
+      ) ?? 0;
+
+    paymentsByQuotation.set(
+      payment.quotation_id,
+      current +
+        Number(payment.amount)
+    );
+  }
+
+  return quotationRows
+    .map((quotation) => {
+      const quotationTotal =
+        Number(
+          quotation.total
+        );
+
+      const receivedAmount =
+        paymentsByQuotation.get(
+          quotation.id
+        ) ?? 0;
+
+      const remainingAmount =
+        Math.max(
+          quotationTotal -
+            receivedAmount,
+          0
+        );
+
+      return {
+        quotationId:
+          quotation.id,
+
+        quotationNumber:
+          quotation.quotation_number,
+
+        clientId:
+          quotation.client_id,
+
+        clientName:
+  quotation.clients?.[0]?.name ??
+  "Unknown Client",
+
+        eventId:
+          quotation.event_id,
+
+        eventName:
+  quotation.events?.[0]?.event_name ??
+  null,
+
+        quotationTotal,
+
+        receivedAmount,
+
+        remainingAmount,
+
+        status:
+          quotation.status as
+            | "Sent"
+            | "Accepted",
+      };
+    })
+    .filter(
+      (quotation) =>
+        quotation.remainingAmount >
+        0
+    );
 }
 
 export async function getPaymentSummary(): Promise<{
@@ -492,13 +884,20 @@ export async function getPaymentSummary(): Promise<{
   const supabase =
     createClient();
 
+  const organizationId =
+    await getOrganizationId();
+
   const {
     data: payments,
     error: paymentsError,
   } = await supabase
     .from("payments")
     .select(
-      "amount, payment_date, quotation_id"
+      "amount, payment_date"
+    )
+    .eq(
+      "organization_id",
+      organizationId
     );
 
   if (paymentsError) {
@@ -512,7 +911,17 @@ export async function getPaymentSummary(): Promise<{
     error: quotationsError,
   } = await supabase
     .from("quotations")
-    .select("id, total");
+    .select(
+      "id, total, status"
+    )
+    .eq(
+      "organization_id",
+      organizationId
+    )
+    .in(
+      "status",
+      ["Sent", "Accepted"]
+    );
 
   if (quotationsError) {
     throw new Error(
@@ -524,15 +933,13 @@ export async function getPaymentSummary(): Promise<{
     (payments ?? []) as Array<{
       amount: number | string;
       payment_date: string;
-      quotation_id:
-        | string
-        | null;
     }>;
 
   const quotationRows =
     (quotations ?? []) as Array<{
       id: string;
       total: number | string;
+      status: string;
     }>;
 
   const totalReceived =
@@ -543,7 +950,8 @@ export async function getPaymentSummary(): Promise<{
       0
     );
 
-  const now = new Date();
+  const now =
+    new Date();
 
   const currentYear =
     now.getFullYear();
@@ -578,6 +986,30 @@ export async function getPaymentSummary(): Promise<{
       0
     );
 
+  const {
+    data: quotationPayments,
+    error: quotationPaymentsError,
+  } = await supabase
+    .from("payments")
+    .select(
+      "quotation_id, amount"
+    )
+    .eq(
+      "organization_id",
+      organizationId
+    )
+    .not(
+      "quotation_id",
+      "is",
+      null
+    );
+
+  if (quotationPaymentsError) {
+    throw new Error(
+      quotationPaymentsError.message
+    );
+  }
+
   const paymentsByQuotation =
     new Map<
       string,
@@ -585,7 +1017,16 @@ export async function getPaymentSummary(): Promise<{
     >();
 
   for (
-    const payment of paymentRows
+    const payment of
+      (quotationPayments ??
+        []) as Array<{
+        quotation_id:
+          | string
+          | null;
+        amount:
+          | number
+          | string;
+      }>
   ) {
     if (
       !payment.quotation_id
@@ -601,9 +1042,7 @@ export async function getPaymentSummary(): Promise<{
     paymentsByQuotation.set(
       payment.quotation_id,
       current +
-        Number(
-          payment.amount
-        )
+        Number(payment.amount)
     );
   }
 
@@ -620,16 +1059,13 @@ export async function getPaymentSummary(): Promise<{
             quotation.id
           ) ?? 0;
 
-        const outstanding =
+        return (
+          sum +
           Math.max(
             quotationTotal -
               received,
             0
-          );
-
-        return (
-          sum +
-          outstanding
+          )
         );
       },
       0
@@ -640,4 +1076,4 @@ export async function getPaymentSummary(): Promise<{
     thisMonthReceived,
     pendingAmount,
   };
-} 
+}

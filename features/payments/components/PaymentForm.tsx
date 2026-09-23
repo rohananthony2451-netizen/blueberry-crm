@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import {
   useForm,
@@ -18,13 +21,22 @@ import type { Client } from "@/features/clients/types";
 import type { Event } from "@/features/events/types";
 import type { Quotation } from "@/features/quotations/types";
 
-import { PAYMENT_METHODS } from "../constants";
+import {
+  PAYMENT_METHODS,
+} from "../constants";
+
+import {
+  getQuotationPaymentSummary,
+} from "../services/payment.service";
 
 import type {
   PaymentFormValues,
+  QuotationPaymentSummary,
 } from "../types";
 
-import { paymentSchema } from "../validation";
+import {
+  paymentSchema,
+} from "../validation";
 
 interface PaymentFormProps {
   clients: Client[];
@@ -32,6 +44,8 @@ interface PaymentFormProps {
   quotations: Quotation[];
 
   initialValues?: PaymentFormValues;
+
+  currentPaymentId?: string;
 
   onCancel?: () => void;
 
@@ -47,6 +61,7 @@ export function PaymentForm({
   events,
   quotations,
   initialValues,
+  currentPaymentId,
   onCancel,
   onSave,
   saveText = "Record Payment",
@@ -59,16 +74,18 @@ export function PaymentForm({
     reset,
     formState: { errors },
   } = useForm<PaymentFormValues>({
-    resolver: zodResolver(paymentSchema),
+    resolver:
+      zodResolver(paymentSchema),
 
     defaultValues:
       initialValues ?? {
         clientId: "",
         eventId: "",
         quotationId: "",
-        paymentDate: new Date()
-          .toISOString()
-          .split("T")[0],
+        paymentDate:
+          new Date()
+            .toISOString()
+            .split("T")[0],
         amount: "",
         paymentMethod: "Cash",
         referenceNumber: "",
@@ -76,91 +93,139 @@ export function PaymentForm({
       },
   });
 
+  const [
+    financialSummary,
+    setFinancialSummary,
+  ] =
+    useState<QuotationPaymentSummary | null>(
+      null
+    );
+
+  const [
+    financialLoading,
+    setFinancialLoading,
+  ] =
+    useState(false);
+
+  const [
+    overpaymentConfirmed,
+    setOverpaymentConfirmed,
+  ] =
+    useState(false);
+
   useEffect(() => {
     if (initialValues) {
       reset(initialValues);
     }
-  }, [initialValues, reset]);
+  }, [
+    initialValues,
+    reset,
+  ]);
 
-  const selectedClientId = useWatch({
-    control,
-    name: "clientId",
-  });
+  const selectedClientId =
+    useWatch({
+      control,
+      name: "clientId",
+    });
 
-  const selectedEventId = useWatch({
-    control,
-    name: "eventId",
-  });
+  const selectedEventId =
+    useWatch({
+      control,
+      name: "eventId",
+    });
 
-  const selectedQuotationId = useWatch({
-    control,
-    name: "quotationId",
-  });
+  const selectedQuotationId =
+    useWatch({
+      control,
+      name: "quotationId",
+    });
 
-  const selectedPaymentMethod = useWatch({
-    control,
-    name: "paymentMethod",
-  });
+  const selectedPaymentMethod =
+    useWatch({
+      control,
+      name: "paymentMethod",
+    });
 
-  /*
-   * --------------------------------------------------
-   * CLIENT → EVENTS
-   * --------------------------------------------------
-   */
+  const amount =
+    useWatch({
+      control,
+      name: "amount",
+    });
 
-  const clientEvents = selectedClientId
-    ? events.filter(
-        (event) =>
-          event.clientId === selectedClientId
-      )
-    : [];
+  const clientEvents =
+    selectedClientId
+      ? events.filter(
+          (event) =>
+            event.clientId ===
+            selectedClientId
+        )
+      : [];
 
-  /*
-   * --------------------------------------------------
-   * CLIENT → QUOTATIONS
-   * --------------------------------------------------
-   *
-   * Without an event selected:
-   * show all quotations for the client.
-   *
-   * With an event selected:
-   * show only quotations belonging to that event.
-   */
-
-  const clientQuotations = selectedClientId
-    ? quotations.filter(
-        (quotation) =>
-          quotation.clientId === selectedClientId
-      )
-    : [];
-
-  const availableQuotations = selectedEventId
-    ? clientQuotations.filter(
-        (quotation) =>
-          quotation.eventId === selectedEventId
-      )
-    : clientQuotations;
+  const clientQuotations =
+    selectedClientId
+      ? quotations.filter(
+          (quotation) =>
+            quotation.clientId ===
+            selectedClientId
+        )
+      : [];
 
   /*
-   * --------------------------------------------------
-   * QUOTATION → CLIENT + EVENT
-   * --------------------------------------------------
+   * Only active quotations
+   * participate in automatic
+   * financial allocation.
    *
-   * Selecting a quotation establishes its
-   * relationships automatically.
+   * Draft and Rejected remain
+   * selectable so the payment
+   * can be recorded, but they
+   * are treated as unallocated.
    */
+  const activeClientQuotations =
+    clientQuotations.filter(
+      (quotation) =>
+        quotation.status ===
+          "Sent" ||
+        quotation.status ===
+          "Accepted"
+    );
 
+  /*
+   * When an event is selected,
+   * show quotations attached
+   * to that event.
+   *
+   * Quotations without an event
+   * remain available when no
+   * event is selected.
+   */
+  const availableQuotations =
+    selectedEventId
+      ? clientQuotations.filter(
+          (quotation) =>
+            quotation.eventId ===
+            selectedEventId
+        )
+      : clientQuotations;
+
+  /*
+   * Quotation selection establishes
+   * the client and event.
+   */
   useEffect(() => {
     if (!selectedQuotationId) {
+      setFinancialSummary(null);
       return;
     }
 
-    const quotation = quotations.find(
-      (item) =>
-        item.id === selectedQuotationId
-    );
+    const quotation =
+      quotations.find(
+        (item) =>
+          item.id ===
+          selectedQuotationId
+      );
 
     if (!quotation) {
+      setFinancialSummary(null);
       return;
     }
 
@@ -203,29 +268,18 @@ export function PaymentForm({
   ]);
 
   /*
-   * --------------------------------------------------
-   * EVENT → QUOTATION
-   * --------------------------------------------------
+   * Event selection:
    *
-   * When an event is selected:
-   *
-   * 0 quotations:
-   *   keep quotation empty.
-   *
-   * 1 quotation:
-   *   automatically select it.
-   *
-   * Multiple quotations:
-   *   let the user choose.
+   * one quotation  -> auto-select
+   * multiple       -> user chooses
    */
-
   useEffect(() => {
     if (!selectedEventId) {
       return;
     }
 
     const matchingQuotations =
-      clientQuotations.filter(
+      activeClientQuotations.filter(
         (quotation) =>
           quotation.eventId ===
           selectedEventId
@@ -254,12 +308,6 @@ export function PaymentForm({
       return;
     }
 
-    /*
-     * If there are multiple quotations,
-     * only keep the current selection if
-     * it still belongs to this event.
-     */
-
     if (
       selectedQuotationId &&
       !matchingQuotations.some(
@@ -280,30 +328,132 @@ export function PaymentForm({
   }, [
     selectedEventId,
     selectedQuotationId,
-    clientQuotations,
+    activeClientQuotations,
     setValue,
   ]);
 
   /*
-   * --------------------------------------------------
-   * FORM SUBMISSION
-   * --------------------------------------------------
+   * Load financial state for
+   * the selected quotation.
+   *
+   * On edit, the current payment
+   * is excluded from received
+   * so that we don't count it twice.
    */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadFinancialSummary() {
+      if (!selectedQuotationId) {
+        setFinancialSummary(null);
+        return;
+      }
+
+      setFinancialLoading(true);
+      setOverpaymentConfirmed(false);
+
+      try {
+        const summary =
+          await getQuotationPaymentSummary(
+            selectedQuotationId,
+            currentPaymentId
+          );
+
+        if (!cancelled) {
+          setFinancialSummary(
+            summary
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setFinancialSummary(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setFinancialLoading(false);
+        }
+      }
+    }
+
+    loadFinancialSummary();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedQuotationId,
+    currentPaymentId,
+  ]);
+
+  const numericAmount =
+    Number(amount) || 0;
+
+  const projectedReceived =
+    financialSummary
+      ? financialSummary.receivedAmount +
+        numericAmount
+      : 0;
+
+  const projectedOverpayment =
+    financialSummary
+      ? Math.max(
+          projectedReceived -
+            financialSummary.quotationTotal,
+          0
+        )
+      : 0;
+
+  const isOverpayment =
+    Boolean(
+      financialSummary &&
+        projectedOverpayment > 0
+    );
+
+  /*
+   * A payment against Draft or
+   * Rejected quotation is allowed,
+   * but it is unallocated from
+   * Client 360 financial totals.
+   */
+  const selectedQuotation =
+    selectedQuotationId
+      ? quotations.find(
+          (quotation) =>
+            quotation.id ===
+            selectedQuotationId
+        )
+      : null;
+
+  const isInactiveQuotation =
+    Boolean(
+      selectedQuotation &&
+        selectedQuotation.status !==
+          "Sent" &&
+        selectedQuotation.status !==
+          "Accepted"
+    );
 
   async function submitForm(
     data: PaymentFormValues
   ) {
+    if (
+      isOverpayment &&
+      !overpaymentConfirmed
+    ) {
+      return;
+    }
+
     await onSave?.(data);
   }
 
   return (
     <form
-      onSubmit={handleSubmit(submitForm)}
+      onSubmit={handleSubmit(
+        submitForm
+      )}
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
-        {/* CLIENT */}
-
         <FormField
           label="Client"
           error={
@@ -343,14 +493,14 @@ export function PaymentForm({
             placeholder="Select Client"
             options={clients.map(
               (client) => ({
-                label: client.name,
-                value: client.id,
+                label:
+                  client.name,
+                value:
+                  client.id,
               })
             )}
           />
         </FormField>
-
-        {/* EVENT */}
 
         <FormField
           label="Event"
@@ -369,6 +519,39 @@ export function PaymentForm({
                   shouldDirty: true,
                 }
               );
+
+              const matching =
+                activeClientQuotations.filter(
+                  (quotation) =>
+                    quotation.eventId ===
+                    value
+                );
+
+              if (
+                matching.length === 1
+              ) {
+                setValue(
+                  "quotationId",
+                  matching[0].id,
+                  {
+                    shouldValidate:
+                      true,
+                    shouldDirty:
+                      true,
+                  }
+                );
+              } else {
+                setValue(
+                  "quotationId",
+                  "",
+                  {
+                    shouldValidate:
+                      true,
+                    shouldDirty:
+                      true,
+                  }
+                );
+              }
             }}
             placeholder={
               selectedClientId
@@ -377,14 +560,14 @@ export function PaymentForm({
             }
             options={clientEvents.map(
               (event) => ({
-                label: event.eventName,
-                value: event.id,
+                label:
+                  event.eventName,
+                value:
+                  event.id,
               })
             )}
           />
         </FormField>
-
-        {/* QUOTATION */}
 
         <FormField
           label="Quotation"
@@ -393,14 +576,20 @@ export function PaymentForm({
           }
         >
           <FormSelect
-            value={selectedQuotationId}
-            onValueChange={(value) => {
+            value={
+              selectedQuotationId
+            }
+            onValueChange={(
+              value
+            ) => {
               setValue(
                 "quotationId",
                 value,
                 {
-                  shouldValidate: true,
-                  shouldDirty: true,
+                  shouldValidate:
+                    true,
+                  shouldDirty:
+                    true,
                 }
               );
             }}
@@ -413,27 +602,27 @@ export function PaymentForm({
               (quotation) => ({
                 label:
                   `${quotation.quotationNumber} — ${quotation.clientName}${quotation.eventName ? ` — ${quotation.eventName}` : ""}`,
-                value: quotation.id,
+                value:
+                  quotation.id,
               })
             )}
           />
         </FormField>
 
-        {/* PAYMENT DATE */}
-
         <FormField
           label="Payment Date"
           error={
-            errors.paymentDate?.message
+            errors.paymentDate
+              ?.message
           }
         >
           <FormInput
             type="date"
-            {...register("paymentDate")}
+            {...register(
+              "paymentDate"
+            )}
           />
         </FormField>
-
-        {/* AMOUNT */}
 
         <FormField
           label="Amount"
@@ -446,41 +635,49 @@ export function PaymentForm({
             min="0.01"
             step="0.01"
             placeholder="Enter amount"
-            {...register("amount")}
+            {...register(
+              "amount"
+            )}
           />
         </FormField>
-
-        {/* PAYMENT METHOD */}
 
         <FormField
           label="Payment Method"
           error={
-            errors.paymentMethod?.message
+            errors.paymentMethod
+              ?.message
           }
         >
           <FormSelect
-            value={selectedPaymentMethod}
-            onValueChange={(value) =>
+            value={
+              selectedPaymentMethod
+            }
+            onValueChange={(
+              value
+            ) =>
               setValue(
                 "paymentMethod",
                 value as PaymentFormValues["paymentMethod"],
                 {
-                  shouldValidate: true,
-                  shouldDirty: true,
+                  shouldValidate:
+                    true,
+                  shouldDirty:
+                    true,
                 }
               )
             }
             placeholder="Select Payment Method"
-            options={PAYMENT_METHODS}
+            options={
+              PAYMENT_METHODS
+            }
           />
         </FormField>
-
-        {/* REFERENCE */}
 
         <FormField
           label="Reference Number"
           error={
-            errors.referenceNumber?.message
+            errors.referenceNumber
+              ?.message
           }
         >
           <FormInput
@@ -492,7 +689,129 @@ export function PaymentForm({
         </FormField>
       </div>
 
-      {/* NOTES */}
+      {financialLoading && (
+        <div className="rounded-xl border bg-muted/40 p-4 text-sm text-muted-foreground">
+          Checking quotation payment status...
+        </div>
+      )}
+
+      {financialSummary && (
+        <div className="rounded-xl border bg-muted/40 p-4">
+          <div className="grid gap-3 text-sm sm:grid-cols-3">
+            <div>
+              <p className="text-muted-foreground">
+                Quotation Total
+              </p>
+              <p className="font-semibold">
+                ₹
+                {financialSummary.quotationTotal.toLocaleString(
+                  "en-IN"
+                )}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-muted-foreground">
+                Already Received
+              </p>
+              <p className="font-semibold">
+                ₹
+                {financialSummary.receivedAmount.toLocaleString(
+                  "en-IN"
+                )}
+              </p>
+            </div>
+
+            <div>
+              <p className="text-muted-foreground">
+                Remaining Before This Payment
+              </p>
+              <p className="font-semibold">
+                ₹
+                {financialSummary.remainingAmount.toLocaleString(
+                  "en-IN"
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isInactiveQuotation && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="font-semibold">
+            This quotation is not financially active.
+          </p>
+
+          <p className="mt-1">
+            This payment can still be
+            recorded, but it will be
+            treated as unallocated in
+            Client 360 because the
+            quotation is{" "}
+            <strong>
+              {selectedQuotation?.status}
+            </strong>
+            .
+          </p>
+        </div>
+      )}
+
+      {isOverpayment && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
+          <p className="font-semibold text-amber-900">
+            Payment exceeds the quotation
+            remaining amount.
+          </p>
+
+          <p className="mt-1 text-sm text-amber-800">
+            This payment would make the
+            quotation overpaid by ₹
+            {projectedOverpayment.toLocaleString(
+              "en-IN"
+            )}
+            .
+          </p>
+
+          {!overpaymentConfirmed ? (
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setValue(
+                    "amount",
+                    "",
+                    {
+                      shouldDirty:
+                        true,
+                    }
+                  )
+                }
+                className="rounded-lg border px-4 py-2 text-sm font-medium"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setOverpaymentConfirmed(
+                    true
+                  )
+                }
+                className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white"
+              >
+                Record Anyway
+              </button>
+            </div>
+          ) : (
+            <p className="mt-3 text-sm font-medium text-amber-900">
+              Overpayment accepted. Submit
+              the form to record it.
+            </p>
+          )}
+        </div>
+      )}
 
       <FormField
         label="Notes"

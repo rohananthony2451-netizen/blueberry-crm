@@ -8,12 +8,14 @@ import { PaymentDialog } from "@/features/payments/components/PaymentDialog";
 import { PaymentDeleteDialog } from "@/features/payments/components/PaymentDeleteDialog";
 import { PaymentEditDialog } from "@/features/payments/components/PaymentEditDialog";
 import { PaymentTable } from "@/features/payments/components/PaymentTable";
+import { PendingPaymentsDialog } from "@/features/payments/components/PendingPaymentsDialog";
 
 import { usePayments } from "@/features/payments/hooks/usePayments";
 
-import type { PaymentFormValues } from "@/features/payments/types";
-
-import type { Payment } from "@/features/payments/types";
+import type {
+  Payment,
+  PaymentFormValues,
+} from "@/features/payments/types";
 
 export default function PaymentsPage() {
   const {
@@ -30,6 +32,11 @@ export default function PaymentsPage() {
   const [dialogOpen, setDialogOpen] =
     useState(false);
 
+  const [
+    pendingDialogOpen,
+    setPendingDialogOpen,
+  ] = useState(false);
+
   const [editingPayment, setEditingPayment] =
     useState<Payment | null>(null);
 
@@ -45,11 +52,14 @@ export default function PaymentsPage() {
     await createPayment({
       clientId: data.clientId,
       eventId: data.eventId || null,
-      quotationId: data.quotationId || null,
+      quotationId:
+        data.quotationId || null,
       paymentDate: data.paymentDate,
       amount: Number(data.amount),
-      paymentMethod: data.paymentMethod,
-      referenceNumber: data.referenceNumber,
+      paymentMethod:
+        data.paymentMethod,
+      referenceNumber:
+        data.referenceNumber,
       notes: data.notes,
     });
   }
@@ -75,11 +85,14 @@ export default function PaymentsPage() {
     await updatePayment(id, {
       clientId: data.clientId,
       eventId: data.eventId || null,
-      quotationId: data.quotationId || null,
+      quotationId:
+        data.quotationId || null,
       paymentDate: data.paymentDate,
       amount: Number(data.amount),
-      paymentMethod: data.paymentMethod,
-      referenceNumber: data.referenceNumber,
+      paymentMethod:
+        data.paymentMethod,
+      referenceNumber:
+        data.referenceNumber,
       notes: data.notes,
     });
   }
@@ -99,7 +112,9 @@ export default function PaymentsPage() {
   }
 
   async function handleConfirmDelete() {
-    if (!deletingPayment) return;
+    if (!deletingPayment) {
+      return;
+    }
 
     try {
       setDeleting(true);
@@ -117,9 +132,12 @@ export default function PaymentsPage() {
   function formatCurrency(
     value: number
   ) {
-    return `₹${value.toLocaleString("en-IN", {
-      maximumFractionDigits: 2,
-    })}`;
+    return `₹${value.toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits: 2,
+      }
+    )}`;
   }
 
   return (
@@ -138,7 +156,9 @@ export default function PaymentsPage() {
         </div>
 
         <Button
-          onClick={() => setDialogOpen(true)}
+          onClick={() =>
+            setDialogOpen(true)
+          }
         >
           Record Payment
         </Button>
@@ -171,7 +191,14 @@ export default function PaymentsPage() {
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+        {/* Pending Amount */}
+        <button
+          type="button"
+          onClick={() =>
+            setPendingDialogOpen(true)
+          }
+          className="rounded-2xl border bg-white p-5 text-left shadow-sm transition hover:border-slate-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2"
+        >
           <p className="text-sm font-medium text-slate-500">
             Pending Amount
           </p>
@@ -187,7 +214,14 @@ export default function PaymentsPage() {
           <p className="mt-1 text-xs text-slate-400">
             Outstanding against quotations
           </p>
-        </div>
+
+          {!summaryLoading &&
+            summary.pendingAmount > 0 && (
+              <p className="mt-3 text-xs font-medium text-slate-600">
+                Click to view pending collections →
+              </p>
+            )}
+        </button>
 
         <div className="rounded-2xl border bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-slate-500">
@@ -261,29 +295,43 @@ export default function PaymentsPage() {
         )}
       </div>
 
-      {/* Create */}
+      {/* Create Payment */}
       <PaymentDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSave={handleCreatePayment}
       />
 
-      {/* Edit */}
+      {/* Pending Collections */}
+      <PendingPaymentsDialog
+        open={pendingDialogOpen}
+        onOpenChange={
+          setPendingDialogOpen
+        }
+      />
+
+      {/* Edit Payment */}
       <PaymentEditDialog
         payment={editingPayment}
         open={Boolean(editingPayment)}
-        onOpenChange={handleEditDialogChange}
+        onOpenChange={
+          handleEditDialogChange
+        }
         onSave={handleUpdatePayment}
       />
 
-      {/* Delete */}
+      {/* Delete Payment */}
       <PaymentDeleteDialog
         payment={deletingPayment}
         open={Boolean(deletingPayment)}
-        onOpenChange={handleDeleteDialogChange}
-        onConfirm={handleConfirmDelete}
+        onOpenChange={
+          handleDeleteDialogChange
+        }
+        onConfirm={
+          handleConfirmDelete
+        }
         deleting={deleting}
       />
     </div>
   );
-}  
+}

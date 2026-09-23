@@ -2,14 +2,16 @@ import { z } from "zod";
 
 import { PAYMENT_METHODS } from "./constants";
 
-const paymentMethodSchema = z.enum(
-  PAYMENT_METHODS
-);
+const paymentMethodSchema =
+  z.enum(PAYMENT_METHODS);
 
 export const paymentSchema = z.object({
   clientId: z
     .string()
-    .min(1, "Please select a client."),
+    .min(
+      1,
+      "Please select a client."
+    ),
 
   eventId: z.string(),
 
@@ -17,15 +19,22 @@ export const paymentSchema = z.object({
 
   paymentDate: z
     .string()
-    .min(1, "Please select the payment date."),
+    .min(
+      1,
+      "Please select the payment date."
+    ),
 
   amount: z
     .string()
     .trim()
-    .min(1, "Please enter the payment amount.")
+    .min(
+      1,
+      "Please enter the payment amount."
+    )
     .refine(
       (value) => {
-        const number = Number(value);
+        const number =
+          Number(value);
 
         return (
           Number.isFinite(number) &&
@@ -35,9 +44,11 @@ export const paymentSchema = z.object({
       "Payment amount must be greater than 0."
     ),
 
-  paymentMethod: paymentMethodSchema,
+  paymentMethod:
+    paymentMethodSchema,
 
-  referenceNumber: z.string(),
+  referenceNumber:
+    z.string(),
 
   notes: z.string(),
 });

@@ -45,3 +45,30 @@ export interface PaymentSummary {
   thisMonthReceived: number;
   pendingAmount: number;
 }
+
+export interface QuotationPaymentSummary {
+  quotationId: string;
+  quotationNumber: string;
+  clientId: string;
+  clientName: string;
+  eventId: string | null;
+  eventName: string | null;
+  quotationTotal: number;
+  receivedAmount: number;
+  remainingAmount: number;
+  overpaidAmount: number;
+  status: "Sent" | "Accepted";
+}
+
+export interface PendingPaymentItem {
+  quotationId: string;
+  quotationNumber: string;
+  clientId: string;
+  clientName: string;
+  eventId: string | null;
+  eventName: string | null;
+  quotationTotal: number;
+  receivedAmount: number;
+  remainingAmount: number;
+  status: "Sent" | "Accepted";
+}

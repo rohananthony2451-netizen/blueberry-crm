@@ -172,6 +172,9 @@ export function PaymentEditDialog({
             initialValues={
               initialValues
             }
+            currentPaymentId={
+              payment.id
+            }
             onCancel={() =>
               onOpenChange(false)
             }
