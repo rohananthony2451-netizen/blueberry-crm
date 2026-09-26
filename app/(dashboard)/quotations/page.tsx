@@ -89,12 +89,20 @@ export default function QuotationsPage() {
   ) {
     await createQuotation({
       clientId: data.clientId,
+      leadId: data.leadId,
 
-      eventId:
-        data.eventId || null,
+      prospectName: data.prospectName,
+      prospectPhone: data.prospectPhone,
+      prospectEmail: data.prospectEmail,
+      prospectAddress: data.prospectAddress,
 
-      quotationDate:
-        data.quotationDate,
+      eventName: data.eventName,
+      eventType: data.eventType,
+      eventDate: data.eventDate,
+      venue: data.venue,
+      guestCount: Number(data.guestCount),
+
+      quotationDate: data.quotationDate,
 
       validUntil:
         data.validUntil || null,
@@ -105,8 +113,7 @@ export default function QuotationsPage() {
       tax:
         Number(data.tax),
 
-      notes:
-        data.notes,
+      notes: data.notes,
 
       items: data.items.map(
         (item) => {
@@ -119,14 +126,10 @@ export default function QuotationsPage() {
           return {
             description:
               item.description,
-
             quantity,
-
             unitPrice,
-
             amount:
-              quantity *
-              unitPrice,
+              quantity * unitPrice,
           };
         }
       ),
@@ -197,12 +200,20 @@ export default function QuotationsPage() {
   ) {
     await updateQuotation(id, {
       clientId: data.clientId,
+      leadId: data.leadId,
 
-      eventId:
-        data.eventId || null,
+      prospectName: data.prospectName,
+      prospectPhone: data.prospectPhone,
+      prospectEmail: data.prospectEmail,
+      prospectAddress: data.prospectAddress,
 
-      quotationDate:
-        data.quotationDate,
+      eventName: data.eventName,
+      eventType: data.eventType,
+      eventDate: data.eventDate,
+      venue: data.venue,
+      guestCount: Number(data.guestCount),
+
+      quotationDate: data.quotationDate,
 
       validUntil:
         data.validUntil || null,
@@ -213,8 +224,7 @@ export default function QuotationsPage() {
       tax:
         Number(data.tax),
 
-      notes:
-        data.notes,
+      notes: data.notes,
 
       items: data.items.map(
         (item) => {
@@ -226,17 +236,12 @@ export default function QuotationsPage() {
 
           return {
             id: item.id,
-
             description:
               item.description,
-
             quantity,
-
             unitPrice,
-
             amount:
-              quantity *
-              unitPrice,
+              quantity * unitPrice,
           };
         }
       ),

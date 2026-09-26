@@ -99,8 +99,7 @@ export function QuotationDialog({
               initialValues?.clientId ??
               "new-quotation"
             }
-            clients={clients}
-            events={events}
+          
             initialValues={initialValues}
             onCancel={() =>
               onOpenChange(false)

@@ -53,16 +53,35 @@ interface QuotationRow {
   id: string;
   organization_id: string;
   quotation_number: string;
-  client_id: string;
+
+  client_id: string | null;
   event_id: string | null;
+
+  lead_id: string | null;
+
+  prospect_name: string;
+  prospect_phone: string;
+  prospect_email: string | null;
+  prospect_address: string | null;
+
+  event_name: string;
+  event_type: string;
+  event_date: string;
+  venue: string;
+  guest_count: number | string;
+
   quotation_date: string;
   valid_until: string | null;
+
   status: string;
+
   subtotal: number | string;
   discount: number | string;
   tax: number | string;
   total: number | string;
+
   notes: string | null;
+
   created_at: string;
   updated_at: string;
 
@@ -164,21 +183,46 @@ function mapQuotation(
     id: row.id,
     organizationId: row.organization_id,
     quotationNumber: row.quotation_number,
+
     clientId: row.client_id,
     clientName: "",
+
     eventId: row.event_id,
-    eventName: row.events?.event_name ?? null,
+    eventName:
+      row.events?.event_name ?? null,
+
+    leadId: row.lead_id,
+
+    prospectName: row.prospect_name,
+    prospectPhone: row.prospect_phone,
+    prospectEmail: row.prospect_email ?? "",
+    prospectAddress:
+      row.prospect_address ?? "",
+
+    proposedEventName: row.event_name,
+    proposedEventType: row.event_type,
+    proposedEventDate: row.event_date,
+    proposedVenue: row.venue,
+    proposedGuestCount:
+      Number(row.guest_count),
+
     quotationDate: row.quotation_date,
     validUntil: row.valid_until,
-    status: row.status as QuotationStatus,
+
+    status:
+      row.status as QuotationStatus,
+
     subtotal: Number(row.subtotal),
     discount: Number(row.discount),
     tax: Number(row.tax),
     total: Number(row.total),
+
     notes: row.notes ?? "",
-    items: (row.quotation_items ?? []).map(
-      mapQuotationItem
-    ),
+
+    items: (
+      row.quotation_items ?? []
+    ).map(mapQuotationItem),
+
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

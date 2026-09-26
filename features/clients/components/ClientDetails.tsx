@@ -56,6 +56,12 @@ export function ClientDetails({
     refresh,
   } = useClient360(client.id);
 
+  /*
+   * Direct event creation is still supported from
+   * an existing confirmed Client.
+   *
+   * This is intentionally separate from quotation creation.
+   */
   const eventInitialValues =
     useMemo<Partial<EventFormValues>>(
       () => ({
@@ -69,19 +75,46 @@ export function ClientDetails({
       [client.id]
     );
 
+  /*
+   * Client 360 quotation creation:
+   *
+   * The Client already exists, so we reuse this client ID.
+   *
+   * There is deliberately NO eventId here.
+   *
+   * The quotation contains the proposed event information.
+   * A confirmed Event is created later when the quotation
+   * is accepted.
+   */
   const quotationInitialValues =
     useMemo<QuotationFormValues>(
       () => ({
         clientId: client.id,
-        eventId: "",
+        leadId: "",
+
+        prospectName: client.name,
+        prospectPhone: client.phone,
+        prospectEmail: client.email,
+        prospectAddress: client.address,
+
+        eventName: "",
+        eventType: "",
+        eventDate: "",
+        venue: "",
+        guestCount: "",
+
         quotationDate:
           new Date()
             .toISOString()
             .split("T")[0],
+
         validUntil: "",
+
         discount: "0",
         tax: "0",
+
         notes: "",
+
         items: [
           {
             description: "",
@@ -90,7 +123,13 @@ export function ClientDetails({
           },
         ],
       }),
-      [client.id]
+      [
+        client.id,
+        client.name,
+        client.phone,
+        client.email,
+        client.address,
+      ]
     );
 
   const paymentInitialValues =
@@ -99,10 +138,12 @@ export function ClientDetails({
         clientId: client.id,
         eventId: "",
         quotationId: "",
+
         paymentDate:
           new Date()
             .toISOString()
             .split("T")[0],
+
         amount: "",
         paymentMethod: "Cash",
         referenceNumber: "",
@@ -156,10 +197,37 @@ export function ClientDetails({
   ) {
     await createQuotation({
       clientId:
-        formData.clientId,
+  formData.clientId,
 
-      eventId:
-        formData.eventId || null,
+leadId:
+  formData.leadId,
+
+      prospectName:
+        formData.prospectName,
+
+      prospectPhone:
+        formData.prospectPhone,
+
+      prospectEmail:
+        formData.prospectEmail,
+
+      prospectAddress:
+        formData.prospectAddress,
+
+      eventName:
+        formData.eventName,
+
+      eventType:
+        formData.eventType,
+
+      eventDate:
+        formData.eventDate,
+
+      venue:
+        formData.venue,
+
+      guestCount:
+        Number(formData.guestCount),
 
       quotationDate:
         formData.quotationDate,

@@ -15,19 +15,12 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/forms/FormActions";
 import { FormField } from "@/components/forms/FormField";
 import { FormInput } from "@/components/forms/FormInput";
-import { FormSelect } from "@/components/forms/FormSelect";
-
-import type { Client } from "@/features/clients/types";
-import type { Event } from "@/features/events/types";
 
 import type { QuotationFormValues } from "../types";
 
 import { quotationSchema } from "../validation";
 
 interface QuotationFormProps {
-  clients: Client[];
-  events: Event[];
-
   initialValues?: QuotationFormValues;
 
   onCancel?: () => void;
@@ -40,8 +33,6 @@ interface QuotationFormProps {
 }
 
 export function QuotationForm({
-  clients,
-  events,
   initialValues,
   onCancel,
   onSave,
@@ -51,25 +42,39 @@ export function QuotationForm({
     register,
     control,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors },
   } = useForm<QuotationFormValues>({
-    resolver:
-      zodResolver(quotationSchema),
+    resolver: zodResolver(quotationSchema),
 
     defaultValues:
       initialValues ?? {
         clientId: "",
-        eventId: "",
+        leadId: "",
+
+        prospectName: "",
+        prospectPhone: "",
+        prospectEmail: "",
+        prospectAddress: "",
+
+        eventName: "",
+        eventType: "",
+        eventDate: "",
+        venue: "",
+        guestCount: "",
+
         quotationDate:
           new Date()
             .toISOString()
             .split("T")[0],
+
         validUntil: "",
+
         discount: "0",
         tax: "0",
+
         notes: "",
+
         items: [
           {
             description: "",
@@ -95,113 +100,33 @@ export function QuotationForm({
     }
   }, [initialValues, reset]);
 
-  const selectedClientId =
-    useWatch({
-      control,
-      name: "clientId",
-    });
+  const watchedItems = useWatch({
+    control,
+    name: "items",
+  });
 
-  const selectedEventId =
-    useWatch({
-      control,
-      name: "eventId",
-    });
+  const discount = useWatch({
+    control,
+    name: "discount",
+  });
 
-  const watchedItems =
-    useWatch({
-      control,
-      name: "items",
-    });
-
-  const discount =
-    useWatch({
-      control,
-      name: "discount",
-    });
-
-  const tax =
-    useWatch({
-      control,
-      name: "tax",
-    });
-
-  /*
-   * Only show events belonging
-   * to the selected client.
-   *
-   * Events created before the
-   * client relationship migration
-   * may have clientId = null.
-   * Those events are intentionally
-   * excluded from client-specific
-   * quotation selection.
-   */
-  const clientEvents =
-    selectedClientId
-      ? events.filter(
-          (event) =>
-            event.clientId ===
-            selectedClientId
-        )
-      : [];
-
-  /*
-   * If the currently selected event
-   * does not belong to the selected
-   * client, clear it.
-   *
-   * This prevents:
-   *
-   * Client A
-   * +
-   * Event belonging to Client B
-   */
-  useEffect(() => {
-    if (!selectedEventId) {
-      return;
-    }
-
-    const eventBelongsToClient =
-      clientEvents.some(
-        (event) =>
-          event.id ===
-          selectedEventId
-      );
-
-    if (!eventBelongsToClient) {
-      setValue(
-        "eventId",
-        "",
-        {
-          shouldValidate: true,
-          shouldDirty: true,
-        }
-      );
-    }
-  }, [
-    selectedClientId,
-    selectedEventId,
-    clientEvents,
-    setValue,
-  ]);
+  const tax = useWatch({
+    control,
+    name: "tax",
+  });
 
   const subtotal =
     watchedItems?.reduce(
       (sum, item) => {
         const quantity =
-          Number(
-            item?.quantity
-          ) || 0;
+          Number(item?.quantity) || 0;
 
         const unitPrice =
-          Number(
-            item?.unitPrice
-          ) || 0;
+          Number(item?.unitPrice) || 0;
 
         return (
           sum +
-          quantity *
-            unitPrice
+          quantity * unitPrice
         );
       },
       0
@@ -226,127 +151,231 @@ export function QuotationForm({
 
   return (
     <form
-      onSubmit={handleSubmit(
-        submitForm
-      )}
-      className="space-y-6"
+      onSubmit={handleSubmit(submitForm)}
+      className="space-y-8"
     >
-      <div className="grid gap-5 md:grid-cols-2">
-        <FormField
-          label="Client"
-          error={
-            errors.clientId?.message
-          }
-        >
-          <FormSelect
-            value={selectedClientId}
-            onValueChange={(value) => {
-              setValue(
-                "clientId",
-                value,
-                {
-                  shouldValidate:
-                    true,
-                  shouldDirty: true,
-                }
-              );
+      {/* -------------------------------------------------- */}
+      {/* Hidden relationship fields                         */}
+      {/* -------------------------------------------------- */}
 
-              setValue(
-                "eventId",
-                "",
-                {
-                  shouldValidate:
-                    true,
-                  shouldDirty: true,
-                }
-              );
-            }}
-            placeholder="Select Client"
-            options={clients.map(
-              (client) => ({
-                label:
-                  client.name,
-                value:
-                  client.id,
-              })
-            )}
-          />
-        </FormField>
+      <input
+        type="hidden"
+        {...register("clientId")}
+      />
 
-        <FormField
-          label="Event"
-          error={
-            errors.eventId?.message
-          }
-        >
-          <FormSelect
-            value={selectedEventId}
-            onValueChange={(value) =>
-              setValue(
-                "eventId",
-                value,
-                {
-                  shouldValidate:
-                    true,
-                  shouldDirty: true,
-                }
-              )
-            }
-            placeholder={
-              selectedClientId
-                ? "Select Event"
-                : "Select Client First"
-            }
-            options={clientEvents.map(
-              (event) => ({
-                label:
-                  event.eventName,
-                value:
-                  event.id,
-              })
-            )}
-          />
-        </FormField>
+      <input
+        type="hidden"
+        {...register("leadId")}
+      />
 
-        <FormField
-          label="Issue Date"
-          error={
-            errors.quotationDate
-              ?.message
-          }
-        >
-          <FormInput
-            type="date"
-            {...register(
-              "quotationDate"
-            )}
-          />
-        </FormField>
+      {/* -------------------------------------------------- */}
+      {/* Prospect / Customer                                */}
+      {/* -------------------------------------------------- */}
 
-        <FormField
-          label="Valid Until"
-          error={
-            errors.validUntil?.message
-          }
-        >
-          <FormInput
-            type="date"
-            {...register(
-              "validUntil"
-            )}
-          />
-        </FormField>
-      </div>
-
-      <div className="space-y-3">
+      <section className="space-y-4">
         <div>
-          <h3 className="text-sm font-semibold">
+          <h3 className="text-base font-semibold">
+            Prospect / Customer
+          </h3>
+
+          <p className="text-sm text-slate-500">
+            Enter the person requesting the quotation.
+            They become a confirmed client only after
+            the quotation is accepted.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField
+            label="Name"
+            error={
+              errors.prospectName?.message
+            }
+          >
+            <FormInput
+              placeholder="Rahul Sharma"
+              {...register("prospectName")}
+            />
+          </FormField>
+
+          <FormField
+            label="Phone"
+            error={
+              errors.prospectPhone?.message
+            }
+          >
+            <FormInput
+              type="tel"
+              placeholder="9876543210"
+              {...register("prospectPhone")}
+            />
+          </FormField>
+
+          <FormField
+            label="Email"
+            error={
+              errors.prospectEmail?.message
+            }
+          >
+            <FormInput
+              type="email"
+              placeholder="rahul@example.com"
+              {...register("prospectEmail")}
+            />
+          </FormField>
+
+          <FormField
+            label="Address"
+            error={
+              errors.prospectAddress?.message
+            }
+          >
+            <FormInput
+              placeholder="Client address"
+              {...register("prospectAddress")}
+            />
+          </FormField>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------- */}
+      {/* Proposed Event                                     */}
+      {/* -------------------------------------------------- */}
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-base font-semibold">
+            Proposed Event
+          </h3>
+
+          <p className="text-sm text-slate-500">
+            This describes the event being quoted.
+            It is not a confirmed Event record yet.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField
+            label="Event Name"
+            error={
+              errors.eventName?.message
+            }
+          >
+            <FormInput
+              placeholder="Rahul & Priya Wedding"
+              {...register("eventName")}
+            />
+          </FormField>
+
+          <FormField
+            label="Event Type"
+            error={
+              errors.eventType?.message
+            }
+          >
+            <FormInput
+              placeholder="Wedding"
+              {...register("eventType")}
+            />
+          </FormField>
+
+          <FormField
+            label="Event Date"
+            error={
+              errors.eventDate?.message
+            }
+          >
+            <FormInput
+              type="date"
+              {...register("eventDate")}
+            />
+          </FormField>
+
+          <FormField
+            label="Guest Count"
+            error={
+              errors.guestCount?.message
+            }
+          >
+            <FormInput
+              type="number"
+              min="1"
+              step="1"
+              placeholder="250"
+              {...register("guestCount")}
+            />
+          </FormField>
+
+          <div className="md:col-span-2">
+            <FormField
+              label="Venue"
+              error={
+                errors.venue?.message
+              }
+            >
+              <FormInput
+                placeholder="The Grand Palace"
+                {...register("venue")}
+              />
+            </FormField>
+          </div>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------- */}
+      {/* Quotation Details                                  */}
+      {/* -------------------------------------------------- */}
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-base font-semibold">
+            Quotation Details
+          </h3>
+
+          <p className="text-sm text-slate-500">
+            Set the quotation issue date and validity.
+          </p>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField
+            label="Issue Date"
+            error={
+              errors.quotationDate?.message
+            }
+          >
+            <FormInput
+              type="date"
+              {...register("quotationDate")}
+            />
+          </FormField>
+
+          <FormField
+            label="Valid Until"
+            error={
+              errors.validUntil?.message
+            }
+          >
+            <FormInput
+              type="date"
+              {...register("validUntil")}
+            />
+          </FormField>
+        </div>
+      </section>
+
+      {/* -------------------------------------------------- */}
+      {/* Line Items                                         */}
+      {/* -------------------------------------------------- */}
+
+      <section className="space-y-4">
+        <div>
+          <h3 className="text-base font-semibold">
             Line Items
           </h3>
 
           <p className="text-xs text-slate-500">
-            Add the services included
-            in this quotation.
+            Add the services included in this quotation.
           </p>
         </div>
 
@@ -365,12 +394,11 @@ export function QuotationForm({
                 error={
                   errors.items?.[
                     index
-                  ]?.description
-                    ?.message
+                  ]?.description?.message
                 }
               >
                 <FormInput
-                  placeholder="Venue coordination"
+                  placeholder="Venue decoration"
                   {...register(
                     `items.${index}.description`
                   )}
@@ -386,8 +414,7 @@ export function QuotationForm({
                 error={
                   errors.items?.[
                     index
-                  ]?.quantity
-                    ?.message
+                  ]?.quantity?.message
                 }
               >
                 <FormInput
@@ -409,8 +436,7 @@ export function QuotationForm({
                 error={
                   errors.items?.[
                     index
-                  ]?.unitPrice
-                    ?.message
+                  ]?.unitPrice?.message
                 }
               >
                 <FormInput
@@ -460,83 +486,93 @@ export function QuotationForm({
         >
           + Add Line Item
         </Button>
-      </div>
+      </section>
 
-      <div className="grid gap-5 md:grid-cols-2">
-        <FormField
-          label="Discount"
-          error={
-            errors.discount?.message
-          }
-        >
-          <FormInput
-            type="number"
-            min="0"
-            step="0.01"
-            {...register("discount")}
-          />
-        </FormField>
+      {/* -------------------------------------------------- */}
+      {/* Pricing                                            */}
+      {/* -------------------------------------------------- */}
 
-        <FormField
-          label="Tax"
-          error={
-            errors.tax?.message
-          }
-        >
-          <FormInput
-            type="number"
-            min="0"
-            step="0.01"
-            {...register("tax")}
-          />
-        </FormField>
-      </div>
+      <section className="space-y-4">
+        <div className="grid gap-5 md:grid-cols-2">
+          <FormField
+            label="Discount"
+            error={
+              errors.discount?.message
+            }
+          >
+            <FormInput
+              type="number"
+              min="0"
+              step="0.01"
+              {...register("discount")}
+            />
+          </FormField>
 
-      <div className="rounded-xl border bg-slate-50 p-5">
-        <div className="flex justify-between text-sm">
-          <span>Subtotal</span>
-
-          <span>
-            ₹
-            {subtotal.toLocaleString(
-              "en-IN"
-            )}
-          </span>
+          <FormField
+            label="Tax"
+            error={
+              errors.tax?.message
+            }
+          >
+            <FormInput
+              type="number"
+              min="0"
+              step="0.01"
+              {...register("tax")}
+            />
+          </FormField>
         </div>
 
-        <div className="mt-2 flex justify-between text-sm">
-          <span>Discount</span>
+        <div className="rounded-xl border bg-slate-50 p-5">
+          <div className="flex justify-between text-sm">
+            <span>Subtotal</span>
 
-          <span>
-            − ₹
-            {discountAmount.toLocaleString(
-              "en-IN"
-            )}
-          </span>
+            <span>
+              ₹
+              {subtotal.toLocaleString(
+                "en-IN"
+              )}
+            </span>
+          </div>
+
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Discount</span>
+
+            <span>
+              − ₹
+              {discountAmount.toLocaleString(
+                "en-IN"
+              )}
+            </span>
+          </div>
+
+          <div className="mt-2 flex justify-between text-sm">
+            <span>Tax</span>
+
+            <span>
+              + ₹
+              {taxAmount.toLocaleString(
+                "en-IN"
+              )}
+            </span>
+          </div>
+
+          <div className="mt-4 flex justify-between border-t pt-4 text-lg font-bold">
+            <span>Total</span>
+
+            <span>
+              ₹
+              {total.toLocaleString(
+                "en-IN"
+              )}
+            </span>
+          </div>
         </div>
+      </section>
 
-        <div className="mt-2 flex justify-between text-sm">
-          <span>Tax</span>
-
-          <span>
-            + ₹
-            {taxAmount.toLocaleString(
-              "en-IN"
-            )}
-          </span>
-        </div>
-
-        <div className="mt-4 flex justify-between border-t pt-4 text-lg font-bold">
-          <span>Total</span>
-
-          <span>
-            ₹
-            {total.toLocaleString(
-              "en-IN"
-            )}
-          </span>
-        </div>
-      </div>
+      {/* -------------------------------------------------- */}
+      {/* Notes                                              */}
+      {/* -------------------------------------------------- */}
 
       <FormField
         label="Notes"
@@ -550,6 +586,10 @@ export function QuotationForm({
           className="min-h-24 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none focus:ring-2"
         />
       </FormField>
+
+      {/* -------------------------------------------------- */}
+      {/* Actions                                             */}
+      {/* -------------------------------------------------- */}
 
       <FormActions
         onCancel={onCancel}

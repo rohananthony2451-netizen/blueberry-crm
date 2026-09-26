@@ -230,18 +230,18 @@ export function PaymentForm({
     }
 
     if (
-      quotation.clientId !==
-      selectedClientId
-    ) {
-      setValue(
-        "clientId",
-        quotation.clientId,
-        {
-          shouldValidate: true,
-          shouldDirty: true,
-        }
-      );
+  quotation.clientId &&
+  quotation.clientId !== selectedClientId
+) {
+  setValue(
+    "clientId",
+    quotation.clientId,
+    {
+      shouldValidate: true,
+      shouldDirty: true,
     }
+  );
+}
 
     const quotationEventId =
       quotation.eventId ?? "";

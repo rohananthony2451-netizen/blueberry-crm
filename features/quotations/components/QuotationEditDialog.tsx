@@ -57,48 +57,37 @@ export function QuotationEditDialog({
         }
 
         return {
-          clientId:
-            quotation.clientId,
+  clientId: quotation.clientId ?? "",
+  leadId: quotation.leadId ?? "",
 
-          eventId:
-            quotation.eventId ?? "",
+  prospectName: quotation.prospectName,
+  prospectPhone: quotation.prospectPhone,
+  prospectEmail: quotation.prospectEmail,
+  prospectAddress: quotation.prospectAddress,
 
-          quotationDate:
-            quotation.quotationDate,
+  eventName: quotation.proposedEventName,
+  eventType: quotation.proposedEventType,
+  eventDate: quotation.proposedEventDate,
+  venue: quotation.proposedVenue,
+  guestCount: String(
+    quotation.proposedGuestCount
+  ),
 
-          validUntil:
-            quotation.validUntil ?? "",
+  quotationDate: quotation.quotationDate,
+  validUntil: quotation.validUntil ?? "",
 
-          discount:
-            String(
-              quotation.discount
-            ),
+  discount: String(quotation.discount),
+  tax: String(quotation.tax),
 
-          tax:
-            String(
-              quotation.tax
-            ),
+  notes: quotation.notes,
 
-          notes:
-            quotation.notes,
-
-          items:
-            quotation.items.map(
-              (item) => ({
-                id: item.id,
-                description:
-                  item.description,
-                quantity:
-                  String(
-                    item.quantity
-                  ),
-                unitPrice:
-                  String(
-                    item.unitPrice
-                  ),
-              })
-            ),
-        };
+  items: quotation.items.map((item) => ({
+    id: item.id,
+    description: item.description,
+    quantity: String(item.quantity),
+    unitPrice: String(item.unitPrice),
+  })),
+}
       },
       [quotation]
     );
@@ -154,9 +143,7 @@ export function QuotationEditDialog({
           </div>
         ) : (
           <QuotationForm
-            clients={clients}
-            events={events}
-            initialValues={
+             initialValues={
               initialValues
             }
             onCancel={() =>
