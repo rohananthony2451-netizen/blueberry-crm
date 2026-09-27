@@ -273,6 +273,65 @@ export function PaymentForm({
    * one quotation  -> auto-select
    * multiple       -> user chooses
    */
+    /*
+   * Client selection:
+   *
+   * one event  -> auto-select
+   * multiple  -> user chooses
+   */
+  useEffect(() => {
+    if (!selectedClientId) {
+      return;
+    }
+
+    if (clientEvents.length === 1) {
+      const onlyEvent = clientEvents[0];
+
+      if (selectedEventId !== onlyEvent.id) {
+        setValue(
+          "eventId",
+          onlyEvent.id,
+          {
+            shouldValidate: true,
+            shouldDirty: true,
+          }
+        );
+      }
+
+      return;
+    }
+
+    if (
+      selectedEventId &&
+      !clientEvents.some(
+        (event) => event.id === selectedEventId
+      )
+    ) {
+      setValue(
+        "eventId",
+        "",
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
+
+      setValue(
+        "quotationId",
+        "",
+        {
+          shouldValidate: true,
+          shouldDirty: true,
+        }
+      );
+    }
+  }, [
+    selectedClientId,
+    selectedEventId,
+    clientEvents,
+    setValue,
+  ]);
+
   useEffect(() => {
     if (!selectedEventId) {
       return;
