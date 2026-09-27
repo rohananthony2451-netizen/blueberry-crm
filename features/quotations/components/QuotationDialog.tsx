@@ -13,7 +13,6 @@ import {
 import { QuotationForm } from "./QuotationForm";
 
 import { useClients } from "@/features/clients/hooks/useClients";
-import { useEvents } from "@/features/events/hooks/useEvents";
 
 import type {
   QuotationFormValues,
@@ -41,11 +40,6 @@ export function QuotationDialog({
     loading: clientsLoading,
   } = useClients();
 
-  const {
-    events,
-    loading: eventsLoading,
-  } = useEvents();
-
   const [saving, setSaving] =
     useState(false);
 
@@ -63,10 +57,6 @@ export function QuotationDialog({
     }
   }
 
-  const loading =
-    clientsLoading ||
-    eventsLoading;
-
   return (
     <Dialog
       open={open}
@@ -79,27 +69,22 @@ export function QuotationDialog({
           </DialogTitle>
 
           <DialogDescription>
-            Create a quotation for your client
+            Create a quotation for this prospect
             and save it as a draft.
           </DialogDescription>
         </DialogHeader>
 
-        {loading ? (
+        {clientsLoading ? (
           <div className="py-10 text-center text-sm text-slate-500">
-            Loading clients and events...
-          </div>
-        ) : clients.length === 0 ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-700">
-            Please create at least one client
-            before creating a quotation.
+            Loading...
           </div>
         ) : (
           <QuotationForm
             key={
-              initialValues?.clientId ??
+              initialValues?.leadId ||
+              initialValues?.clientId ||
               "new-quotation"
             }
-          
             initialValues={initialValues}
             onCancel={() =>
               onOpenChange(false)
