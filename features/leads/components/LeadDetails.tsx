@@ -74,6 +74,7 @@ export function LeadDetails({
           description: "",
           quantity: "1",
           unitPrice: "0",
+          ourExpense: false,
         },
       ],
     }),
@@ -124,6 +125,8 @@ export function LeadDetails({
           quantity,
           unitPrice,
           amount: quantity * unitPrice,
+            ourExpense:
+    item.ourExpense,
         };
       }),
     });

@@ -3,13 +3,14 @@ import { QUOTATION_STATUSES } from "./constants";
 export type QuotationStatus =
   (typeof QUOTATION_STATUSES)[number];
 
-export interface QuotationItem {
+  export interface QuotationItem {
   id: string;
   quotationId: string;
   description: string;
   quantity: number;
   unitPrice: number;
   amount: number;
+  ourExpense: boolean;
   createdAt: string;
 }
 
@@ -63,6 +64,7 @@ export interface QuotationItemFormValues {
   description: string;
   quantity: string;
   unitPrice: string;
+  ourExpense: boolean;
 }
 
 export interface QuotationFormValues {

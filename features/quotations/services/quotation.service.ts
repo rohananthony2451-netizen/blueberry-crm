@@ -34,6 +34,7 @@ export interface QuotationInput {
     quantity: number;
     unitPrice: number;
     amount: number;
+    ourExpense: boolean;
   }[];
 }
 
@@ -44,6 +45,7 @@ interface QuotationItemRow {
   quantity: number | string;
   unit_price: number | string;
   amount: number | string;
+  our_expense: boolean;
   created_at: string;
 }
 
@@ -103,6 +105,7 @@ function mapQuotationItem(
     quantity: Number(row.quantity),
     unitPrice: Number(row.unit_price),
     amount: Number(row.amount),
+    ourExpense: row.our_expense,
     createdAt: row.created_at,
   };
 }
@@ -476,6 +479,9 @@ export async function createQuotation(
 
         amount:
           item.amount,
+
+        our_expense:
+          item.ourExpense,
       })
     );
 
@@ -613,11 +619,6 @@ export async function updateQuotation(
     );
   }
 
-  /*
-   * Keep existing quotation item IDs
-   * whenever possible.
-   */
-
   const existingItemIds =
     existingQuotation.items.map(
       (item) => item.id
@@ -680,6 +681,9 @@ export async function updateQuotation(
 
           amount:
             item.amount,
+
+          our_expense:
+            item.ourExpense,
         })
         .eq("id", item.id)
         .eq(
@@ -712,6 +716,9 @@ export async function updateQuotation(
 
           amount:
             item.amount,
+
+          our_expense:
+            item.ourExpense,
         });
 
       if (insertItemError) {

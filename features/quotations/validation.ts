@@ -48,6 +48,16 @@ const quotationItemSchema = z.object({
       },
       "Unit price cannot be negative."
     ),
+
+  /*
+   * When true, this quotation item represents
+   * money the business expects to owe someone
+   * after the quotation is accepted.
+   *
+   * Default is handled when creating the form
+   * values. Validation simply requires a boolean.
+   */
+  ourExpense: z.boolean(),
 });
 
 export const quotationSchema = z.object({

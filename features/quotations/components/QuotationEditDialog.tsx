@@ -86,6 +86,7 @@ export function QuotationEditDialog({
     description: item.description,
     quantity: String(item.quantity),
     unitPrice: String(item.unitPrice),
+    ourExpense: item.ourExpense,
   })),
 }
       },

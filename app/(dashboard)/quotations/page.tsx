@@ -130,6 +130,9 @@ export default function QuotationsPage() {
             unitPrice,
             amount:
               quantity * unitPrice,
+              ourExpense:
+    item.ourExpense,
+
           };
         }
       ),
@@ -242,6 +245,8 @@ export default function QuotationsPage() {
             unitPrice,
             amount:
               quantity * unitPrice,
+              ourExpense:
+                  item.ourExpense,
           };
         }
       ),

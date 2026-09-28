@@ -120,6 +120,7 @@ export function ClientDetails({
             description: "",
             quantity: "1",
             unitPrice: "0",
+             ourExpense: false,
           },
         ],
       }),
@@ -264,6 +265,8 @@ leadId:
               amount:
                 quantity *
                 unitPrice,
+                 ourExpense:
+                  item.ourExpense,
             };
           }
         ),

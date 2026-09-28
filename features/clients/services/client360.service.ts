@@ -46,6 +46,7 @@ interface QuotationItemRow {
   quantity: number | string;
   unit_price: number | string;
   amount: number | string;
+   our_expense: boolean;
   created_at: string;
 }
 
@@ -172,6 +173,7 @@ function mapQuotationItem(
     quantity: Number(row.quantity),
     unitPrice: Number(row.unit_price),
     amount: Number(row.amount),
+     ourExpense: row.our_expense,
     createdAt: row.created_at,
   };
 }

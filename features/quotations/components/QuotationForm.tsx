@@ -80,6 +80,7 @@ export function QuotationForm({
             description: "",
             quantity: "1",
             unitPrice: "0",
+            ourExpense: false,
           },
         ],
       },
@@ -383,7 +384,7 @@ export function QuotationForm({
           (field, index) => (
             <div
               key={field.id}
-              className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_auto]"
+              className="grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_auto]"
             >
               <FormField
                 label={
@@ -449,6 +450,32 @@ export function QuotationForm({
                 />
               </FormField>
 
+              {/* Our Expense switch */}
+
+              <div
+                className={
+                  index === 0
+                    ? "pt-6"
+                    : ""
+                }
+              >
+                <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg border px-3">
+                  <input
+                    type="checkbox"
+                    {...register(
+                      `items.${index}.ourExpense`
+                    )}
+                    className="h-4 w-4"
+                  />
+
+                  <span className="whitespace-nowrap text-sm">
+                    Our Expense?
+                  </span>
+                </label>
+              </div>
+
+              {/* Remove */}
+
               <div
                 className={
                   index === 0
@@ -481,6 +508,7 @@ export function QuotationForm({
               description: "",
               quantity: "1",
               unitPrice: "0",
+              ourExpense: false,
             })
           }
         >
