@@ -31,6 +31,30 @@ interface EventRow {
   } | null;
 }
 
+function getDateBasedStatus(
+  eventDate: string
+): Event["status"] {
+  // Use local calendar dates, not UTC timestamps.
+  const today = new Date();
+  const todayKey = [
+    today.getFullYear(),
+    String(today.getMonth() + 1).padStart(2, "0"),
+    String(today.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  const dateKey = eventDate.slice(0, 10);
+
+  if (dateKey > todayKey) {
+    return "Upcoming";
+  }
+
+  if (dateKey < todayKey) {
+    return "Completed";
+  }
+
+  return "In Progress";
+}
+
 function mapEventRow(
   event: EventRow
 ): Event {
@@ -44,7 +68,10 @@ function mapEventRow(
     eventType: event.event_type,
     eventDate: event.event_date,
     venue: event.venue,
-    status: event.status,
+    status:
+      event.status === "Cancelled"
+        ? "Cancelled"
+        : getDateBasedStatus(event.event_date),
     guestCount: event.guest_count,
   };
 }

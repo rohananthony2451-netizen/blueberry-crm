@@ -20,6 +20,17 @@ interface ObligationRowProps {
   ) => Promise<void>;
 }
 
+interface EventGroup {
+  eventId: string;
+  eventName: string;
+  eventDate: string;
+  clientName: string;
+  items: EventCostObligation[];
+  totalOwed: number;
+  totalPaid: number;
+  totalRemaining: number;
+}
+
 function formatCurrency(value: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -123,15 +134,13 @@ function ObligationRow({
     numericPaid >= 0 &&
     numericPaid <= numericAmount;
 
-  const remaining =
-    validNumbers
-      ? Math.max(0, numericAmount - numericPaid)
-      : null;
+  const remaining = validNumbers
+    ? Math.max(0, numericAmount - numericPaid)
+    : null;
 
-  const status =
-    validNumbers
-      ? getPaymentStatus(numericAmount, numericPaid)
-      : null;
+  const status = validNumbers
+    ? getPaymentStatus(numericAmount, numericPaid)
+    : null;
 
   async function handleSave() {
     setLocalError(null);
@@ -161,20 +170,16 @@ function ObligationRow({
   }
 
   return (
-    <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <article className="rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="break-words text-base font-semibold text-slate-900">
+          <h4 className="break-words font-semibold text-slate-900">
             {item.description}
-          </h3>
-          <p className="mt-1 text-sm text-slate-600">
-            {item.eventName}
-          </p>
+          </h4>
           <p className="mt-1 text-xs text-slate-500">
-            {item.clientName} · {formatDate(item.eventDate)}
             {item.quotationNumber
-              ? ` · ${item.quotationNumber}`
-              : ""}
+              ? `Quotation ${item.quotationNumber}`
+              : "Quotation item"}
           </p>
         </div>
 
@@ -187,7 +192,7 @@ function ObligationRow({
         )}
       </div>
 
-      <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <label className="block">
           <span className="text-sm font-medium text-slate-700">
             Amount Owed (₹)
@@ -243,18 +248,13 @@ function ObligationRow({
             Remaining
           </p>
           <p className="mt-2 text-xl font-semibold text-slate-900">
-            {remaining === null
-              ? "—"
-              : formatCurrency(remaining)}
+            {remaining === null ? "—" : formatCurrency(remaining)}
           </p>
         </div>
       </div>
 
       {localError && (
-        <p
-          role="alert"
-          className="mt-3 text-sm text-red-600"
-        >
+        <p role="alert" className="mt-3 text-sm text-red-600">
           {localError}
         </p>
       )}
@@ -275,6 +275,136 @@ function ObligationRow({
           {saving ? "Saving..." : "Save Changes"}
         </button>
       </div>
+    </article>
+  );
+}
+
+function buildEventGroups(
+  obligations: EventCostObligation[]
+): EventGroup[] {
+  const groups = new Map<string, EventGroup>();
+
+  for (const item of obligations) {
+    const existing = groups.get(item.eventId);
+
+    if (existing) {
+      existing.items.push(item);
+      existing.totalOwed += item.amount;
+      existing.totalPaid += item.paid;
+      existing.totalRemaining += item.remaining;
+      continue;
+    }
+
+    groups.set(item.eventId, {
+      eventId: item.eventId,
+      eventName: item.eventName,
+      eventDate: item.eventDate,
+      clientName: item.clientName,
+      items: [item],
+      totalOwed: item.amount,
+      totalPaid: item.paid,
+      totalRemaining: item.remaining,
+    });
+  }
+
+  return Array.from(groups.values()).sort((a, b) => {
+    const dateComparison = a.eventDate.localeCompare(b.eventDate);
+    if (dateComparison !== 0) return dateComparison;
+    return a.eventName.localeCompare(b.eventName);
+  });
+}
+
+function EventObligationCard({
+  group,
+  savingId,
+  onSave,
+}: {
+  group: EventGroup;
+  savingId: string | null;
+  onSave: ObligationRowProps["onSave"];
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <button
+        type="button"
+        onClick={() => setExpanded((current) => !current)}
+        aria-expanded={expanded}
+        className="w-full p-5 text-left transition hover:bg-slate-50 sm:p-6"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="break-words text-lg font-semibold text-slate-900">
+                {group.eventName}
+              </h3>
+              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                {group.items.length}{" "}
+                {group.items.length === 1 ? "item" : "items"}
+              </span>
+            </div>
+            <p className="mt-1 text-sm text-slate-600">
+              {group.clientName}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {formatDate(group.eventDate)}
+            </p>
+          </div>
+
+          <span className="shrink-0 pt-1 text-slate-500" aria-hidden="true">
+            {expanded ? "−" : "+"}
+          </span>
+        </div>
+
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="rounded-lg bg-slate-50 p-3">
+            <p className="text-xs font-medium text-slate-500">
+              Total Owed
+            </p>
+            <p className="mt-1 break-words text-base font-semibold text-slate-900">
+              {formatCurrency(group.totalOwed)}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-emerald-50/70 p-3">
+            <p className="text-xs font-medium text-emerald-700">
+              Already Paid
+            </p>
+            <p className="mt-1 break-words text-base font-semibold text-emerald-800">
+              {formatCurrency(group.totalPaid)}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-amber-50/70 p-3">
+            <p className="text-xs font-medium text-amber-700">
+              Still to Pay
+            </p>
+            <p className="mt-1 break-words text-base font-semibold text-amber-800">
+              {formatCurrency(group.totalRemaining)}
+            </p>
+          </div>
+        </div>
+
+        <p className="mt-3 text-xs font-medium text-slate-500">
+          {expanded
+            ? "Hide expense details"
+            : "Open to view and edit individual expenses"}
+        </p>
+      </button>
+
+      {expanded && (
+        <div className="space-y-3 border-t border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+          {group.items.map((item) => (
+            <ObligationRow
+              key={item.id}
+              item={item}
+              saving={savingId === item.id}
+              onSave={onSave}
+            />
+          ))}
+        </div>
+      )}
     </article>
   );
 }
@@ -308,6 +438,8 @@ export default function ExpensesPage() {
   const unassignedCount = obligations.filter(
     (item) => !item.owedTo.trim()
   ).length;
+
+  const eventGroups = buildEventGroups(obligations);
 
   async function handleSave(
     id: string,
@@ -347,8 +479,8 @@ export default function ExpensesPage() {
             Money We Owe
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-slate-600">
-            Track what you need to pay for confirmed events,
-            what you have already paid, and what remains.
+            View expenses by event, see the overall balance,
+            and edit individual payments without mixing events together.
           </p>
         </div>
 
@@ -410,9 +542,7 @@ export default function ExpensesPage() {
           <h2 className="font-semibold text-red-800">
             Could not load obligations
           </h2>
-          <p className="mt-2 text-sm text-red-700">
-            {error}
-          </p>
+          <p className="mt-2 text-sm text-red-700">{error}</p>
           <button
             type="button"
             onClick={() => void refresh()}
@@ -436,29 +566,31 @@ export default function ExpensesPage() {
         </div>
       )}
 
-      {obligations.length > 0 && (
+      {!error && eventGroups.length > 0 && (
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">
-              Event obligations
+              Expenses by event
             </h2>
             <p className="mt-1 text-sm text-slate-500">
+              {eventGroups.length}{" "}
+              {eventGroups.length === 1 ? "event" : "events"} ·{" "}
               {obligations.length}{" "}
-              {obligations.length === 1
-                ? "item"
-                : "items"}{" "}
-              across your confirmed events.
+              {obligations.length === 1 ? "expense item" : "expense items"}.
+              Open an event to view and edit its individual expenses.
             </p>
           </div>
 
-          {obligations.map((item) => (
-            <ObligationRow
-              key={item.id}
-              item={item}
-              saving={savingId === item.id}
-              onSave={handleSave}
-            />
-          ))}
+          <div className="space-y-4">
+            {eventGroups.map((group) => (
+              <EventObligationCard
+                key={group.eventId}
+                group={group}
+                savingId={savingId}
+                onSave={handleSave}
+              />
+            ))}
+          </div>
         </section>
       )}
     </main>

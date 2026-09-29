@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Check,
-  Play,
   RotateCcw,
   X,
 } from "lucide-react";
@@ -16,15 +14,11 @@ import { EventTypeBadge } from "./EventTypeBadge";
 
 interface EventDetailsProps {
   event: Event;
-
   onEdit?: () => void;
-
   onDelete?: () => void;
-
   onStatusChange?: (
     status: Event["status"]
   ) => Promise<void>;
-
   statusUpdating?: boolean;
 }
 
@@ -38,10 +32,7 @@ export function EventDetails({
   async function handleStatusChange(
     status: Event["status"]
   ) {
-    if (!onStatusChange) {
-      return;
-    }
-
+    if (!onStatusChange) return;
     await onStatusChange(status);
   }
 
@@ -64,9 +55,7 @@ export function EventDetails({
           </p>
 
           <div className="mt-1">
-            <EventTypeBadge
-              type={event.eventType}
-            />
+            <EventTypeBadge type={event.eventType} />
           </div>
         </div>
 
@@ -91,135 +80,55 @@ export function EventDetails({
           </p>
 
           <div className="mt-1">
-            <EventStatusBadge
-              status={event.status}
-            />
+            <EventStatusBadge status={event.status} />
           </div>
+
+          <p className="mt-2 text-xs text-slate-500">
+            Status is determined automatically by the
+            event date. Cancelled events remain cancelled.
+          </p>
         </div>
       </div>
 
-      {/* Lifecycle actions */}
       <div className="rounded-2xl border bg-slate-50/70 p-4">
-        <div>
-          <p className="text-sm font-semibold">
-            Event Status
-          </p>
+        <p className="text-sm font-semibold">
+          Booking Controls
+        </p>
 
-          <p className="mt-1 text-xs text-slate-500">
-            Update the operational status of this event.
-          </p>
-        </div>
+        <p className="mt-1 text-xs text-slate-500">
+          Accepting a quotation confirms the booking.
+          You do not need to start the event manually.
+        </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {event.status ===
-            "Upcoming" && (
-            <>
-              <Button
-                type="button"
-                disabled={
-                  statusUpdating
-                }
-                onClick={() =>
-                  handleStatusChange(
-                    "In Progress"
-                  )
-                }
-              >
-                <Play size={15} />
-                {statusUpdating
-                  ? "Updating..."
-                  : "Start Event"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                disabled={
-                  statusUpdating
-                }
-                onClick={() =>
-                  handleStatusChange(
-                    "Cancelled"
-                  )
-                }
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <X size={15} />
-                Cancel Event
-              </Button>
-            </>
-          )}
-
-          {event.status ===
-            "In Progress" && (
-            <>
-              <Button
-                type="button"
-                disabled={
-                  statusUpdating
-                }
-                onClick={() =>
-                  handleStatusChange(
-                    "Completed"
-                  )
-                }
-              >
-                <Check size={15} />
-                {statusUpdating
-                  ? "Updating..."
-                  : "Mark Completed"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                disabled={
-                  statusUpdating
-                }
-                onClick={() =>
-                  handleStatusChange(
-                    "Cancelled"
-                  )
-                }
-                className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-              >
-                <X size={15} />
-                Cancel Event
-              </Button>
-            </>
-          )}
-
-          {event.status ===
-            "Completed" && (
+          {event.status !== "Cancelled" && (
             <Button
               type="button"
               variant="outline"
               disabled={
-                statusUpdating
+                statusUpdating || !onStatusChange
               }
               onClick={() =>
-                handleStatusChange(
-                  "In Progress"
-                )
+                void handleStatusChange("Cancelled")
               }
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
             >
-              <RotateCcw size={15} />
+              <X size={15} />
               {statusUpdating
                 ? "Updating..."
-                : "Reopen Event"}
+                : "Cancel Event"}
             </Button>
           )}
 
-          {event.status ===
-            "Cancelled" && (
+          {event.status === "Cancelled" && (
             <Button
               type="button"
               variant="outline"
               disabled={
-                statusUpdating
+                statusUpdating || !onStatusChange
               }
               onClick={() =>
-                handleStatusChange(
+                void handleStatusChange(
                   "Upcoming"
                 )
               }
