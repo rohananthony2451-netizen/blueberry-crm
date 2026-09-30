@@ -47,7 +47,10 @@ export function QuotationEditDialog({
   } = useEvents();
 
   const [saving, setSaving] =
-    useState(false);
+  useState(false);
+
+const [saveError, setSaveError] =
+  useState<string | null>(null);
 
   const initialValues =
     useMemo<QuotationFormValues | undefined>(
@@ -101,21 +104,28 @@ export function QuotationEditDialog({
     quotation;
 
   async function handleSave(
-    data: QuotationFormValues
-  ) {
-    try {
-      setSaving(true);
+  data: QuotationFormValues
+) {
+  try {
+    setSaving(true);
+    setSaveError(null);
 
-      await onSave(
-        currentQuotation.id,
-        data
-      );
+    await onSave(
+      currentQuotation.id,
+      data
+    );
 
-      onOpenChange(false);
-    } finally {
-      setSaving(false);
-    }
+    onOpenChange(false);
+  } catch (err) {
+    setSaveError(
+      err instanceof Error
+        ? err.message
+        : "Failed to update quotation. Please try again."
+    );
+  } finally {
+    setSaving(false);
   }
+}
 
   const loading =
     clientsLoading ||
@@ -137,6 +147,21 @@ export function QuotationEditDialog({
             and line items.
           </DialogDescription>
         </DialogHeader>
+
+{saveError && (
+  <div
+    role="alert"
+    className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800"
+  >
+    <p className="font-semibold">
+      Unable to update quotation
+    </p>
+
+    <p className="mt-1">
+      {saveError}
+    </p>
+  </div>
+)}
 
         {loading ? (
           <div className="py-10 text-center text-sm text-slate-500">

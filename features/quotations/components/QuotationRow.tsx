@@ -6,6 +6,7 @@ import {
   Send,
   Check,
   X,
+  LockKeyhole,
 } from "lucide-react";
 
 import type {
@@ -169,16 +170,31 @@ export function QuotationRow({
           </button>
 
           <button
-            type="button"
-            onClick={() =>
-              onEdit?.(quotation)
-            }
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Edit quotation"
-            title="Edit quotation"
-          >
-            <Pencil size={16} />
-          </button>
+  type="button"
+  disabled={quotation.status === "Accepted"}
+  onClick={() => onEdit?.(quotation)}
+  className={`rounded-lg p-2 transition ${
+    quotation.status === "Accepted"
+      ? "cursor-not-allowed text-slate-400"
+      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+  }`}
+  aria-label={
+    quotation.status === "Accepted"
+      ? "Accepted quotation cannot be edited"
+      : "Edit quotation"
+  }
+  title={
+    quotation.status === "Accepted"
+      ? "This quotation has been accepted. Its agreed terms are locked."
+      : "Edit quotation"
+  }
+>
+  {quotation.status === "Accepted" ? (
+    <LockKeyhole size={16} />
+  ) : (
+    <Pencil size={16} />
+  )}
+</button>
 
           <button
             type="button"

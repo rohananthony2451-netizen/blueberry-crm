@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { EVENT_TYPES } from "@/features/events/constants";
 
 const quotationItemSchema = z.object({
   id: z.string().optional(),
@@ -126,12 +127,15 @@ export const quotationSchema = z.object({
     ),
 
   eventType: z
-    .string()
-    .trim()
-    .min(
-      2,
-      "Event type must be at least 2 characters."
-    ),
+  .string()
+  .trim()
+  .refine(
+    (value) =>
+      EVENT_TYPES.includes(
+        value as (typeof EVENT_TYPES)[number]
+      ),
+    "Please select a valid event type."
+  ),
 
   eventDate: z
     .string()

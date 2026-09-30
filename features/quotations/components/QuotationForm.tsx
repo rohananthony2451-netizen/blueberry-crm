@@ -15,7 +15,8 @@ import { Button } from "@/components/ui/button";
 import { FormActions } from "@/components/forms/FormActions";
 import { FormField } from "@/components/forms/FormField";
 import { FormInput } from "@/components/forms/FormInput";
-
+import { FormSelect } from "@/components/forms/FormSelect";
+import { EVENT_TYPES } from "@/features/events/constants";
 import type { QuotationFormValues } from "../types";
 
 import { quotationSchema } from "../validation";
@@ -43,6 +44,7 @@ export function QuotationForm({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<QuotationFormValues>({
     resolver: zodResolver(quotationSchema),
@@ -115,6 +117,11 @@ export function QuotationForm({
     control,
     name: "tax",
   });
+
+  const eventType = useWatch({
+  control,
+  name: "eventType",
+});
 
   const subtotal =
     watchedItems?.reduce(
@@ -269,16 +276,21 @@ export function QuotationForm({
           </FormField>
 
           <FormField
-            label="Event Type"
-            error={
-              errors.eventType?.message
-            }
-          >
-            <FormInput
-              placeholder="Wedding"
-              {...register("eventType")}
-            />
-          </FormField>
+  label="Event Type"
+  error={errors.eventType?.message}
+>
+  <FormSelect
+    value={eventType ?? ""}
+    onValueChange={(value) =>
+      setValue("eventType", value, {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+    placeholder="Select Event Type"
+    options={[...EVENT_TYPES]}
+  />
+</FormField>
 
           <FormField
             label="Event Date"
