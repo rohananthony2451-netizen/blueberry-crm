@@ -1,5 +1,5 @@
 "use client";
-
+import { useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -13,6 +13,10 @@ export default function LoginPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const searchParams = useSearchParams();
+  const invitationToken = searchParams.get("invite");
+
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,8 +37,13 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    if (invitationToken) {
+  router.push(`/invite/${encodeURIComponent(invitationToken)}`);
+} else {
+  router.push("/dashboard");
+}
+
+router.refresh();
   }
 
   async function handleGoogleLogin() {
@@ -46,7 +55,11 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: invitationToken
+  ? `${window.location.origin}/auth/callback?invite=${encodeURIComponent(
+      invitationToken
+    )}`
+  : `${window.location.origin}/auth/callback`,
       },
     });
 
