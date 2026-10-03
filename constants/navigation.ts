@@ -50,6 +50,19 @@ export const navigation = [
     ],
   },
 
+
+    {
+    title: "Workspace",
+    items: [
+      {
+        title: "Team",
+        href: "/team",
+        icon: UsersRound,
+      },
+    ],
+  },
+
+
   {
     title: "Finance",
     items: [
