@@ -19,8 +19,9 @@ function LoginForm() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-
+  const [isSignUp, setIsSignUp] = useState(
+  Boolean(invitationToken)
+);
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
   ) {
@@ -185,26 +186,37 @@ function LoginForm() {
             </div>
 
             <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-              EventOS
-            </h1>
+  EventOS
+</h1>
 
-            <h2 className="mt-5 text-2xl font-bold tracking-tight text-slate-950">
-              {isSignUp
-                ? "Create your account"
-                : "Welcome back"}
-            </h2>
+{invitationToken ? (
+  <>
+    <div className="mt-5 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-5">
+      <p className="text-sm font-bold uppercase tracking-wide text-blue-600">
+        You&apos;re invited
+      </p>
 
-            <p className="mt-2 text-sm text-slate-500">
-              {isSignUp
-                ? "Create your EventOS account to continue."
-                : "Sign in to your event management workspace"}
-            </p>
+      <h2 className="mt-2 text-2xl font-bold tracking-tight text-slate-950">
+        Join your EventOS team
+      </h2>
 
-            {invitationToken && (
-              <p className="mt-3 text-xs font-medium text-blue-600">
-                You are joining an EventOS workspace.
-              </p>
-            )}
+      <p className="mt-2 text-sm leading-6 text-slate-600">
+        Create your staff account to join the workspace
+        you were invited to.
+      </p>
+    </div>
+  </>
+) : (
+  <>
+    <h2 className="mt-5 text-2xl font-bold tracking-tight text-slate-950">
+      Welcome back
+    </h2>
+
+    <p className="mt-2 text-sm text-slate-500">
+      Sign in to your event management workspace
+    </p>
+  </>
+)}
           </div>
 
           {/* Login / Signup Card */}
@@ -244,9 +256,11 @@ function LoginForm() {
                 />
               </svg>
 
-              {isSignUp
-                ? "Sign up with Google"
-                : "Continue with Google"}
+              {invitationToken
+  ? "Join with Google"
+  : isSignUp
+    ? "Sign up with Google"
+    : "Continue with Google"}
             </button>
 
             {/* Divider */}

@@ -10,6 +10,7 @@ export interface TeamMember {
 
 export interface PendingInvitation {
   id: string;
+  fullName: string;
   email: string;
   role: TeamRole;
   expiresAt: string;
@@ -18,6 +19,7 @@ export interface PendingInvitation {
 
 export interface CreateInvitationResult {
   invitationId: string;
+  fullName: string;
   email: string;
   role: TeamRole;
   token: string;

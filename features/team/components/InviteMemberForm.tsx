@@ -11,7 +11,9 @@ interface InviteMemberFormProps {
 export default function InviteMemberForm({
   onCreated,
 }: InviteMemberFormProps) {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [inviteLink, setInviteLink] = useState("");
@@ -24,7 +26,14 @@ export default function InviteMemberForm({
     setError("");
     setInviteLink("");
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedName = fullName.trim();
+    const normalizedEmail =
+      email.trim().toLowerCase();
+
+    if (!normalizedName) {
+      setError("Please enter the team member's full name.");
+      return;
+    }
 
     if (!normalizedEmail) {
       setError("Please enter an email address.");
@@ -35,12 +44,15 @@ export default function InviteMemberForm({
 
     try {
       const result = await createInvitation(
+        normalizedName,
         normalizedEmail
       );
 
-      const link = `${window.location.origin}/invite/${result.token}`;
+      const link =
+        `${window.location.origin}/invite/${result.token}`;
 
       setInviteLink(link);
+      setFullName("");
       setEmail("");
 
       onCreated();
@@ -56,9 +68,19 @@ export default function InviteMemberForm({
   }
 
   async function handleCopy() {
-    if (!inviteLink) return;
+    if (!inviteLink) {
+      return;
+    }
 
-    await navigator.clipboard.writeText(inviteLink);
+    try {
+      await navigator.clipboard.writeText(
+        inviteLink
+      );
+    } catch {
+      setError(
+        "Could not copy the link. Please copy it manually."
+      );
+    }
   }
 
   return (
@@ -69,15 +91,27 @@ export default function InviteMemberForm({
         </h2>
 
         <p className="mt-1 text-sm text-slate-500">
-          Send a secure invitation to a staff member.
+          Add a staff member to your EventOS workspace.
           The invitation expires after 7 days.
         </p>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-3 sm:flex-row"
+        className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]"
       >
+        <input
+          type="text"
+          value={fullName}
+          onChange={(event) =>
+            setFullName(event.target.value)
+          }
+          placeholder="Full name"
+          disabled={loading}
+          required
+          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-50"
+        />
+
         <input
           type="email"
           value={email}
@@ -86,7 +120,8 @@ export default function InviteMemberForm({
           }
           placeholder="employee@example.com"
           disabled={loading}
-          className="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-50"
+          required
+          className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 disabled:bg-slate-50"
         />
 
         <button
@@ -94,7 +129,9 @@ export default function InviteMemberForm({
           disabled={loading}
           className="h-11 rounded-xl bg-blue-600 px-5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading ? "Creating..." : "Create invitation"}
+          {loading
+            ? "Creating..."
+            : "Create invitation"}
         </button>
       </form>
 
@@ -123,7 +160,7 @@ export default function InviteMemberForm({
 
             <button
               type="button"
-              onClick={handleCopy}
+              onClick={() => void handleCopy()}
               className="h-10 rounded-lg border border-blue-200 bg-white px-4 text-sm font-medium text-blue-700 hover:bg-blue-100"
             >
               Copy link

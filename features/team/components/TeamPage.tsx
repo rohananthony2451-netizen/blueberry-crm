@@ -95,7 +95,9 @@ export default function TeamPage() {
         </div>
       ) : (
         <>
-          <PendingInvitations invitations={invitations} />
+          <PendingInvitations
+  invitations={invitations}
+/>
 
           <TeamMembersTable members={members} />
         </>
