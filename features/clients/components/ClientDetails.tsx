@@ -9,6 +9,7 @@ import {
   CalendarDays,
   CheckCircle2,
   CreditCard,
+  Eye,
   FileText,
   Mail,
   MapPin,
@@ -31,6 +32,8 @@ import type { EventFormValues } from "@/features/events/validation";
 import { QuotationDialog } from "@/features/quotations/components/QuotationDialog";
 import { createQuotation } from "@/features/quotations/services/quotation.service";
 import type { QuotationFormValues } from "@/features/quotations/types";
+import { QuotationViewDialog } from "@/features/quotations/components/QuotationViewDialog";
+import type { Quotation } from "@/features/quotations/types";
 
 import { PaymentDialog } from "@/features/payments/components/PaymentDialog";
 import { createPayment } from "@/features/payments/services/payment.service";
@@ -65,6 +68,13 @@ export function ClientDetails({
 
   const [paymentDialogOpen, setPaymentDialogOpen] =
     useState(false);
+
+
+    const [quotationViewOpen, setQuotationViewOpen] =
+  useState(false);
+
+const [selectedQuotation, setSelectedQuotation] =
+  useState<Quotation | null>(null);
 
   const {
     data,
@@ -152,6 +162,13 @@ export function ClientDetails({
       }),
       [client.id]
     );
+
+    function handleViewQuotation(
+  quotation: Quotation
+) {
+  setSelectedQuotation(quotation);
+  setQuotationViewOpen(true);
+}
 
   async function handleDelete() {
     if (!onDelete) return;
@@ -557,36 +574,51 @@ export function ClientDetails({
             <LoadingList />
           ) : data?.quotations.length ? (
             <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
-              {data.quotations.map((quotation) => (
-                <div
-                  key={quotation.id}
-                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-semibold text-slate-950">
-                      {quotation.quotationNumber}
-                    </p>
+             {data.quotations.map((quotation) => (
+  <button
+    key={quotation.id}
+    type="button"
+    onClick={() =>
+      handleViewQuotation(quotation)
+    }
+    className="group flex w-full flex-col gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div className="min-w-0">
+      <div className="flex items-center gap-2">
+        <p className="font-semibold text-slate-950">
+          {quotation.quotationNumber}
+        </p>
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      {formatDate(
-                        quotation.quotationDate
-                      )}
-                    </p>
-                  </div>
+        <Eye
+          size={15}
+          className="text-slate-400 opacity-0 transition-opacity group-hover:opacity-100"
+        />
+      </div>
 
-                  <div className="flex items-center gap-4">
-                    <p className="font-semibold text-slate-950">
-                      {formatCurrency(
-                        quotation.total
-                      )}
-                    </p>
+      <p className="mt-1 text-sm text-slate-500">
+        {quotation.eventName ||
+          quotation.proposedEventName ||
+          "No event linked"}
+        {" · "}
+        {formatDate(
+          quotation.quotationDate
+        )}
+      </p>
+    </div>
 
-                    <StatusPill
-                      status={quotation.status}
-                    />
-                  </div>
-                </div>
-              ))}
+    <div className="flex items-center gap-4">
+      <p className="font-semibold text-slate-950">
+        {formatCurrency(
+          quotation.total
+        )}
+      </p>
+
+      <StatusPill
+        status={quotation.status}
+      />
+    </div>
+  </button>
+))}
             </div>
           ) : (
             <EmptyState
@@ -791,6 +823,19 @@ export function ClientDetails({
         initialValues={paymentInitialValues}
         onSave={handleCreatePayment}
       />
+
+<QuotationViewDialog
+  quotation={selectedQuotation}
+  open={quotationViewOpen}
+  onOpenChange={(open) => {
+    setQuotationViewOpen(open);
+
+    if (!open) {
+      setSelectedQuotation(null);
+    }
+  }}
+/>
+
     </div>
   );
 }
