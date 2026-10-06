@@ -8,6 +8,7 @@ import { FormField } from "@/components/forms/FormField";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormSelect } from "@/components/forms/FormSelect";
 import { FormTextarea } from "@/components/forms/FormTextarea";
+import { TeamMemberSelect } from "@/components/forms/TeamMemberSelect";
 
 import { EVENT_TYPES, LEAD_SOURCES } from "../constants";
 import { leadSchema, LeadFormValues } from "../validation";
@@ -59,7 +60,6 @@ export function LeadForm({
       className="space-y-6"
     >
       <div className="grid gap-5 md:grid-cols-2">
-
         <FormField
           label="Client Name"
           error={errors.clientName?.message}
@@ -140,22 +140,17 @@ export function LeadForm({
           label="Assigned To"
           error={errors.assignedTo?.message}
         >
-          <FormSelect
+          <TeamMemberSelect
             value={assignedTo}
             onValueChange={(value) =>
               setValue("assignedTo", value, {
                 shouldValidate: true,
+                shouldDirty: true,
               })
             }
-            placeholder="Select Salesperson"
-            options={[
-              "Avinash",
-              "Rohit",
-              "Sales Team",
-            ]}
+            placeholder="Select team member"
           />
         </FormField>
-
       </div>
 
       <FormField label="Notes">

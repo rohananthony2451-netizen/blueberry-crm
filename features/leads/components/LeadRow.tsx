@@ -24,7 +24,6 @@ export function LeadRow({
       onDelete={onDelete}
     >
       <tr className="cursor-pointer transition-colors hover:bg-slate-50">
-
         <td className="px-4 py-4 font-medium">
           {lead.clientName}
         </td>
@@ -43,8 +42,9 @@ export function LeadRow({
           <SourceBadge source={lead.source} />
         </td>
 
-        <td>{lead.assignedTo}</td>
-
+        <td>
+          {lead.assignedToName || "Unassigned"}
+        </td>
       </tr>
     </LeadDrawer>
   );

@@ -12,6 +12,9 @@ type LeadRow = {
   source: string | null;
   status: string;
   assigned_to: string | null;
+  assigned_profile: {
+    full_name: string | null;
+  } | null;
   notes: string | null;
   converted_client_id: string | null;
   created_at: string;
@@ -40,6 +43,8 @@ function mapLead(row: LeadRow): Lead {
     source: row.source as Lead["source"],
     status: row.status as Lead["status"],
     assignedTo: row.assigned_to ?? "",
+    assignedToName:
+      row.assigned_profile?.full_name?.trim() ?? "",
     notes: row.notes ?? "",
     convertedClientId: row.converted_client_id ?? null,
   };
@@ -50,7 +55,10 @@ export async function getLeads(): Promise<Lead[]> {
 
   const { data, error } = await supabase
     .from("leads")
-    .select("*")
+    .select(
+      `*,
+       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
+    )
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -61,7 +69,7 @@ export async function getLeads(): Promise<Lead[]> {
 }
 
 export async function createLead(
-  lead: Omit<Lead, "id">
+  lead: Omit<Lead, "id" | "assignedToName">
 ): Promise<Lead> {
   const supabase = createClient();
 
@@ -91,7 +99,10 @@ export async function createLead(
       notes: lead.notes || null,
       converted_client_id: null,
     })
-    .select("*")
+    .select(
+      `*,
+       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
+    )
     .single();
 
   if (error) {
@@ -149,7 +160,10 @@ export async function updateLead(
     .from("leads")
     .update(updateData)
     .eq("id", id)
-    .select("*")
+    .select(
+      `*,
+       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
+    )
     .single();
 
   if (error) {

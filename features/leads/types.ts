@@ -10,6 +10,7 @@ export interface Lead {
   source: (typeof LEAD_SOURCES)[number] | "";
   status: (typeof LEAD_STATUS)[number];
   assignedTo: string;
+  assignedToName?: string;
   notes: string;
   convertedClientId: string | null;
 }
