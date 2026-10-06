@@ -1,11 +1,19 @@
 "use client";
 
+import { LogOut } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
 
 import { createClient } from "@/lib/supabase/client";
 
-export default function LogoutButton() {
+interface LogoutButtonProps {
+  collapsed?: boolean;
+}
+
+export default function LogoutButton({
+  collapsed = false,
+}: LogoutButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -31,9 +39,29 @@ export default function LogoutButton() {
       type="button"
       onClick={handleLogout}
       disabled={loading}
-      className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+      title={
+        collapsed
+          ? loading
+            ? "Signing out..."
+            : "Sign out"
+          : undefined
+      }
+      className={clsx(
+        "flex w-full items-center rounded-lg text-sm font-medium text-slate-600 transition",
+        "hover:bg-slate-100 hover:text-slate-900",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        collapsed
+          ? "h-10 justify-center px-2"
+          : "gap-2 px-3 py-2 text-left"
+      )}
     >
-      {loading ? "Signing out..." : "Sign out"}
+      <LogOut size={17} />
+
+      {!collapsed && (
+        <span>
+          {loading ? "Signing out..." : "Sign out"}
+        </span>
+      )}
     </button>
   );
 }
