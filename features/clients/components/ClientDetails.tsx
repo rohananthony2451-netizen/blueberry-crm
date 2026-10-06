@@ -1,6 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
+
+import {
+  CalendarDays,
+  CheckCircle2,
+  CreditCard,
+  FileText,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Receipt,
+  Trash2,
+  Wallet,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -56,12 +73,6 @@ export function ClientDetails({
     refresh,
   } = useClient360(client.id);
 
-  /*
-   * Direct event creation is still supported from
-   * an existing confirmed Client.
-   *
-   * This is intentionally separate from quotation creation.
-   */
   const eventInitialValues =
     useMemo<Partial<EventFormValues>>(
       () => ({
@@ -75,17 +86,6 @@ export function ClientDetails({
       [client.id]
     );
 
-  /*
-   * Client 360 quotation creation:
-   *
-   * The Client already exists, so we reuse this client ID.
-   *
-   * There is deliberately NO eventId here.
-   *
-   * The quotation contains the proposed event information.
-   * A confirmed Event is created later when the quotation
-   * is accepted.
-   */
   const quotationInitialValues =
     useMemo<QuotationFormValues>(
       () => ({
@@ -120,7 +120,7 @@ export function ClientDetails({
             description: "",
             quantity: "1",
             unitPrice: "0",
-             ourExpense: false,
+            ourExpense: false,
           },
         ],
       }),
@@ -169,24 +169,12 @@ export function ClientDetails({
     formData: EventFormValues
   ) {
     await createEvent({
-      eventName:
-        formData.eventName,
-
-      clientId:
-        formData.clientId,
-
-      eventType:
-        formData.eventType,
-
-      eventDate:
-        formData.eventDate,
-
-      venue:
-        formData.venue,
-
-      guestCount:
-        Number(formData.guestCount),
-
+      eventName: formData.eventName,
+      clientId: formData.clientId,
+      eventType: formData.eventType,
+      eventDate: formData.eventDate,
+      venue: formData.venue,
+      guestCount: Number(formData.guestCount),
       status: "Upcoming",
     });
 
@@ -197,11 +185,8 @@ export function ClientDetails({
     formData: QuotationFormValues
   ) {
     await createQuotation({
-      clientId:
-  formData.clientId,
-
-leadId:
-  formData.leadId,
+      clientId: formData.clientId,
+      leadId: formData.leadId,
 
       prospectName:
         formData.prospectName,
@@ -246,30 +231,28 @@ leadId:
         formData.notes,
 
       items:
-        formData.items.map(
-          (item) => {
-            const quantity =
-              Number(item.quantity);
+        formData.items.map((item) => {
+          const quantity =
+            Number(item.quantity);
 
-            const unitPrice =
-              Number(item.unitPrice);
+          const unitPrice =
+            Number(item.unitPrice);
 
-            return {
-              description:
-                item.description,
+          return {
+            description:
+              item.description,
 
-              quantity,
+            quantity,
 
-              unitPrice,
+            unitPrice,
 
-              amount:
-                quantity *
-                unitPrice,
-                 ourExpense:
-                  item.ourExpense,
-            };
-          }
-        ),
+            amount:
+              quantity * unitPrice,
+
+            ourExpense:
+              item.ourExpense,
+          };
+        }),
     });
 
     await refresh();
@@ -279,12 +262,8 @@ leadId:
     formData: PaymentFormValues
   ) {
     await createPayment({
-      clientId:
-        formData.clientId,
-
-      eventId:
-        formData.eventId || null,
-
+      clientId: formData.clientId,
+      eventId: formData.eventId || null,
       quotationId:
         formData.quotationId || null,
 
@@ -308,640 +287,697 @@ leadId:
   }
 
   return (
-    <div className="space-y-8">
-      {/* Client identity */}
+    <div className="mx-auto max-w-5xl">
+      {/* Header */}
+      <header className="border-b border-slate-200 px-6 py-7 sm:px-8 lg:px-10">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+              Client workspace
+            </p>
 
-      <div>
-        <h2 className="text-2xl font-bold">
-          {client.name}
-        </h2>
+            <h2 className="mt-2 truncate text-3xl font-semibold tracking-tight text-slate-950">
+              {client.name}
+            </h2>
 
-        <p className="text-slate-500">
-          {client.phone ||
-            "No phone number"}
-        </p>
-      </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
+              {client.phone && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Phone size={14} />
+                  {client.phone}
+                </span>
+              )}
 
-      {/* Client information */}
+              {client.email && (
+                <span className="inline-flex items-center gap-1.5">
+                  <Mail size={14} />
+                  {client.email}
+                </span>
+              )}
+            </div>
+          </div>
 
-      <div className="space-y-3">
-        <Info
-          label="Email"
-          value={
-            client.email ||
-            "No email added"
-          }
-        />
-
-        <Info
-          label="Address"
-          value={
-            client.address ||
-            "No address added"
-          }
-        />
-
-        <Info
-          label="Notes"
-          value={
-            client.notes ||
-            "No notes added"
-          }
-        />
-      </div>
-
-      {/* Client 360 */}
-
-      <section className="space-y-4 border-t pt-6">
-        <div>
-          <h3 className="text-lg font-semibold">
-            Business Overview
-          </h3>
-
-          <p className="text-sm text-slate-500">
-            A snapshot of this client's
-            business activity.
-          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onEdit}
+            className="shrink-0"
+          >
+            Edit Client
+          </Button>
         </div>
+      </header>
 
-        {loading && (
-          <div className="rounded-xl border p-4">
-            <p className="text-sm text-slate-500">
-              Loading client activity...
+      <div className="space-y-8 px-6 py-7 sm:px-8 lg:px-10">
+        {/* Business snapshot */}
+        <section>
+          <div className="mb-4">
+            <p className="text-sm font-semibold text-slate-950">
+              Business snapshot
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Everything you need to know about this client at a glance.
             </p>
           </div>
-        )}
 
-        {error && (
-          <div className="space-y-3 rounded-xl border border-red-200 bg-red-50 p-4">
-            <div>
-              <p className="font-semibold text-red-900">
+          {loading ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map(
+                (_, index) => (
+                  <div
+                    key={index}
+                    className="h-24 animate-pulse rounded-2xl bg-slate-100"
+                  />
+                )
+              )}
+            </div>
+          ) : error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+              <p className="font-medium text-red-900">
                 Could not load client activity
               </p>
 
               <p className="mt-1 text-sm text-red-700">
                 {error}
               </p>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void refresh()}
+                className="mt-4"
+              >
+                Try Again
+              </Button>
+            </div>
+          ) : data ? (
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                label="Events"
+                value={String(
+                  data.summary.eventCount
+                )}
+                icon={CalendarDays}
+              />
+
+              <MetricCard
+                label="Total quoted"
+                value={formatCurrency(
+                  data.summary.totalQuoted
+                )}
+                icon={FileText}
+              />
+
+              <MetricCard
+                label="Received"
+                value={formatCurrency(
+                  data.summary.totalReceived
+                )}
+                icon={Wallet}
+              />
+
+              <MetricCard
+                label="Outstanding"
+                value={formatCurrency(
+                  data.summary.remaining
+                )}
+                icon={CreditCard}
+              />
+            </div>
+          ) : null}
+        </section>
+
+        {/* Quick actions */}
+        <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-slate-950">
+                Quick actions
+              </p>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Add something to this client's workspace.
+              </p>
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                void refresh()
-              }
-            >
-              Try Again
-            </Button>
-          </div>
-        )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                onClick={() =>
+                  setEventDialogOpen(true)
+                }
+              >
+                <Plus size={16} />
+                Event
+              </Button>
 
-        {data && !loading && (
-          <>
-            <SummaryGrid
-              totalQuoted={
-                data.summary.totalQuoted
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setQuotationDialogOpen(true)
+                }
+              >
+                <FileText size={16} />
+                Quotation
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setPaymentDialogOpen(true)
+                }
+              >
+                <Wallet size={16} />
+                Payment
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        {/* Events */}
+        <section>
+          <SectionHeading
+            title="Events"
+            description="Every event connected to this client."
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setEventDialogOpen(true)
+                }
+              >
+                <Plus size={16} />
+                Add Event
+              </Button>
+            }
+          />
+
+          {loading ? (
+            <LoadingList />
+          ) : data?.events.length ? (
+            <div className="overflow-hidden rounded-2xl border border-slate-200">
+              <div className="hidden grid-cols-[1fr_140px_140px_120px] gap-4 border-b bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400 md:grid">
+                <span>Event</span>
+                <span>Date</span>
+                <span>Venue</span>
+                <span>Status</span>
+              </div>
+
+              <div className="divide-y divide-slate-100">
+                {data.events.map((event) => (
+                  <div
+                    key={event.id}
+                    className="grid gap-3 px-5 py-4 transition-colors hover:bg-slate-50 md:grid-cols-[1fr_140px_140px_120px] md:items-center md:gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-slate-950">
+                        {event.eventName}
+                      </p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {event.eventType}
+                      </p>
+                    </div>
+
+                    <div className="text-sm text-slate-600">
+                      {formatDate(event.eventDate)}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                      <MapPin size={14} />
+                      <span className="truncate">
+                        {event.venue || "No venue"}
+                      </span>
+                    </div>
+
+                    <StatusPill
+                      status={event.status}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState
+              icon={CalendarDays}
+              title="No events yet"
+              description="Create the first event for this client."
+              actionLabel="Create Event"
+              onAction={() =>
+                setEventDialogOpen(true)
               }
-              totalReceived={
-                data.summary.totalReceived
+            />
+          )}
+        </section>
+
+        {/* Quotations */}
+        <section>
+          <SectionHeading
+            title="Quotations"
+            description="Quotes created for this client."
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setQuotationDialogOpen(true)
+                }
+              >
+                <Plus size={16} />
+                New Quotation
+              </Button>
+            }
+          />
+
+          {loading ? (
+            <LoadingList />
+          ) : data?.quotations.length ? (
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
+              {data.quotations.map((quotation) => (
+                <div
+                  key={quotation.id}
+                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-950">
+                      {quotation.quotationNumber}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {formatDate(
+                        quotation.quotationDate
+                      )}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <p className="font-semibold text-slate-950">
+                      {formatCurrency(
+                        quotation.total
+                      )}
+                    </p>
+
+                    <StatusPill
+                      status={quotation.status}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={FileText}
+              title="No quotations yet"
+              description="Create a quotation for this client."
+              actionLabel="Create Quotation"
+              onAction={() =>
+                setQuotationDialogOpen(true)
               }
-              remaining={
-                data.summary.remaining
+            />
+          )}
+        </section>
+
+        {/* Payments */}
+        <section>
+          <SectionHeading
+            title="Payments"
+            description="Payment activity for this client."
+            action={
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  setPaymentDialogOpen(true)
+                }
+              >
+                <Plus size={16} />
+                Record Payment
+              </Button>
+            }
+          />
+
+          {loading ? (
+            <LoadingList />
+          ) : data?.payments.length ? (
+            <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
+              {data.payments.map((payment) => (
+                <div
+                  key={payment.id}
+                  className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-semibold text-slate-950">
+                      {payment.paymentNumber}
+                    </p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {formatDate(
+                        payment.paymentDate
+                      )}
+                      {" · "}
+                      {payment.paymentMethod}
+                    </p>
+
+                    {payment.quotationNumber && (
+                      <p className="mt-1 text-xs text-slate-400">
+                        {payment.quotationNumber}
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="font-semibold text-emerald-700">
+                    {formatCurrency(
+                      payment.amount
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={Receipt}
+              title="No payments yet"
+              description="Record the first payment for this client."
+              actionLabel="Record Payment"
+              onAction={() =>
+                setPaymentDialogOpen(true)
               }
-              overpaid={
-                data.summary.overpaid
-              }
-              unallocated={
-                data.summary.unallocated
+            />
+          )}
+        </section>
+
+        {/* Client information */}
+        <section>
+          <SectionHeading
+            title="Client information"
+            description="Contact and additional information."
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <InfoCard
+              icon={Phone}
+              label="Phone"
+              value={
+                client.phone || "Not provided"
               }
             />
 
-            <RelationshipCounts
-              eventCount={
-                data.summary.eventCount
-              }
-              quotationCount={
-                data.summary.quotationCount
-              }
-              paymentCount={
-                data.summary.paymentCount
+            <InfoCard
+              icon={Mail}
+              label="Email"
+              value={
+                client.email || "Not provided"
               }
             />
 
-            <ClientActivity
-              events={data.events}
-              quotations={
-                data.quotations
+            <InfoCard
+              icon={MapPin}
+              label="Address"
+              value={
+                client.address || "Not provided"
               }
-              payments={data.payments}
             />
-          </>
-        )}
-      </section>
 
-      {/* Client 360 quick actions */}
-
-      <section className="space-y-3 border-t pt-6">
-        <div>
-          <h3 className="text-lg font-semibold">
-            Quick Actions
-          </h3>
-
-          <p className="text-sm text-slate-500">
-            Create related records directly
-            from this client.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Button
-            type="button"
-            onClick={() =>
-              setEventDialogOpen(true)
-            }
-          >
-            + Create Event
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              setQuotationDialogOpen(
-                true
-              )
-            }
-          >
-            + Create Quotation
-          </Button>
-
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() =>
-              setPaymentDialogOpen(true)
-            }
-          >
-            + Record Payment
-          </Button>
-        </div>
-      </section>
-
-      {/* Existing client actions */}
-
-      {!confirmDelete ? (
-        <div className="flex justify-end gap-3 border-t pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onEdit}
-          >
-            Edit Client
-          </Button>
-
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={() =>
-              setConfirmDelete(true)
-            }
-          >
-            Delete Client
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4 rounded-xl border border-red-200 bg-red-50 p-4">
-          <div>
-            <p className="font-semibold text-red-900">
-              Delete this client?
-            </p>
-
-            <p className="mt-1 text-sm text-red-700">
-              This action cannot be undone.
-              The client will be permanently
-              removed from your workspace.
-            </p>
-          </div>
-
-          <div className="flex justify-end gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                setConfirmDelete(false)
+            <InfoCard
+              icon={FileText}
+              label="Notes"
+              value={
+                client.notes || "No notes added"
               }
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              {deleting
-                ? "Deleting..."
-                : "Yes, Delete Client"}
-            </Button>
+            />
           </div>
-        </div>
-      )}
+        </section>
 
-      {/* Quick-action dialogs */}
+        {/* Danger zone */}
+        <section className="border-t border-slate-200 pt-8">
+          {!confirmDelete ? (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() =>
+                  setConfirmDelete(true)
+                }
+                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                <Trash2 size={16} />
+                Delete Client
+              </Button>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
+              <div>
+                <p className="font-semibold text-red-950">
+                  Delete this client?
+                </p>
+
+                <p className="mt-1 text-sm text-red-700">
+                  This action cannot be undone. The client
+                  will be permanently removed from your
+                  workspace.
+                </p>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() =>
+                    setConfirmDelete(false)
+                  }
+                  disabled={deleting}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleting}
+                >
+                  {deleting
+                    ? "Deleting..."
+                    : "Delete Client"}
+                </Button>
+              </div>
+            </div>
+          )}
+        </section>
+      </div>
 
       <EventDialog
         open={eventDialogOpen}
-        onOpenChange={
-          setEventDialogOpen
-        }
-        initialValues={
-          eventInitialValues
-        }
+        onOpenChange={setEventDialogOpen}
+        initialValues={eventInitialValues}
         showTrigger={false}
-        onCreateEvent={
-          handleCreateEvent
-        }
+        onCreateEvent={handleCreateEvent}
       />
 
       <QuotationDialog
-        open={
-          quotationDialogOpen
-        }
-        onOpenChange={
-          setQuotationDialogOpen
-        }
-        initialValues={
-          quotationInitialValues
-        }
-        onSave={
-          handleCreateQuotation
-        }
+        open={quotationDialogOpen}
+        onOpenChange={setQuotationDialogOpen}
+        initialValues={quotationInitialValues}
+        onSave={handleCreateQuotation}
       />
 
       <PaymentDialog
         open={paymentDialogOpen}
-        onOpenChange={
-          setPaymentDialogOpen
-        }
-        initialValues={
-          paymentInitialValues
-        }
-        onSave={
-          handleCreatePayment
-        }
+        onOpenChange={setPaymentDialogOpen}
+        initialValues={paymentInitialValues}
+        onSave={handleCreatePayment}
       />
     </div>
   );
 }
 
-interface SummaryGridProps {
-  totalQuoted: number;
-  totalReceived: number;
-  remaining: number;
-  overpaid: number;
-  unallocated: number;
-}
-
-function SummaryGrid({
-  totalQuoted,
-  totalReceived,
-  remaining,
-  overpaid,
-  unallocated,
-}: SummaryGridProps) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <SummaryCard
-        label="Total Quoted"
-        value={formatCurrency(
-          totalQuoted
-        )}
-      />
-
-      <SummaryCard
-        label="Received"
-        value={formatCurrency(
-          totalReceived
-        )}
-      />
-
-      <SummaryCard
-        label="Remaining"
-        value={formatCurrency(
-          remaining
-        )}
-      />
-
-      <SummaryCard
-        label="Overpaid"
-        value={formatCurrency(
-          overpaid
-        )}
-      />
-
-      <SummaryCard
-        label="Unallocated"
-        value={formatCurrency(
-          unallocated
-        )}
-      />
-    </div>
-  );
-}
-
-interface SummaryCardProps {
+interface MetricCardProps {
   label: string;
   value: string;
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
 }
 
-function SummaryCard({
+function MetricCard({
   label,
   value,
-}: SummaryCardProps) {
+  icon: Icon,
+}: MetricCardProps) {
   return (
-    <div className="rounded-xl border bg-slate-50 p-4">
-      <p className="text-xs uppercase tracking-wide text-slate-500">
-        {label}
-      </p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            {label}
+          </p>
 
-      <p className="mt-1 text-lg font-semibold">
-        {value}
-      </p>
+          <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
+            {value}
+          </p>
+        </div>
+
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+          <Icon size={17} />
+        </div>
+      </div>
     </div>
   );
 }
 
-interface RelationshipCountsProps {
-  eventCount: number;
-  quotationCount: number;
-  paymentCount: number;
-}
-
-function RelationshipCounts({
-  eventCount,
-  quotationCount,
-  paymentCount,
-}: RelationshipCountsProps) {
-  return (
-    <div className="grid grid-cols-3 gap-3">
-      <CountCard
-        label="Events"
-        value={eventCount}
-      />
-
-      <CountCard
-        label="Quotations"
-        value={quotationCount}
-      />
-
-      <CountCard
-        label="Payments"
-        value={paymentCount}
-      />
-    </div>
-  );
-}
-
-interface CountCardProps {
-  label: string;
-  value: number;
-}
-
-function CountCard({
-  label,
-  value,
-}: CountCardProps) {
-  return (
-    <div className="rounded-xl border p-3 text-center">
-      <p className="text-xl font-bold">
-        {value}
-      </p>
-
-      <p className="text-xs text-slate-500">
-        {label}
-      </p>
-    </div>
-  );
-}
-
-interface ClientActivityProps {
-  events: {
-    id: string;
-    eventName: string;
-    eventType: string;
-    eventDate: string;
-    venue: string;
-    status: string;
-  }[];
-
-  quotations: {
-    id: string;
-    quotationNumber: string;
-    total: number;
-    status: string;
-    quotationDate: string;
-  }[];
-
-  payments: {
-    id: string;
-    paymentNumber: string;
-    paymentDate: string;
-    amount: number;
-    paymentMethod: string;
-    quotationNumber: string | null;
-  }[];
-}
-
-function ClientActivity({
-  events,
-  quotations,
-  payments,
-}: ClientActivityProps) {
-  return (
-    <div className="space-y-6">
-      <ActivitySection
-        title="Events"
-        emptyText="No events linked to this client."
-        hasItems={
-          events.length > 0
-        }
-      >
-        {events.map((event) => (
-          <div
-            key={event.id}
-            className="rounded-xl border p-4"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-semibold">
-                  {event.eventName}
-                </p>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {event.eventType}
-                  {event.venue
-                    ? ` · ${event.venue}`
-                    : ""}
-                </p>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {formatDate(
-                    event.eventDate
-                  )}
-                </p>
-              </div>
-
-              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium">
-                {event.status}
-              </span>
-            </div>
-          </div>
-        ))}
-      </ActivitySection>
-
-      <ActivitySection
-        title="Quotations"
-        emptyText="No quotations linked to this client."
-        hasItems={
-          quotations.length > 0
-        }
-      >
-        {quotations.map(
-          (quotation) => (
-            <div
-              key={quotation.id}
-              className="flex items-center justify-between gap-4 rounded-xl border p-4"
-            >
-              <div>
-                <p className="font-semibold">
-                  {
-                    quotation.quotationNumber
-                  }
-                </p>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {formatDate(
-                    quotation.quotationDate
-                  )}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p className="font-semibold">
-                  {formatCurrency(
-                    quotation.total
-                  )}
-                </p>
-
-                <p className="text-xs text-slate-500">
-                  {quotation.status}
-                </p>
-              </div>
-            </div>
-          )
-        )}
-      </ActivitySection>
-
-      <ActivitySection
-        title="Payments"
-        emptyText="No payments linked to this client."
-        hasItems={
-          payments.length > 0
-        }
-      >
-        {payments.map(
-          (payment) => (
-            <div
-              key={payment.id}
-              className="flex items-center justify-between gap-4 rounded-xl border p-4"
-            >
-              <div>
-                <p className="font-semibold">
-                  {payment.paymentNumber}
-                </p>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {formatDate(
-                    payment.paymentDate
-                  )}
-                  {" · "}
-                  {
-                    payment.paymentMethod
-                  }
-                </p>
-
-                {payment.quotationNumber && (
-                  <p className="mt-1 text-xs text-slate-500">
-                    {
-                      payment.quotationNumber
-                    }
-                  </p>
-                )}
-              </div>
-
-              <p className="font-semibold">
-                {formatCurrency(
-                  payment.amount
-                )}
-              </p>
-            </div>
-          )
-        )}
-      </ActivitySection>
-    </div>
-  );
-}
-
-interface ActivitySectionProps {
+interface SectionHeadingProps {
   title: string;
-  emptyText: string;
-  hasItems: boolean;
-  children: React.ReactNode;
+  description: string;
+  action?: React.ReactNode;
 }
 
-function ActivitySection({
+function SectionHeading({
   title,
-  emptyText,
-  hasItems,
-  children,
-}: ActivitySectionProps) {
+  description,
+  action,
+}: SectionHeadingProps) {
   return (
-    <div className="space-y-3">
-      <h4 className="font-semibold">
-        {title}
-      </h4>
+    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h3 className="text-lg font-semibold tracking-tight text-slate-950">
+          {title}
+        </h3>
 
-      {hasItems ? (
-        children
-      ) : (
-        <p className="rounded-xl border border-dashed p-4 text-sm text-slate-500">
-          {emptyText}
+        <p className="mt-1 text-sm text-slate-500">
+          {description}
         </p>
-      )}
+      </div>
+
+      {action}
     </div>
   );
 }
 
-interface InfoProps {
+interface StatusPillProps {
+  status: string;
+}
+
+function StatusPill({
+  status,
+}: StatusPillProps) {
+  const normalized =
+    status.toLowerCase();
+
+  const className =
+    normalized.includes("complete") ||
+    normalized.includes("paid") ||
+    normalized.includes("accept")
+      ? "bg-emerald-50 text-emerald-700"
+      : normalized.includes("cancel") ||
+          normalized.includes("reject")
+        ? "bg-red-50 text-red-700"
+        : "bg-blue-50 text-blue-700";
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${className}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-current" />
+      {status}
+    </span>
+  );
+}
+
+interface InfoCardProps {
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
   label: string;
   value: string;
 }
 
-function Info({
+function InfoCard({
+  icon: Icon,
   label,
   value,
-}: InfoProps) {
+}: InfoCardProps) {
   return (
-    <div className="border-b pb-3">
-      <p className="text-xs uppercase tracking-wide text-slate-500">
-        {label}
+    <div className="rounded-2xl border border-slate-200 p-4">
+      <div className="flex gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+          <Icon size={16} />
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+            {label}
+          </p>
+
+          <p className="mt-1 break-words text-sm font-medium text-slate-800">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface EmptyStateProps {
+  icon: React.ComponentType<{
+    size?: number;
+    className?: string;
+  }>;
+  title: string;
+  description: string;
+  actionLabel: string;
+  onAction: () => void;
+}
+
+function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  actionLabel,
+  onAction,
+}: EmptyStateProps) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+      <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+        <Icon size={18} />
+      </div>
+
+      <p className="mt-3 font-semibold text-slate-950">
+        {title}
       </p>
 
-      <p className="mt-1 font-medium">
-        {value}
+      <p className="mt-1 text-sm text-slate-500">
+        {description}
       </p>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onAction}
+        className="mt-4"
+      >
+        {actionLabel}
+      </Button>
+    </div>
+  );
+}
+
+function LoadingList() {
+  return (
+    <div className="space-y-2">
+      {Array.from({ length: 3 }).map(
+        (_, index) => (
+          <div
+            key={index}
+            className="h-16 animate-pulse rounded-2xl bg-slate-100"
+          />
+        )
+      )}
     </div>
   );
 }

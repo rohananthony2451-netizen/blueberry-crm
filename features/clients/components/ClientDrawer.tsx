@@ -34,15 +34,10 @@ export function ClientDrawer({
   onEdit,
   onDelete,
 }: ClientDrawerProps) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
 
-  const [editing, setEditing] =
-    useState(false);
-
-  async function handleEdit(
-    data: ClientFormValues
-  ) {
+  async function handleEdit(data: ClientFormValues) {
     if (!onEdit) return;
 
     await onEdit(client.id, {
@@ -56,18 +51,14 @@ export function ClientDrawer({
     setEditing(false);
   }
 
-  async function handleDelete(
-    id: string
-  ) {
+  async function handleDelete(id: string) {
     if (!onDelete) return;
 
     await onDelete(id);
     setOpen(false);
   }
 
-  function handleDrawerChange(
-    value: boolean
-  ) {
+  function handleDrawerChange(value: boolean) {
     setOpen(value);
 
     if (!value) {
@@ -84,18 +75,21 @@ export function ClientDrawer({
         {children}
       </DrawerTrigger>
 
-      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-2xl overflow-hidden">
-        <div className="min-h-0 flex-1 overflow-y-auto p-8">
+      <DrawerContent className="mx-auto max-h-[92vh] w-full max-w-5xl overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto">
           {editing ? (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold">
+            <div className="mx-auto max-w-3xl p-6 sm:p-8 lg:p-10">
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Client
+                </p>
+
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                   Edit Client
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Update the information for{" "}
-                  {client.name}.
+                  Update the information for {client.name}.
                 </p>
               </div>
 
@@ -107,9 +101,7 @@ export function ClientDrawer({
                   address: client.address,
                   notes: client.notes,
                 }}
-                onCancel={() =>
-                  setEditing(false)
-                }
+                onCancel={() => setEditing(false)}
                 onSave={handleEdit}
                 saveText="Save Changes"
               />
@@ -117,9 +109,7 @@ export function ClientDrawer({
           ) : (
             <ClientDetails
               client={client}
-              onEdit={() =>
-                setEditing(true)
-              }
+              onEdit={() => setEditing(true)}
               onDelete={handleDelete}
             />
           )}
