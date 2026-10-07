@@ -1,4 +1,3 @@
-
 import type { Payment } from "@/features/payments/types";
 import type { Event } from "@/features/events/types";
 
@@ -13,12 +12,9 @@ export function DashboardCharts({
   events: Event[];
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
-      <div className="xl:col-span-2">
-        <RevenueChart payments={payments} />
-      </div>
-
+    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
+      <RevenueChart payments={payments} />
       <EventTypeChart events={events} />
-    </div>
+    </section>
   );
 }

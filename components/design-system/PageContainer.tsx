@@ -8,7 +8,7 @@ export function PageContainer({
   children,
 }: PageContainerProps) {
   return (
-    <div className="space-y-8 bg-slate-50 p-8 min-h-screen">
+    <div className="min-h-full bg-slate-50 px-6 py-6 lg:px-8 lg:py-7">
       {children}
     </div>
   );

@@ -15,7 +15,7 @@ export default function AppShell({
       <Sidebar />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header title="Dashboard" />
+        <Header />
 
         <main className="min-h-0 flex-1 overflow-y-auto">
           <div className="p-8">

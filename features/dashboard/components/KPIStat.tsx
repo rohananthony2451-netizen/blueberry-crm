@@ -1,11 +1,11 @@
-import { LucideIcon } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import type { LucideIcon } from "lucide-react";
 
 interface KPIStatProps {
   title: string;
   value: string;
   subtitle: string;
   icon: LucideIcon;
+  iconClassName?: string;
 }
 
 export function KPIStat({
@@ -13,28 +13,34 @@ export function KPIStat({
   value,
   subtitle,
   icon: Icon,
+  iconClassName = "bg-slate-50 text-slate-600",
 }: KPIStatProps) {
   return (
-    <Card className="rounded-2xl border bg-white p-6 shadow-sm transition-all hover:shadow-md">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">
+    <div className="group rounded-2xl border border-slate-200 bg-white px-5 py-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-xs font-bold uppercase tracking-[0.06em] text-slate-700">
             {title}
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold">
+          <p className="mt-2.5 truncate text-[30px] font-bold leading-none tracking-[-0.03em] text-slate-950">
             {value}
-          </h2>
+          </p>
 
-          <p className="mt-2 text-sm text-emerald-600">
+          <p className="mt-3 text-sm font-semibold text-emerald-600">
             {subtitle}
           </p>
         </div>
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
-          <Icon className="h-6 w-6 text-blue-600" />
+        <div
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${iconClassName}`}
+        >
+          <Icon
+            className="h-6 w-6"
+            strokeWidth={2}
+          />
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

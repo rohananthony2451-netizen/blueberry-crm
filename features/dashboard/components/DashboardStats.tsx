@@ -1,18 +1,17 @@
-
 import {
-  Calendar,
+  CalendarDays,
   IndianRupee,
-  Clock3,
-  Users,
+  ReceiptText,
+  UserPlus,
 } from "lucide-react";
 
 import { KPIStat } from "./KPIStat";
 
 interface DashboardStatsProps {
-  totalReceived: number;
-  completedEvents: number;
-  pendingAmount: number;
-  totalClients: number;
+  totalRevenue: number;
+  activeEvents: number;
+  pendingPayments: number;
+  newLeads: number;
 }
 
 function formatCurrency(amount: number) {
@@ -24,40 +23,47 @@ function formatCurrency(amount: number) {
 }
 
 export function DashboardStats({
-  totalReceived,
-  completedEvents,
-  pendingAmount,
-  totalClients,
+  totalRevenue,
+  activeEvents,
+  pendingPayments,
+  newLeads,
 }: DashboardStatsProps) {
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <section
+      aria-label="Business overview"
+      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+    >
       <KPIStat
-        title="Payments Received"
-        value={formatCurrency(totalReceived)}
-        subtitle="All recorded payments"
+        title="Total Revenue"
+        value={formatCurrency(totalRevenue)}
+        subtitle="Collected payments"
         icon={IndianRupee}
+        iconClassName="bg-blue-50 text-blue-600"
       />
 
       <KPIStat
-        title="Events Completed"
-        value={String(completedEvents)}
-        subtitle="Based on event status"
-        icon={Calendar}
+        title="Active Events"
+        value={String(activeEvents)}
+        subtitle="Upcoming & in progress"
+        icon={CalendarDays}
+        iconClassName="bg-violet-50 text-violet-600"
       />
 
       <KPIStat
-        title="Outstanding Payments"
-        value={formatCurrency(pendingAmount)}
-        subtitle="From sent and accepted quotations"
-        icon={Clock3}
+        title="Pending Payments"
+        value={formatCurrency(pendingPayments)}
+        subtitle="Outstanding amount"
+        icon={ReceiptText}
+        iconClassName="bg-amber-50 text-amber-600"
       />
 
       <KPIStat
-        title="Total Clients"
-        value={String(totalClients)}
-        subtitle="Registered clients"
-        icon={Users}
+        title="New Leads"
+        value={String(newLeads)}
+        subtitle="Leads in your pipeline"
+        icon={UserPlus}
+        iconClassName="bg-emerald-50 text-emerald-600"
       />
-    </div>
+    </section>
   );
 }
