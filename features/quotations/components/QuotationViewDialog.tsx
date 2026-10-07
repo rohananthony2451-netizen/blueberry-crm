@@ -41,6 +41,20 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
+function formatDateTime(value: string | null) {
+  if (!value) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -162,7 +176,22 @@ export function QuotationViewDialog({
                 />
               </div>
             )}
+
+            <div className="mt-4 border-t border-slate-200 pt-4">
+  <div className="grid gap-4 sm:grid-cols-2">
+    <DetailItem
+      label="Created"
+      value={formatDateTime(quotation.createdAt)}
+    />
+
+    <DetailItem
+      label="Last updated"
+      value={formatDateTime(quotation.updatedAt)}
+    />
+  </div>
+</div>
           </section>
+          
 
           {/* Line items */}
           <section>

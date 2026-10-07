@@ -20,6 +20,7 @@ import type {
   QuotationFormValues,
 } from "../types";
 
+import { EVENT_TYPES } from "@/features/events/constants";
 interface QuotationEditDialogProps {
   quotation: Quotation | null;
   open: boolean;
@@ -69,7 +70,11 @@ const [saveError, setSaveError] =
   prospectAddress: quotation.prospectAddress,
 
   eventName: quotation.proposedEventName,
-  eventType: quotation.proposedEventType,
+  eventType: EVENT_TYPES.includes(
+  quotation.proposedEventType as (typeof EVENT_TYPES)[number]
+)
+  ? quotation.proposedEventType
+  : "Other",
   eventDate: quotation.proposedEventDate,
   venue: quotation.proposedVenue,
   guestCount: String(

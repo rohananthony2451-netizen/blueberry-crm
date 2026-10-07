@@ -516,22 +516,6 @@ export async function updateQuotation(
   const existingQuotation =
     await getQuotationById(id);
 
-  /*
-   * Once a quotation is accepted,
-   * Client + Event have been confirmed.
-   *
-   * Do not allow editing the quotation
-   * through the prospect form afterward.
-   */
-  if (
-    existingQuotation.status ===
-    "Accepted"
-  ) {
-    throw new Error(
-      "Accepted quotations cannot be edited."
-    );
-  }
-
   await validateQuotationRelationships(
     quotation
   );

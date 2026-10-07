@@ -159,9 +159,9 @@ export function QuotationForm({
 
   return (
     <form
-      onSubmit={handleSubmit(submitForm)}
-      className="space-y-8"
-    >
+  onSubmit={handleSubmit(submitForm)}
+  className="space-y-8"
+>
       {/* -------------------------------------------------- */}
       {/* Hidden relationship fields                         */}
       {/* -------------------------------------------------- */}
