@@ -16,7 +16,9 @@ import { leadSchema, LeadFormValues } from "../validation";
 interface LeadFormProps {
   initialValues?: Partial<LeadFormValues>;
   onCancel?: () => void;
-  onSave?: (data: LeadFormValues) => void | Promise<void>;
+  onSave?: (
+    data: LeadFormValues
+  ) => void | Promise<void>;
   saveText?: string;
 }
 
@@ -34,13 +36,16 @@ export function LeadForm({
     formState: { errors, isSubmitting },
   } = useForm<LeadFormValues>({
     resolver: zodResolver(leadSchema),
+
     defaultValues: {
       clientName: initialValues?.clientName ?? "",
+      email: initialValues?.email ?? "",
       phone: initialValues?.phone ?? "",
       eventType: initialValues?.eventType ?? "",
       eventDate: initialValues?.eventDate ?? "",
       budget: initialValues?.budget ?? "",
       source: initialValues?.source ?? "",
+      followUpDate: initialValues?.followUpDate ?? "",
       assignedTo: initialValues?.assignedTo ?? "",
       notes: initialValues?.notes ?? "",
     },
@@ -67,6 +72,17 @@ export function LeadForm({
           <FormInput
             placeholder="John Doe"
             {...register("clientName")}
+          />
+        </FormField>
+
+        <FormField
+          label="Email"
+          error={errors.email?.message}
+        >
+          <FormInput
+            type="email"
+            placeholder="john@example.com"
+            {...register("email")}
           />
         </FormField>
 
@@ -133,6 +149,16 @@ export function LeadForm({
             }
             placeholder="Select Source"
             options={[...LEAD_SOURCES]}
+          />
+        </FormField>
+
+        <FormField
+          label="Follow-up Date"
+          error={errors.followUpDate?.message}
+        >
+          <FormInput
+            type="date"
+            {...register("followUpDate")}
           />
         </FormField>
 

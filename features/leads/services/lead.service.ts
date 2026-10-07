@@ -5,12 +5,14 @@ type LeadRow = {
   id: string;
   organization_id: string;
   client_name: string;
+  email: string | null;
   phone: string | null;
   event_type: string;
   event_date: string | null;
   budget: number | string | null;
   source: string | null;
   status: string;
+  follow_up_date: string | null;
   assigned_to: string | null;
   assigned_profile: {
     full_name: string | null;
@@ -21,45 +23,59 @@ type LeadRow = {
   updated_at: string;
 };
 
-function parseBudget(value: string): number | null {
-  if (!value.trim()) {
-    return null;
-  }
+function parseBudget(
+  value: string
+): number | null {
+  const normalized = value.replace(
+    /[₹,\s]/g,
+    ""
+  );
 
-  const normalized = value.replace(/[₹,\s]/g, "");
   const number = Number(normalized);
 
-  return Number.isFinite(number) ? number : null;
+  return Number.isFinite(number)
+    ? number
+    : null;
 }
 
 function mapLead(row: LeadRow): Lead {
   return {
     id: row.id,
     clientName: row.client_name,
+    email: row.email ?? "",
     phone: row.phone ?? "",
     eventType: row.event_type,
     eventDate: row.event_date ?? "",
     budget: row.budget?.toString() ?? "",
     source: row.source as Lead["source"],
     status: row.status as Lead["status"],
+    followUpDate: row.follow_up_date ?? "",
     assignedTo: row.assigned_to ?? "",
     assignedToName:
       row.assigned_profile?.full_name?.trim() ?? "",
     notes: row.notes ?? "",
-    convertedClientId: row.converted_client_id ?? null,
+    convertedClientId:
+      row.converted_client_id ?? null,
   };
 }
+
+const LEAD_SELECT = `
+  *,
+  assigned_profile:profiles!leads_assigned_to_fkey(full_name)
+`;
 
 export async function getLeads(): Promise<Lead[]> {
   const supabase = createClient();
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+  } = await supabase
     .from("leads")
-    .select(
-      `*,
-       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
-    )
-    .order("created_at", { ascending: false });
+    .select(LEAD_SELECT)
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) {
     throw new Error(error.message);
@@ -73,36 +89,48 @@ export async function createLead(
 ): Promise<Lead> {
   const supabase = createClient();
 
-  const { data: organizationId, error: organizationError } =
-    await supabase.rpc("get_user_organization_id");
+  const {
+    data: organizationId,
+    error: organizationError,
+  } = await supabase.rpc(
+    "get_user_organization_id"
+  );
 
   if (organizationError) {
-    throw new Error(organizationError.message);
+    throw new Error(
+      organizationError.message
+    );
   }
 
   if (!organizationId) {
-    throw new Error("No workspace found for the current user.");
+    throw new Error(
+      "No workspace found for the current user."
+    );
   }
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+  } = await supabase
     .from("leads")
     .insert({
       organization_id: organizationId,
       client_name: lead.clientName,
+      email: lead.email || null,
       phone: lead.phone || null,
       event_type: lead.eventType,
       event_date: lead.eventDate || null,
       budget: parseBudget(lead.budget),
       source: lead.source || null,
       status: lead.status,
-      assigned_to: lead.assignedTo || null,
+      follow_up_date:
+        lead.followUpDate || null,
+      assigned_to:
+        lead.assignedTo || null,
       notes: lead.notes || null,
       converted_client_id: null,
     })
-    .select(
-      `*,
-       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
-    )
+    .select(LEAD_SELECT)
     .single();
 
   if (error) {
@@ -118,52 +146,74 @@ export async function updateLead(
 ): Promise<Lead> {
   const supabase = createClient();
 
-  const updateData: Record<string, unknown> = {};
+  const updateData: Record<
+    string,
+    unknown
+  > = {};
 
   if (lead.clientName !== undefined) {
-    updateData.client_name = lead.clientName;
+    updateData.client_name =
+      lead.clientName;
+  }
+
+  if (lead.email !== undefined) {
+    updateData.email =
+      lead.email || null;
   }
 
   if (lead.phone !== undefined) {
-    updateData.phone = lead.phone || null;
+    updateData.phone =
+      lead.phone || null;
   }
 
   if (lead.eventType !== undefined) {
-    updateData.event_type = lead.eventType;
+    updateData.event_type =
+      lead.eventType;
   }
 
   if (lead.eventDate !== undefined) {
-    updateData.event_date = lead.eventDate || null;
+    updateData.event_date =
+      lead.eventDate || null;
   }
 
   if (lead.budget !== undefined) {
-    updateData.budget = parseBudget(lead.budget);
+    updateData.budget =
+      parseBudget(lead.budget);
   }
 
   if (lead.source !== undefined) {
-    updateData.source = lead.source || null;
+    updateData.source =
+      lead.source || null;
   }
 
   if (lead.status !== undefined) {
-    updateData.status = lead.status;
+    updateData.status =
+      lead.status;
+  }
+
+  if (lead.followUpDate !== undefined) {
+    updateData.follow_up_date =
+      lead.followUpDate || null;
   }
 
   if (lead.assignedTo !== undefined) {
-    updateData.assigned_to = lead.assignedTo || null;
+    updateData.assigned_to =
+      lead.assignedTo || null;
   }
 
   if (lead.notes !== undefined) {
-    updateData.notes = lead.notes || null;
+    updateData.notes =
+      lead.notes || null;
   }
 
-  const { data, error } = await supabase
+  const {
+    data,
+    error,
+  } = await supabase
     .from("leads")
     .update(updateData)
     .eq("id", id)
-    .select(
-      `*,
-       assigned_profile:profiles!leads_assigned_to_fkey(full_name)`
-    )
+    .select(LEAD_SELECT)
     .single();
 
   if (error) {
@@ -178,7 +228,10 @@ export async function convertLeadToClient(
 ): Promise<string> {
   const supabase = createClient();
 
-  const { data, error } = await supabase.rpc(
+  const {
+    data,
+    error,
+  } = await supabase.rpc(
     "convert_lead_to_client",
     {
       p_lead_id: leadId,
@@ -190,13 +243,17 @@ export async function convertLeadToClient(
   }
 
   if (!data) {
-    throw new Error("Client conversion failed.");
+    throw new Error(
+      "Client conversion failed."
+    );
   }
 
   return data;
 }
 
-export async function deleteLead(id: string): Promise<void> {
+export async function deleteLead(
+  id: string
+): Promise<void> {
   const supabase = createClient();
 
   const { error } = await supabase

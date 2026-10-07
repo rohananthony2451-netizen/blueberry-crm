@@ -37,11 +37,13 @@ export function LeadDrawer({
 
     await onEdit(lead.id, {
       clientName: data.clientName,
+      email: data.email,
       phone: data.phone,
       eventType: data.eventType,
       eventDate: data.eventDate,
       budget: data.budget,
       source: data.source as Lead["source"],
+      followUpDate: data.followUpDate ?? "",
       assignedTo: data.assignedTo,
       notes: data.notes ?? "",
     });
@@ -74,50 +76,47 @@ export function LeadDrawer({
       </DrawerTrigger>
 
       <DrawerContent className="mx-auto max-h-[80vh] w-full max-w-xl overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-y-auto p-8">
+          {editing ? (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-950">
+                  Edit Lead
+                </h2>
 
-  <div className="min-h-0 flex-1 overflow-y-auto p-8">
+                <p className="mt-1 text-sm text-slate-500">
+                  Update the information for{" "}
+                  {lead.clientName}.
+                </p>
+              </div>
 
-    {editing ? (
-      <div className="space-y-6">
-
-        <div>
-          <h2 className="text-2xl font-bold">
-            Edit Lead
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Update the information for {lead.clientName}.
-          </p>
+              <LeadForm
+                initialValues={{
+                  clientName: lead.clientName,
+                  email: lead.email,
+                  phone: lead.phone,
+                  eventType: lead.eventType,
+                  eventDate: lead.eventDate,
+                  budget: lead.budget,
+                  source: lead.source,
+                  followUpDate: lead.followUpDate,
+                  assignedTo: lead.assignedTo,
+                  notes: lead.notes,
+                }}
+                onCancel={() => setEditing(false)}
+                onSave={handleEdit}
+                saveText="Save Changes"
+              />
+            </div>
+          ) : (
+            <LeadDetails
+              lead={lead}
+              onEdit={() => setEditing(true)}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
-
-        <LeadForm
-          initialValues={{
-            clientName: lead.clientName,
-            phone: lead.phone,
-            eventType: lead.eventType,
-            eventDate: lead.eventDate,
-            budget: lead.budget,
-            source: lead.source,
-            assignedTo: lead.assignedTo,
-            notes: lead.notes,
-          }}
-          onCancel={() => setEditing(false)}
-          onSave={handleEdit}
-          saveText="Save Changes"
-        />
-
-      </div>
-    ) : (
-      <LeadDetails
-        lead={lead}
-        onEdit={() => setEditing(true)}
-        onDelete={handleDelete}
-      />
-    )}
-
-  </div>
-
-</DrawerContent>
+      </DrawerContent>
     </Drawer>
   );
 }

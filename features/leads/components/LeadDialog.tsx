@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -20,10 +21,12 @@ interface LeadDialogProps {
   onCreateLead: (
     lead: Omit<Lead, "id">
   ) => Promise<Lead>;
+  triggerClassName?: string;
 }
 
 export function LeadDialog({
   onCreateLead,
+  triggerClassName,
 }: LeadDialogProps) {
   const [open, setOpen] = useState(false);
 
@@ -33,25 +36,44 @@ export function LeadDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger asChild>
-        <Button>+ New Lead</Button>
+        <Button
+          className={
+            triggerClassName ??
+            "h-10 rounded-xl bg-blue-600 px-4 font-semibold text-white shadow-sm hover:bg-blue-700"
+          }
+        >
+          <Plus
+            className="mr-1.5 h-4 w-4"
+            strokeWidth={2.2}
+          />
+          Add Lead
+        </Button>
       </DialogTrigger>
 
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Create New Lead</DialogTitle>
+          <DialogTitle>
+            Create New Lead
+          </DialogTitle>
         </DialogHeader>
 
         <LeadForm
           onCancel={() => setOpen(false)}
-          onSave={async (data: LeadFormValues) => {
+          onSave={async (
+            data: LeadFormValues
+          ) => {
             await onCreateLead({
               clientName: data.clientName,
+              email: data.email,
               phone: data.phone,
               eventType: data.eventType,
               eventDate: data.eventDate,
               budget: data.budget,
-              source: data.source as Lead["source"],
+              source:
+                data.source as Lead["source"],
               status: "New",
+              followUpDate:
+                data.followUpDate ?? "",
               assignedTo: data.assignedTo,
               notes: data.notes ?? "",
               convertedClientId: null,
