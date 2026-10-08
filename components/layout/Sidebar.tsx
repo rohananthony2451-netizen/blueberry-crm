@@ -1,24 +1,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import clsx from "clsx";
 
 import Logo from "./Logo";
 import Navigation from "./Navigation";
 import UserProfile from "./UserProfile";
 import LogoutButton from "@/components/shared/LogoutButton";
+import { CurrentUser } from "@/app/(dashboard)/layout";
 
-const SIDEBAR_STORAGE_KEY = "eventify-sidebar-collapsed";
+const SIDEBAR_STORAGE_KEY =
+  "eventify-sidebar-collapsed";
 
-export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mounted, setMounted] = useState(false);
+interface SidebarProps {
+  currentUser: CurrentUser;
+}
+
+export default function Sidebar({
+  currentUser,
+}: SidebarProps) {
+  const [collapsed, setCollapsed] =
+    useState(false);
+
+  const [mounted, setMounted] =
+    useState(false);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(
-      SIDEBAR_STORAGE_KEY
-    );
+    const saved =
+      window.localStorage.getItem(
+        SIDEBAR_STORAGE_KEY
+      );
 
     setCollapsed(saved === "true");
     setMounted(true);
@@ -40,15 +55,19 @@ export default function Sidebar() {
   return (
     <aside
       className={clsx(
-        "hidden h-screen shrink-0 border-r border-slate-200/80 bg-white lg:flex lg:flex-col",
+        "hidden h-screen shrink-0 border-r border-slate-200 bg-white lg:flex lg:flex-col",
         "transition-[width] duration-200 ease-in-out",
-        collapsed ? "w-[76px]" : "w-64"
+        collapsed
+          ? "w-[72px]"
+          : "w-[252px]"
       )}
     >
       <div
         className={clsx(
-          "relative flex items-center border-b border-slate-200/80",
-          collapsed ? "justify-center" : "justify-between"
+          "relative flex h-[72px] shrink-0 items-center border-b border-slate-100",
+          collapsed
+            ? "justify-center"
+            : "justify-between"
         )}
       >
         {collapsed ? (
@@ -72,18 +91,24 @@ export default function Sidebar() {
                 : "Collapse sidebar"
             }
             className={clsx(
-              "flex h-8 w-8 items-center justify-center rounded-lg",
-              "text-slate-500 transition-colors",
-              "hover:bg-slate-100 hover:text-slate-900",
+              "flex h-7 w-7 items-center justify-center rounded-lg",
+              "text-slate-400 transition-all",
+              "hover:bg-slate-100 hover:text-slate-700",
               collapsed
-                ? "absolute -right-4 top-5 z-30 border border-slate-200 bg-white shadow-sm"
+                ? "absolute -right-3.5 top-[22px] z-30 border border-slate-200 bg-white shadow-sm"
                 : "mr-3"
             )}
           >
             {collapsed ? (
-              <ChevronRight size={16} />
+              <ChevronRight
+                size={15}
+                strokeWidth={2}
+              />
             ) : (
-              <ChevronLeft size={16} />
+              <ChevronLeft
+                size={15}
+                strokeWidth={2}
+              />
             )}
           </button>
         )}
@@ -91,24 +116,34 @@ export default function Sidebar() {
 
       <div
         className={clsx(
-          "min-h-0 flex-1 overflow-y-auto py-4",
-          collapsed ? "px-2" : "px-3"
+          "min-h-0 flex-1 overflow-y-auto",
+          "scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent",
+          collapsed
+            ? "px-2 py-4"
+            : "px-3 py-4"
         )}
       >
-        <Navigation collapsed={collapsed} />
+        <Navigation
+          collapsed={collapsed}
+        />
       </div>
 
       <div
         className={clsx(
-          "border-t border-slate-200/80",
-          collapsed ? "p-2" : "p-3"
+          "shrink-0 border-t border-slate-100 bg-white",
+          collapsed
+            ? "p-2"
+            : "p-3"
         )}
       >
-        <UserProfile collapsed={collapsed} />
+        <UserProfile
+          collapsed={collapsed}
+          currentUser={currentUser}
+        />
 
-        <div className="mt-2">
-          <LogoutButton collapsed={collapsed} />
-        </div>
+        <LogoutButton
+          collapsed={collapsed}
+        />
       </div>
     </aside>
   );

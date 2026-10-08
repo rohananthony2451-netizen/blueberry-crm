@@ -2,17 +2,20 @@ import { ReactNode } from "react";
 
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import { CurrentUser } from "@/app/(dashboard)/layout";
 
 interface AppShellProps {
   children: ReactNode;
+  currentUser: CurrentUser;
 }
 
 export default function AppShell({
   children,
+  currentUser,
 }: AppShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      <Sidebar />
+      <Sidebar currentUser={currentUser} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />

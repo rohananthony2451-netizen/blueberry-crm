@@ -5,7 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 
-import { navigation } from "@/constants/navigation";
+import {
+  bottomNavigation,
+  navigation,
+} from "@/constants/navigation";
+
 import { createClient } from "@/lib/supabase/client";
 
 type UserRole = "admin" | "staff" | null;
@@ -19,7 +23,8 @@ export default function Navigation({
 }: NavigationProps) {
   const pathname = usePathname();
 
-  const [role, setRole] = useState<UserRole>(null);
+  const [role, setRole] =
+    useState<UserRole>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -29,7 +34,8 @@ export default function Navigation({
 
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } =
+        await supabase.auth.getUser();
 
       if (!user) {
         if (mounted) {
@@ -39,11 +45,12 @@ export default function Navigation({
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
+      const { data: profile } =
+        await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
 
       if (!mounted) {
         return;
@@ -63,81 +70,174 @@ export default function Navigation({
     };
   }, []);
 
+  function isActive(href: string) {
+    return href === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname === href ||
+          pathname.startsWith(`${href}/`);
+  }
+
   return (
-    <nav
-      className={clsx(
-        "flex flex-col",
-        collapsed ? "gap-4" : "gap-8"
-      )}
-    >
-      {navigation.map((section) => {
-        const visibleItems = section.items.filter(
-          (item) =>
-            !("adminOnly" in item) ||
-            !item.adminOnly ||
-            role === "admin"
-        );
+    <div className="flex h-full flex-col">
+      <nav
+        className={clsx(
+          "flex flex-1 flex-col",
+          collapsed ? "gap-3" : "gap-6"
+        )}
+      >
+        {navigation.map((section) => {
+          const visibleItems =
+            section.items.filter(
+              (item) =>
+                !("adminOnly" in item) ||
+                !item.adminOnly ||
+                role === "admin"
+            );
 
-        if (visibleItems.length === 0) {
-          return null;
-        }
+          if (
+            visibleItems.length === 0
+          ) {
+            return null;
+          }
 
-        return (
-          <div key={section.title}>
-            {!collapsed && (
-              <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                {section.title}
-              </p>
-            )}
-
+          return (
             <div
-              className={clsx(
-                "space-y-1",
-                collapsed && "flex flex-col items-center"
-              )}
+              key={section.title}
             >
-              {visibleItems.map((item) => {
-                const Icon = item.icon;
+              {!collapsed && (
+                <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  {section.title}
+                </p>
+              )}
 
-                const active =
-                  item.href === "/dashboard"
-                    ? pathname === "/dashboard"
-                    : pathname === item.href ||
-                      pathname.startsWith(
-                        `${item.href}/`
+              <div className="space-y-1">
+                {visibleItems.map(
+                  (item) => {
+                    const Icon =
+                      item.icon;
+
+                    const active =
+                      isActive(
+                        item.href
                       );
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    title={
-                      collapsed
-                        ? item.title
-                        : undefined
-                    }
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={
+                          collapsed
+                            ? item.title
+                            : undefined
+                        }
+                        className={clsx(
+                          "group flex items-center rounded-xl transition-all duration-150",
+                          collapsed
+                            ? "mx-auto h-10 w-10 justify-center"
+                            : "h-10 gap-3 px-3",
+                          active
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                        )}
+                      >
+                        <Icon
+                          className={clsx(
+                            "shrink-0",
+                            active
+                              ? "text-white"
+                              : "text-slate-400 group-hover:text-slate-600"
+                          )}
+                          size={18}
+                          strokeWidth={
+                            active ? 2.2 : 1.9
+                          }
+                        />
+
+                        {!collapsed && (
+                          <span
+                            className={clsx(
+                              "text-[14px]",
+                              active
+                                ? "font-semibold"
+                                : "font-medium"
+                            )}
+                          >
+                            {item.title}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  }
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
+
+      <div
+        className={clsx(
+          "border-t border-slate-100 pt-3",
+          collapsed
+            ? "mt-3"
+            : "mt-4"
+        )}
+      >
+        {bottomNavigation.map(
+          (item) => {
+            const Icon = item.icon;
+            const active =
+              isActive(item.href);
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                title={
+                  collapsed
+                    ? item.title
+                    : undefined
+                }
+                className={clsx(
+                  "group flex items-center rounded-xl transition-all duration-150",
+                  collapsed
+                    ? "mx-auto h-10 w-10 justify-center"
+                    : "h-10 gap-3 px-3",
+                  active
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                )}
+              >
+                <Icon
+                  className={clsx(
+                    "shrink-0",
+                    active
+                      ? "text-white"
+                      : "text-slate-400 group-hover:text-slate-600"
+                  )}
+                  size={18}
+                  strokeWidth={
+                    active ? 2.2 : 1.9
+                  }
+                />
+
+                {!collapsed && (
+                  <span
                     className={clsx(
-                      "flex items-center rounded-xl text-sm font-medium transition-colors",
-                      collapsed
-                        ? "h-10 w-10 justify-center"
-                        : "gap-3 px-3 py-2.5",
+                      "text-[14px]",
                       active
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                        ? "font-semibold"
+                        : "font-medium"
                     )}
                   >
-                    <Icon size={18} />
-
-                    {!collapsed && (
-                      <span>{item.title}</span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </nav>
+                    {item.title}
+                  </span>
+                )}
+              </Link>
+            );
+          }
+        )}
+      </div>
+    </div>
   );
 }
