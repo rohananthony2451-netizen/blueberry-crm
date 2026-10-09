@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -70,7 +71,7 @@ export function EventTypeChart({
       </div>
 
       {data.length === 0 ? (
-        <div className="flex h-[280px] items-center justify-center">
+        <div className="flex h-[252px] items-center justify-center">
           <div className="text-center">
             <p className="text-sm font-medium text-slate-700">
               No event data yet
@@ -83,11 +84,8 @@ export function EventTypeChart({
         </div>
       ) : (
         <>
-          <div className="relative mt-2 h-[185px]">
-            <ResponsiveContainer
-              width="100%"
-              height="100%"
-            >
+          <div className="relative mt-2 h-[167px]">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
@@ -95,27 +93,25 @@ export function EventTypeChart({
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  innerRadius={55}
-                  outerRadius={78}
+                  innerRadius={50}
+                  outerRadius={70}
                   paddingAngle={3}
                   stroke="none"
                 >
                   {data.map((entry, index) => (
                     <Cell
                       key={entry.name}
-                      fill={
-                        COLORS[index % COLORS.length]
-                      }
+                      fill={COLORS[index % COLORS.length]}
                     />
                   ))}
                 </Pie>
 
                 <Tooltip
                   contentStyle={{
-                    borderRadius: 12,
+                    borderRadius: 11,
                     border: "1px solid #e2e8f0",
                     boxShadow:
-                      "0 10px 30px rgba(15, 23, 42, 0.08)",
+                      "0 9px 27px rgba(15, 23, 42, 0.08)",
                   }}
                 />
               </PieChart>
@@ -127,7 +123,7 @@ export function EventTypeChart({
                   {totalEvents}
                 </p>
 
-                <p className="text-[11px] font-medium text-slate-400">
+                <p className="text-[10px] font-medium text-slate-400">
                   total events
                 </p>
               </div>
@@ -139,8 +135,7 @@ export function EventTypeChart({
               const percentage =
                 totalEvents > 0
                   ? Math.round(
-                      (item.value / totalEvents) *
-                        100
+                      (item.value / totalEvents) * 100
                     )
                   : 0;
 
@@ -154,9 +149,7 @@ export function EventTypeChart({
                       className="h-2 w-2 shrink-0 rounded-full"
                       style={{
                         backgroundColor:
-                          COLORS[
-                            index % COLORS.length
-                          ],
+                          COLORS[index % COLORS.length],
                       }}
                     />
 

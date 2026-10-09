@@ -1019,7 +1019,7 @@ function LoadingList() {
         (_, index) => (
           <div
             key={index}
-            className="h-16 animate-pulse rounded-2xl bg-slate-100"
+            className="h-[60px] animate-pulse rounded-2xl bg-slate-100"
           />
         )
       )}

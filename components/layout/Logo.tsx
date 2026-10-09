@@ -12,28 +12,30 @@ export default function Logo({
     <Link
       href="/dashboard"
       title={
-        collapsed ? "Eventos" : undefined
+        collapsed
+          ? "Eventos"
+          : undefined
       }
       className={
         collapsed
           ? "flex items-center justify-center"
-          : "flex min-w-0 items-center gap-3 px-5"
+          : "flex min-w-0 items-center gap-2.5 px-4"
       }
     >
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
         <Sparkles
-          size={18}
+          size={17}
           strokeWidth={2.1}
         />
       </div>
 
       {!collapsed && (
         <div className="min-w-0">
-          <h1 className="truncate text-[17px] font-bold tracking-tight text-slate-950">
+          <h1 className="truncate text-[16px] font-bold tracking-tight text-slate-950">
             Eventos
           </h1>
 
-          <p className="truncate text-[11px] font-medium text-slate-400">
+          <p className="truncate text-[10px] font-medium text-slate-400">
             Event Management CRM
           </p>
         </div>

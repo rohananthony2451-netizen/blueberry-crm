@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from "lucide-react";
 
 interface KPIStatProps {
@@ -23,7 +24,7 @@ export function KPIStat({
             {title}
           </p>
 
-          <p className="mt-2.5 truncate text-[30px] font-bold leading-none tracking-[-0.03em] text-slate-950">
+          <p className="mt-2.5 truncate text-[27px] font-bold leading-none tracking-[-0.03em] text-slate-950">
             {value}
           </p>
 
@@ -35,10 +36,7 @@ export function KPIStat({
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${iconClassName}`}
         >
-          <Icon
-            className="h-6 w-6"
-            strokeWidth={2}
-          />
+          <Icon className="h-6 w-6" strokeWidth={2} />
         </div>
       </div>
     </div>

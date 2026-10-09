@@ -86,8 +86,11 @@ export default async function DashboardLayout({
   };
 
   return (
+  <div>
     <AppShell currentUser={currentUser}>
       {children}
     </AppShell>
-  );
+  </div>
+);
+  
 }

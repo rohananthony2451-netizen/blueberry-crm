@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -121,7 +122,7 @@ export function RevenueChart({
       </div>
 
       {payments.length === 0 ? (
-        <div className="flex h-[280px] items-center justify-center">
+        <div className="flex h-[252px] items-center justify-center">
           <div className="text-center">
             <p className="text-sm font-medium text-slate-700">
               No payment activity yet
@@ -132,14 +133,14 @@ export function RevenueChart({
           </div>
         </div>
       ) : (
-        <div className="mt-5 h-[285px]">
+        <div className="mt-5 h-[257px]">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={data}
               margin={{
-                top: 10,
-                right: 8,
-                left: -18,
+                top: 9,
+                right: 7,
+                left: -16,
                 bottom: 0,
               }}
             >
@@ -176,9 +177,9 @@ export function RevenueChart({
                 tickLine={false}
                 tick={{
                   fill: "#94a3b8",
-                  fontSize: 11,
+                  fontSize: 10,
                 }}
-                dy={10}
+                dy={9}
               />
 
               <YAxis
@@ -186,10 +187,10 @@ export function RevenueChart({
                 tickLine={false}
                 tick={{
                   fill: "#94a3b8",
-                  fontSize: 11,
+                  fontSize: 10,
                 }}
                 tickFormatter={formatCompactCurrency}
-                width={48}
+                width={43}
               />
 
               <Tooltip
@@ -198,15 +199,15 @@ export function RevenueChart({
                   strokeDasharray: "4 4",
                 }}
                 contentStyle={{
-                  borderRadius: 12,
+                  borderRadius: 11,
                   border: "1px solid #e2e8f0",
                   boxShadow:
-                    "0 10px 30px rgba(15, 23, 42, 0.08)",
-                  padding: "10px 12px",
+                    "0 9px 27px rgba(15, 23, 42, 0.08)",
+                  padding: "9px 11px",
                 }}
                 labelStyle={{
                   color: "#64748b",
-                  fontSize: 11,
+                  fontSize: 10,
                   marginBottom: 4,
                 }}
                 formatter={(value) => [
@@ -219,10 +220,10 @@ export function RevenueChart({
                 type="monotone"
                 dataKey="revenue"
                 stroke="#2563eb"
-                strokeWidth={2.5}
+                strokeWidth={2.25}
                 fill="url(#revenueFill)"
                 activeDot={{
-                  r: 5,
+                  r: 4.5,
                   strokeWidth: 3,
                   stroke: "#fff",
                 }}

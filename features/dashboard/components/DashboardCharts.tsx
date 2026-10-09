@@ -12,7 +12,7 @@ export function DashboardCharts({
   events: Event[];
 }) {
   return (
-    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.85fr)]">
+    <section className="grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(288px,0.85fr)]">
       <RevenueChart payments={payments} />
       <EventTypeChart events={events} />
     </section>

@@ -170,3 +170,21 @@
     font: inherit;
   }
 }
+
+/* Eventos UI density */
+:root {
+  --eventos-page-x: 24px;
+  --eventos-page-y: 24px;
+
+  --eventos-card-radius: 16px;
+  --eventos-control-height: 44px;
+
+  --eventos-text-xs: 12px;
+  --eventos-text-sm: 13px;
+  --eventos-text-base: 14px;
+}
+
+/* Global UI scale — experimental */
+html {
+  font-size: 90%;
+}
