@@ -92,11 +92,11 @@ export function LeadRow({
         {/* Name */}
         <td className="px-5 py-4">
           <div className="min-w-0">
-            <p className="truncate text-[15px] font-bold leading-tight text-slate-950">
+            <p className="truncate text-[14px] font-bold leading-tight text-slate-950">
               {lead.clientName}
             </p>
 
-            <p className="mt-1 text-[13px] font-medium leading-tight text-slate-500">
+            <p className="mt-1 text-[12px] font-medium leading-tight text-slate-500">
               {lead.eventType || "Event"}
             </p>
           </div>
@@ -111,18 +111,18 @@ export function LeadRow({
                 strokeWidth={2}
               />
 
-              <span className="truncate text-[14px] font-semibold leading-tight text-slate-800">
+              <span className="truncate text-[13px] font-semibold leading-tight text-slate-800">
                 {lead.email || "No email"}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <Phone
-                className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                className="h-3 w-3 shrink-0 text-slate-400"
                 strokeWidth={2}
               />
 
-              <span className="text-[13px] font-medium leading-tight text-slate-500">
+              <span className="text-[12px] font-medium leading-tight text-slate-500">
                 {lead.phone || "No phone"}
               </span>
             </div>
@@ -141,7 +141,7 @@ export function LeadRow({
 
         {/* Estimated value */}
         <td className="px-5 py-4">
-          <p className="whitespace-nowrap text-[15px] font-bold text-slate-950">
+          <p className="whitespace-nowrap text-[14px] font-bold text-slate-950">
             {formatCurrency(lead.budget)}
           </p>
         </td>
@@ -150,11 +150,11 @@ export function LeadRow({
         <td className="px-5 py-4">
           <div className="flex items-center gap-2">
             <CalendarDays
-              className="h-4 w-4 shrink-0 text-slate-400"
+              className="h-3.5 w-3.5 shrink-0 text-slate-400"
               strokeWidth={2}
             />
 
-            <span className="whitespace-nowrap text-[14px] font-semibold text-slate-700">
+            <span className="whitespace-nowrap text-[13px] font-semibold text-slate-700">
               {formatDate(
                 lead.followUpDate
               )}
@@ -165,13 +165,13 @@ export function LeadRow({
         {/* Assignee */}
         <td className="px-5 py-4">
           <div className="flex min-w-0 items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 text-[10px] font-bold text-sky-700 ring-1 ring-inset ring-sky-200">
+            <div className="flex h-[29px] w-[29px] shrink-0 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 ring-1 ring-inset ring-sky-200">
               {getInitials(
                 assigneeName
               )}
             </div>
 
-            <span className="truncate text-[14px] font-semibold text-slate-800">
+            <span className="truncate text-[13px] font-semibold text-slate-800">
               {assigneeName}
             </span>
           </div>
@@ -182,7 +182,7 @@ export function LeadRow({
           <div className="flex justify-center">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors group-hover:bg-slate-100 group-hover:text-slate-700">
               <MoreHorizontal
-                className="h-5 w-5"
+                className="h-[18px] w-[18px] "
                 strokeWidth={2}
               />
             </div>

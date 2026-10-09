@@ -154,7 +154,7 @@ const paginatedLeads =
     return (
       <PageContainer>
         <div className="mb-5">
-          <h1 className="text-[28px] font-bold tracking-tight text-slate-950">
+          <h1 className="text-[25px] font-bold tracking-tight text-slate-950">
             Leads
           </h1>
 
@@ -175,11 +175,11 @@ const paginatedLeads =
       {/* Page header */}
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h1 className="text-[30px] font-bold leading-tight tracking-tight text-slate-950">
+          <h1 className="text-[27px] font-bold leading-tight tracking-tight text-slate-950">
             Leads
           </h1>
 
-          <p className="mt-1 text-[15px] font-medium text-slate-500">
+          <p className="mt-1 text-[14px] font-medium text-slate-500">
             Manage and convert your event enquiries.
           </p>
         </div>
@@ -191,7 +191,7 @@ const paginatedLeads =
       </div>
 
       {/* Search + filters */}
-      <div className="mb-4 flex min-h-[64px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
+      <div className="mb-4 flex min-h-[58px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
         <LeadToolbar
           search={search}
           onSearchChange={setSearch}

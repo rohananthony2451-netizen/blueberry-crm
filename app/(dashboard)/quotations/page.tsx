@@ -289,10 +289,12 @@ export default function QuotationsPage() {
 
   return (
     <PageContainer>
-      <PageHeader
-        title="Quotations"
-        description="Create and manage quotations for your clients."
-      />
+     <div>
+  <h1 className="text-[28px] font-bold text-black-500">
+    Quotations 
+  </h1>
+  <p>Create and manage quotations for your clients.</p>
+</div>
 
       <div className="mb-6 flex justify-end">
         <button

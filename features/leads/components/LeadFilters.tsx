@@ -1,3 +1,4 @@
+
 "use client";
 
 import { RotateCcw } from "lucide-react";
@@ -38,28 +39,16 @@ export function LeadFilters({
     source !== "" ||
     sortBy !== "";
 
-  function handleStatusChange(
-    value: string
-  ) {
-    onStatusChange(
-      value === CLEAR_VALUE ? "" : value
-    );
+  function handleStatusChange(value: string) {
+    onStatusChange(value === CLEAR_VALUE ? "" : value);
   }
 
-  function handleSourceChange(
-    value: string
-  ) {
-    onSourceChange(
-      value === CLEAR_VALUE ? "" : value
-    );
+  function handleSourceChange(value: string) {
+    onSourceChange(value === CLEAR_VALUE ? "" : value);
   }
 
-  function handleSortChange(
-    value: string
-  ) {
-    onSortChange(
-      value === CLEAR_VALUE ? "" : value
-    );
+  function handleSortChange(value: string) {
+    onSortChange(value === CLEAR_VALUE ? "" : value);
   }
 
   function clearFilters() {
@@ -70,46 +59,37 @@ export function LeadFilters({
 
   return (
     <div className="flex shrink-0 items-center gap-2">
-      <div className="w-[150px]">
+      <div className="w-[135px]">
         <FormSelect
           value={status}
           onValueChange={handleStatusChange}
           placeholder="All Status"
           options={[
-            {
-              label: "All Status",
-              value: CLEAR_VALUE,
-            },
+            { label: "All Status", value: CLEAR_VALUE },
             ...LEAD_STATUS,
-          ]}
-        />
-      </div>
-
-      <div className="w-[150px]">
-        <FormSelect
-          value={source}
-          onValueChange={handleSourceChange}
-          placeholder="All Sources"
-          options={[
-            {
-              label: "All Sources",
-              value: CLEAR_VALUE,
-            },
-            ...LEAD_SOURCES,
           ]}
         />
       </div>
 
       <div className="w-[135px]">
         <FormSelect
+          value={source}
+          onValueChange={handleSourceChange}
+          placeholder="All Sources"
+          options={[
+            { label: "All Sources", value: CLEAR_VALUE },
+            ...LEAD_SOURCES,
+          ]}
+        />
+      </div>
+
+      <div className="w-[122px]">
+        <FormSelect
           value={sortBy}
           onValueChange={handleSortChange}
           placeholder="Sort by"
           options={[
-            {
-              label: "Default order",
-              value: CLEAR_VALUE,
-            },
+            { label: "Default order", value: CLEAR_VALUE },
             ...LEAD_SORT_OPTIONS,
           ]}
         />
