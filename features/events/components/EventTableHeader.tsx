@@ -1,34 +1,14 @@
 export function EventTableHeader() {
   return (
     <thead>
-      <tr className="border-b bg-slate-50 text-left text-sm text-slate-500">
-        <th className="px-4 py-3 font-medium">
-          Event
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Client
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Type
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Date
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Venue
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Guests
-        </th>
-
-        <th className="px-4 py-3 font-medium">
-          Status
-        </th>
+      <tr className="border-b bg-slate-50/80 text-left text-[11px] font-medium uppercase tracking-wide text-slate-500">
+        <th className="w-[22%] px-4 py-3">Event</th>
+        <th className="w-[16%] px-4 py-3">Client</th>
+        <th className="w-[16%] px-4 py-3">Venue</th>
+        <th className="w-[11%] px-4 py-3">Date</th>
+        <th className="w-[11%] px-4 py-3">Type</th>
+        <th className="w-[12%] px-4 py-3">Status</th>
+        <th className="w-[12%] px-4 py-3">Amount</th>
       </tr>
     </thead>
   );

@@ -1,12 +1,15 @@
+
 "use client";
 
 import { useState } from "react";
 
 import {
-  Drawer,
-  DrawerContent,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 import type { Event } from "../types";
 import type { EventFormValues } from "../validation";
@@ -38,48 +41,24 @@ export function EventDrawer({
   onDelete,
   onStatusChange,
 }: EventDrawerProps) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
-  const [editing, setEditing] =
-    useState(false);
-
-  const [saving, setSaving] =
-    useState(false);
-
-  const [
-    statusUpdating,
-    setStatusUpdating,
-  ] = useState(false);
-
-  async function handleEdit(
-    data: EventFormValues
-  ) {
+  async function handleEdit(data: EventFormValues) {
     if (!onEdit) return;
 
     try {
       setSaving(true);
 
       await onEdit(event.id, {
-        eventName:
-          data.eventName,
-
-        clientId:
-          data.clientId,
-
-        eventType:
-          data.eventType,
-
-        eventDate:
-          data.eventDate,
-
-        venue:
-          data.venue,
-
-        guestCount:
-          Number(
-            data.guestCount
-          ),
+        eventName: data.eventName,
+        clientId: data.clientId,
+        eventType: data.eventType,
+        eventDate: data.eventDate,
+        venue: data.venue,
+        guestCount: Number(data.guestCount),
       });
 
       setEditing(false);
@@ -88,20 +67,12 @@ export function EventDrawer({
     }
   }
 
-  async function handleStatusChange(
-    status: Event["status"]
-  ) {
-    if (!onStatusChange) {
-      return;
-    }
+  async function handleStatusChange(status: Event["status"]) {
+    if (!onStatusChange) return;
 
     try {
       setStatusUpdating(true);
-
-      await onStatusChange(
-        event.id,
-        status
-      );
+      await onStatusChange(event.id, status);
     } finally {
       setStatusUpdating(false);
     }
@@ -110,10 +81,9 @@ export function EventDrawer({
   function handleDelete() {
     if (!onDelete) return;
 
-    const confirmed =
-      window.confirm(
-        `Are you sure you want to delete "${event.eventName}"?`
-      );
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${event.eventName}"?`
+    );
 
     if (!confirmed) return;
 
@@ -121,9 +91,7 @@ export function EventDrawer({
     setOpen(false);
   }
 
-  function handleDrawerChange(
-    value: boolean
-  ) {
+  function handleOpenChange(value: boolean) {
     setOpen(value);
 
     if (!value) {
@@ -133,84 +101,51 @@ export function EventDrawer({
   }
 
   return (
-    <Drawer
-      open={open}
-      onOpenChange={
-        handleDrawerChange
-      }
-    >
-      <DrawerTrigger asChild>
-        {children}
-      </DrawerTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DrawerContent className="mx-auto max-h-[90vh] w-full max-w-xl overflow-hidden">
-        <div className="min-h-0 flex-1 overflow-y-auto p-8">
-          {editing ? (
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Edit Event
-                </h2>
+      <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto rounded-2xl border-0 bg-white p-0 shadow-2xl sm:max-w-3xl">
+        <DialogHeader className="sticky top-0 z-10 border-b border-slate-200 bg-white px-6 py-4 text-left sm:px-8">
+          <DialogTitle className="text-base font-semibold text-slate-800">
+            {editing ? "Edit Event" : "Event Details"}
+          </DialogTitle>
+        </DialogHeader>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Update the information for{" "}
-                  {event.eventName}.
-                </p>
-              </div>
-
-              <EventForm
-                initialValues={{
-                  eventName:
-                    event.eventName,
-
-                  clientId:
-                    event.clientId ??
-                    "",
-
-                  eventType:
-                    event.eventType,
-
-                  eventDate:
-                    event.eventDate,
-
-                  venue:
-                    event.venue,
-
-                  guestCount:
-                    event.guestCount.toString(),
-                }}
-                onCancel={() =>
-                  setEditing(false)
-                }
-                onSave={
-                  handleEdit
-                }
-                saveText={
-                  saving
-                    ? "Saving..."
-                    : "Save Changes"
-                }
-              />
+        {editing ? (
+          <div className="space-y-5 p-6 sm:p-8">
+            <div>
+              <h2 className="text-xl font-semibold text-slate-900">
+                Update Event
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Update the information for {event.eventName}.
+              </p>
             </div>
-          ) : (
-            <EventDetails
-              event={event}
-              onEdit={() =>
-                setEditing(true)
-              }
-              onDelete={
-                handleDelete
-              }
-              onStatusChange={
-                handleStatusChange
-              }
-              statusUpdating={
-                statusUpdating
-              }
+
+            <EventForm
+              initialValues={{
+                eventName: event.eventName,
+                clientId: event.clientId ?? "",
+                eventType: event.eventType,
+                eventDate: event.eventDate,
+                venue: event.venue,
+                guestCount: event.guestCount.toString(),
+              }}
+              onCancel={() => setEditing(false)}
+              onSave={handleEdit}
+              saveText={saving ? "Saving..." : "Save Changes"}
             />
-          )}
-        </div>
-      </DrawerContent>
-    </Drawer>
+          </div>
+        ) : (
+          <EventDetails
+            event={event}
+            onEdit={() => setEditing(true)}
+            onDelete={handleDelete}
+            onStatusChange={handleStatusChange}
+            statusUpdating={statusUpdating}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

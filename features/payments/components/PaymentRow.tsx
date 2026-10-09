@@ -1,127 +1,108 @@
-import {
-  Pencil,
-  Trash2,
-} from "lucide-react";
 
-import type {
-  Payment,
-} from "../types";
-
-import {
-  PaymentMethodBadge,
-} from "./PaymentMethodBadge";
+import { Pencil, Trash2 } from "lucide-react";
+import type { Payment } from "../types";
+import { PaymentMethodBadge } from "./PaymentMethodBadge";
 
 interface PaymentRowProps {
   payment: Payment;
-
-  onEdit?: (
-    payment: Payment
-  ) => void;
-
-  onDelete?: (
-    payment: Payment
-  ) => void;
+  balance?: number;
+  onEdit?: (payment: Payment) => void;
+  onDelete?: (payment: Payment) => void;
 }
 
-function formatDate(
-  value: string
-) {
-  return new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }
-  ).format(
-    new Date(value)
-  );
+function formatDate(value: string) {
+  const date = new Date(`${value.slice(0, 10)}T00:00:00`);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(date);
 }
 
-function formatCurrency(
-  value: number
-) {
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }
-  ).format(value);
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export function PaymentRow({
   payment,
+  balance,
   onEdit,
   onDelete,
 }: PaymentRowProps) {
   return (
-    <tr className="border-t border-slate-100 transition-colors hover:bg-slate-50/70">
-      <td className="px-4 py-4 font-medium text-primary">
-        {payment.paymentNumber}
+    <tr className="transition-colors hover:bg-slate-50/80">
+      <td className="px-3 py-3 sm:px-3.5">
+        <span className="block truncate font-semibold text-blue-700">
+          {payment.paymentNumber}
+        </span>
       </td>
 
-      <td className="px-4 py-4 font-medium">
-        {payment.clientName}
+      <td className="px-3 py-3 sm:px-3.5">
+        <span className="block truncate font-medium text-slate-800">
+          {payment.clientName}
+        </span>
       </td>
 
-      <td className="px-4 py-4 text-slate-600">
-        {payment.eventName ??
-          "—"}
+      <td className="px-3 py-3 sm:px-3.5">
+        <span className="block truncate text-slate-600">
+          {payment.eventName || "—"}
+        </span>
       </td>
 
-      <td className="px-4 py-4 text-slate-600">
-        {payment.quotationNumber ??
-          "—"}
+      <td className="whitespace-nowrap px-3 py-3 text-slate-600 sm:px-3.5">
+        {formatDate(payment.paymentDate)}
       </td>
 
-      <td className="px-4 py-4 text-slate-600">
-        {formatDate(
-          payment.paymentDate
+      <td className="px-3 py-3 sm:px-3.5">
+        <PaymentMethodBadge method={payment.paymentMethod} />
+      </td>
+
+      <td className="whitespace-nowrap px-3 py-3 text-right font-semibold tabular-nums text-emerald-700 sm:px-3.5">
+        {formatCurrency(payment.amount)}
+      </td>
+
+      <td className="whitespace-nowrap px-3 py-3 text-right sm:px-3.5">
+        {balance === undefined ? (
+          <span className="text-slate-400">—</span>
+        ) : (
+          <span
+            className={`font-medium tabular-nums ${
+              balance > 0 ? "text-amber-600" : "text-slate-500"
+            }`}
+            title="Outstanding balance on the linked quotation"
+          >
+            {formatCurrency(balance)}
+          </span>
         )}
       </td>
 
-      <td className="px-4 py-4">
-        <PaymentMethodBadge
-          method={
-            payment.paymentMethod
-          }
-        />
-      </td>
-
-      <td className="px-4 py-4 text-right font-semibold text-green-600">
-        {formatCurrency(
-          payment.amount
-        )}
-      </td>
-
-      <td className="max-w-xs px-4 py-4 text-slate-600">
-        {payment.notes || "—"}
-      </td>
-
-      <td className="px-4 py-4">
-        <div className="flex justify-end gap-1">
+      <td className="px-1 py-2">
+        <div className="flex items-center justify-center gap-0.5">
           <button
             type="button"
-            onClick={() =>
-              onEdit?.(payment)
-            }
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Edit payment"
+            onClick={() => onEdit?.(payment)}
+            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            aria-label={`Edit ${payment.paymentNumber}`}
+            title="Edit payment"
           >
-            <Pencil size={16} />
+            <Pencil size={14} />
           </button>
 
           <button
             type="button"
-            onClick={() =>
-              onDelete?.(payment)
-            }
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-            aria-label="Delete payment"
+            onClick={() => onDelete?.(payment)}
+            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+            aria-label={`Delete ${payment.paymentNumber}`}
+            title="Delete payment"
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
           </button>
         </div>
       </td>

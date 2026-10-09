@@ -6,14 +6,11 @@ import { EventTableBody } from "./EventTableBody";
 
 interface EventTableProps {
   events: Event[];
-
   onEdit?: (
     id: string,
     data: Partial<Event>
   ) => Promise<void>;
-
   onDelete?: (id: string) => void;
-
   onStatusChange?: (
     id: string,
     status: Event["status"]
@@ -27,18 +24,15 @@ export function EventTable({
   onStatusChange,
 }: EventTableProps) {
   return (
-    <Card className="overflow-hidden rounded-2xl">
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <Card className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="w-full overflow-x-auto">
+        <table className="w-full min-w-[960px] table-fixed">
           <EventTableHeader />
-
           <EventTableBody
             events={events}
             onEdit={onEdit}
             onDelete={onDelete}
-            onStatusChange={
-              onStatusChange
-            }
+            onStatusChange={onStatusChange}
           />
         </table>
       </div>
