@@ -1,0 +1,176 @@
+﻿FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 54
+SQL: ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 57
+SQL: CREATE POLICY "Users can view their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 71
+SQL: ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 74
+SQL: CREATE POLICY "Users can view profiles in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 83
+SQL: CREATE POLICY "Users can update their own profile"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 101
+SQL: ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 104
+SQL: CREATE POLICY "Users can view leads in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 113
+SQL: CREATE POLICY "Users can create leads in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 122
+SQL: CREATE POLICY "Users can update leads in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260821160000_enable_multi_tenant_rls.sql
+LINE: 134
+SQL: CREATE POLICY "Users can delete leads in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260825150000_add_organization_owner.sql
+LINE: 17
+SQL: CREATE POLICY "Users can create their own organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260825150000_add_organization_owner.sql
+LINE: 29
+SQL: CREATE POLICY "Users can create their own profile"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 25
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 78
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 95
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 15
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 32
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 48
+SQL: ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 119
+SQL: ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 130
+SQL: CREATE POLICY
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 145
+SQL: CREATE POLICY
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 160
+SQL: CREATE POLICY
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 179
+SQL: CREATE POLICY
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261002190000_create_workspace_invitations.sql
+LINE: 51
+SQL: ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261002190000_create_workspace_invitations.sql
+LINE: 58
+SQL: CREATE POLICY "Users can view invitations in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261008160000_add_organization_update_policy.sql
+LINE: 5
+SQL: CREATE POLICY "Workspace admins can update their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 2
+SQL: CREATE TABLE IF NOT EXISTS public.vendors (
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 28
+SQL: ALTER TABLE public.vendors ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 30
+SQL: CREATE POLICY "Users can view vendors in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 36
+SQL: CREATE POLICY "Users can create vendors in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 42
+SQL: CREATE POLICY "Users can update vendors in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010100000_create_vendors.sql
+LINE: 49
+SQL: CREATE POLICY "Users can delete vendors in their organization"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 4
+SQL: CREATE TABLE IF NOT EXISTS public.vendor_entries (
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 39
+SQL: ALTER TABLE public.vendor_entries ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 42
+SQL: CREATE POLICY "vendor_entries_select"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 50
+SQL: CREATE POLICY "vendor_entries_insert"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 68
+SQL: CREATE POLICY "vendor_entries_update"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 89
+SQL: CREATE POLICY "vendor_entries_delete"
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 2
+SQL: CREATE TABLE IF NOT EXISTS public.expenses (
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 48
+SQL: ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 51
+SQL: CREATE POLICY expenses_select
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 59
+SQL: CREATE POLICY expenses_insert
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 76
+SQL: CREATE POLICY expenses_update
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 96
+SQL: CREATE POLICY expenses_delete
+

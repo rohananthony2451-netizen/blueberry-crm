@@ -23,6 +23,8 @@ import { QuotationStatusBadge } from "./QuotationStatusBadge";
 
 import type { Quotation } from "../types";
 
+import { QuotationAuditHistory } from "./QuotationAuditHistory";
+
 interface QuotationViewDialogProps {
   quotation: Quotation | null;
   open: boolean;
@@ -75,8 +77,7 @@ export function QuotationViewDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-4xl">
-        <div className="border-b border-slate-200 bg-white px-6 py-5 sm:px-8">
-          <DialogHeader>
+<div className="border-b border-slate-200 bg-white px-6 py-3 sm:px-8">          <DialogHeader>
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
@@ -98,7 +99,7 @@ export function QuotationViewDialog({
           </DialogHeader>
         </div>
 
-        <div className="space-y-7 bg-white px-6 py-6 sm:px-8">
+        <div className="space-y-4 bg-white px-6 py-4 sm:px-8">
           {/* Client + Event */}
           <section className="grid gap-4 sm:grid-cols-2">
             <InfoBlock
@@ -129,8 +130,7 @@ export function QuotationViewDialog({
           </section>
 
           {/* Event details */}
-          <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
-            <div className="mb-4">
+<section className="rounded-xl border border-slate-200 bg-slate-50/70 p-3">            <div className="mb-3">
               <p className="text-sm font-semibold text-slate-950">
                 Event details
               </p>
@@ -140,7 +140,7 @@ export function QuotationViewDialog({
               </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <DetailItem
                 icon={CalendarDays}
                 label="Event date"
@@ -169,7 +169,7 @@ export function QuotationViewDialog({
             </div>
 
             {quotation.validUntil && (
-              <div className="mt-4 border-t border-slate-200 pt-4">
+              <div className="mt-3 border-t border-slate-200 pt-3">
                 <DetailItem
                   label="Valid until"
                   value={formatDate(quotation.validUntil)}
@@ -177,7 +177,7 @@ export function QuotationViewDialog({
               </div>
             )}
 
-            <div className="mt-4 border-t border-slate-200 pt-4">
+            <div className="mt-3 border-t border-slate-200 pt-3">
   <div className="grid gap-4 sm:grid-cols-2">
     <DetailItem
       label="Created"
@@ -195,7 +195,7 @@ export function QuotationViewDialog({
 
           {/* Line items */}
           <section>
-            <div className="mb-4">
+            <div className="mb-3">
               <p className="text-sm font-semibold text-slate-950">
                 Quotation items
               </p>
@@ -210,19 +210,19 @@ export function QuotationViewDialog({
                 <table className="w-full min-w-[620px] text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Description
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Qty
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Unit price
                       </th>
 
-                      <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      <th className="px-4 py-2 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Amount
                       </th>
                     </tr>
@@ -232,7 +232,7 @@ export function QuotationViewDialog({
                     {quotation.items.length ? (
                       quotation.items.map((item) => (
                         <tr key={item.id}>
-                          <td className="px-5 py-4 text-slate-700">
+                          <td className="px-4 py-2 text-slate-700">
                             <div className="font-medium text-slate-900">
                               {item.description}
                             </div>
@@ -244,15 +244,15 @@ export function QuotationViewDialog({
                             )}
                           </td>
 
-                          <td className="px-5 py-4 text-right text-slate-700">
+                          <td className="px-4 py-2 text-right text-slate-700">
                             {item.quantity}
                           </td>
 
-                          <td className="px-5 py-4 text-right text-slate-700">
+                          <td className="px-4 py-2 text-right text-slate-700">
                             {formatCurrency(item.unitPrice)}
                           </td>
 
-                          <td className="px-5 py-4 text-right font-medium text-slate-900">
+                          <td className="px-4 py-2 text-right font-medium text-slate-900">
                             {formatCurrency(item.amount)}
                           </td>
                         </tr>
@@ -261,7 +261,7 @@ export function QuotationViewDialog({
                       <tr>
                         <td
                           colSpan={4}
-                          className="px-5 py-8 text-center text-sm text-slate-500"
+                          className="px-4 py-4 text-center text-sm text-slate-500"
                         >
                           No quotation items added.
                         </td>
@@ -275,8 +275,8 @@ export function QuotationViewDialog({
 
           {/* Financial summary */}
           <section className="flex justify-end">
-            <div className="w-full rounded-2xl border border-slate-200 bg-slate-50/70 p-5 sm:max-w-sm">
-              <div className="space-y-3 text-sm">
+            <div className="w-full rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:max-w-sm">
+              <div className="space-y-2 text-sm">
                 <SummaryRow
                   label="Subtotal"
                   value={formatCurrency(quotation.subtotal)}
@@ -292,7 +292,7 @@ export function QuotationViewDialog({
                   value={`+ ${formatCurrency(quotation.tax)}`}
                 />
 
-                <div className="border-t border-slate-200 pt-4">
+                <div className="border-t border-slate-200 pt-3">
                   <div className="flex items-center justify-between gap-4">
                     <span className="text-base font-semibold text-slate-950">
                       Total
@@ -314,14 +314,14 @@ export function QuotationViewDialog({
                 Notes
               </p>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600">
+              <div className="rounded-xl border border-slate-200 bg-white p-3 text-sm leading-6 text-slate-600">
                 {quotation.notes}
               </div>
             </section>
           )}
 
           {/* Future actions */}
-          <section className="border-t border-slate-200 pt-5">
+          <section className="border-t border-slate-200 pt-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-semibold text-slate-950">
@@ -357,6 +357,11 @@ export function QuotationViewDialog({
               </div>
             </div>
           </section>
+
+          <QuotationAuditHistory
+  quotationId={quotation.id}
+  open={open}
+/>
         </div>
       </DialogContent>
     </Dialog>
@@ -380,10 +385,8 @@ function InfoBlock({
   secondary,
 }: InfoBlockProps) {
   return (
-    <div className="rounded-2xl border border-slate-200 p-5">
-      <div className="flex gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
-          <Icon size={17} />
+<div className="rounded-xl border border-slate-200 p-3">      <div className="flex gap-3">
+<div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">          <Icon size={17} />
         </div>
 
         <div className="min-w-0">

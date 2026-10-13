@@ -1,0 +1,48 @@
+﻿FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 25
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 78
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924160000_quotation_prospect_workflow.sql
+LINE: 95
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 15
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 32
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260924170000_fix_quotation_prospect_schema.sql
+LINE: 48
+SQL:  ALTER TABLE public.quotations
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 42
+SQL:  REFERENCES public.events(id)
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 46
+SQL:  REFERENCES public.quotations(id)
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928160000_add_event_cost_obligations.sql
+LINE: 50
+SQL:  REFERENCES public.quotation_items(id)
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20260928170000_add_our_expense_to_quotation_items.sql
+LINE: 18
+SQL:  ALTER TABLE public.quotation_items
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010110000_create_vendor_entries.sql
+LINE: 11
+SQL:  REFERENCES public.events(id) ON DELETE CASCADE,
+
+FILE: E:\DS_Projects\blueberry-crm\supabase\migrations\20261010120000_create_manual_expenses.sql
+LINE: 12
+SQL:  REFERENCES public.events(id) ON DELETE RESTRICT,
+
