@@ -513,204 +513,56 @@ export async function updateQuotation(
 ): Promise<Quotation> {
   const supabase = createClient();
 
-  const existingQuotation =
-    await getQuotationById(id);
+  await validateQuotationRelationships(quotation);
 
-  await validateQuotationRelationships(
-    quotation
+  const subtotal = quotation.items.reduce(
+    (sum, item) => sum + item.amount,
+    0
   );
 
-  const subtotal =
-    quotation.items.reduce(
-      (sum, item) =>
-        sum + item.amount,
-      0
-    );
-
-  const total =
-    subtotal -
-    quotation.discount +
-    quotation.tax;
+  const total = subtotal - quotation.discount + quotation.tax;
 
   if (total < 0) {
-    throw new Error(
-      "Quotation total cannot be negative."
-    );
+    throw new Error("Quotation total cannot be negative.");
   }
 
-  const {
-    error: quotationError,
-  } = await supabase
-    .from("quotations")
-    .update({
-      client_id:
-        quotation.clientId || null,
+  const payload = {
+    client_id: quotation.clientId || null,
+    lead_id: quotation.leadId || null,
+    prospect_name: quotation.prospectName,
+    prospect_phone: quotation.prospectPhone || null,
+    prospect_email: quotation.prospectEmail || null,
+    prospect_address: quotation.prospectAddress || null,
+    event_name: quotation.eventName,
+    event_type: quotation.eventType,
+    event_date: quotation.eventDate || null,
+    venue: quotation.venue,
+    guest_count: quotation.guestCount,
+    quotation_date: quotation.quotationDate,
+    valid_until: quotation.validUntil || null,
+    discount: quotation.discount,
+    tax: quotation.tax,
+    notes: quotation.notes || null,
+    items: quotation.items.map((item) => ({
+      id: item.id || null,
+      description: item.description,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      amount: item.amount,
+      our_expense: item.ourExpense,
+    })),
+  };
 
-      lead_id:
-        quotation.leadId || null,
-
-      prospect_name:
-        quotation.prospectName,
-
-      prospect_phone:
-        quotation.prospectPhone || null,
-
-      prospect_email:
-        quotation.prospectEmail || null,
-
-      prospect_address:
-        quotation.prospectAddress || null,
-
-      event_name:
-        quotation.eventName,
-
-      event_type:
-        quotation.eventType,
-
-      event_date:
-        quotation.eventDate,
-
-      venue:
-        quotation.venue,
-
-      guest_count:
-        quotation.guestCount,
-
-      quotation_date:
-        quotation.quotationDate,
-
-      valid_until:
-        quotation.validUntil || null,
-
-      subtotal,
-
-      discount:
-        quotation.discount,
-
-      tax:
-        quotation.tax,
-
-      total,
-
-      notes:
-        quotation.notes || null,
-    })
-    .eq("id", id);
-
-  if (quotationError) {
-    throw new Error(
-      quotationError.message
-    );
-  }
-
-  const existingItemIds =
-    existingQuotation.items.map(
-      (item) => item.id
-    );
-
-  const submittedExistingItemIds =
-    quotation.items
-      .filter((item) => item.id)
-      .map(
-        (item) =>
-          item.id as string
-      );
-
-  const removedItemIds =
-    existingItemIds.filter(
-      (existingId) =>
-        !submittedExistingItemIds.includes(
-          existingId
-        )
-    );
-
-  if (
-    removedItemIds.length > 0
-  ) {
-    const {
-      error: deleteError,
-    } = await supabase
-      .from("quotation_items")
-      .delete()
-      .eq("quotation_id", id)
-      .in(
-        "id",
-        removedItemIds
-      );
-
-    if (deleteError) {
-      throw new Error(
-        deleteError.message
-      );
+  const { error } = await supabase.rpc(
+    "update_quotation_atomically",
+    {
+      p_quotation_id: id,
+      p_payload: payload,
     }
-  }
+  );
 
-  for (
-    const item of quotation.items
-  ) {
-    if (item.id) {
-      const {
-        error: updateItemError,
-      } = await supabase
-        .from("quotation_items")
-        .update({
-          description:
-            item.description,
-
-          quantity:
-            item.quantity,
-
-          unit_price:
-            item.unitPrice,
-
-          amount:
-            item.amount,
-
-          our_expense:
-            item.ourExpense,
-        })
-        .eq("id", item.id)
-        .eq(
-          "quotation_id",
-          id
-        );
-
-      if (updateItemError) {
-        throw new Error(
-          updateItemError.message
-        );
-      }
-    } else {
-      const {
-        error: insertItemError,
-      } = await supabase
-        .from("quotation_items")
-        .insert({
-          quotation_id:
-            id,
-
-          description:
-            item.description,
-
-          quantity:
-            item.quantity,
-
-          unit_price:
-            item.unitPrice,
-
-          amount:
-            item.amount,
-
-          our_expense:
-            item.ourExpense,
-        });
-
-      if (insertItemError) {
-        throw new Error(
-          insertItemError.message
-        );
-      }
-    }
+  if (error) {
+    throw new Error(error.message);
   }
 
   return getQuotationById(id);
