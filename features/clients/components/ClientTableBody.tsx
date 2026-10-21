@@ -12,6 +12,7 @@ interface ClientTableBodyProps {
   clients: Client[];
   events: Event[];
   pendingPayments: PendingPaymentItem[];
+  canDelete: boolean;
 
   onEdit?: (
     id: string,
@@ -27,6 +28,7 @@ export function ClientTableBody({
   clients,
   events,
   pendingPayments,
+  canDelete,
   onEdit,
   onDelete,
 }: ClientTableBodyProps) {
@@ -37,17 +39,18 @@ export function ClientTableBody({
       ) : (
         clients.map((client) => (
           <ClientRow
-            key={client.id}
-            client={client}
-            events={events.filter(
-              (event) => event.clientId === client.id
-            )}
-            pendingPayments={pendingPayments.filter(
-              (payment) => payment.clientId === client.id
-            )}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+  key={client.id}
+  client={client}
+  events={events.filter(
+    (event) => event.clientId === client.id
+  )}
+  pendingPayments={pendingPayments.filter(
+    (payment) => payment.clientId === client.id
+  )}
+  canDelete={canDelete}
+  onEdit={onEdit}
+  onDelete={onDelete}
+/>
         ))
       )}
     </tbody>

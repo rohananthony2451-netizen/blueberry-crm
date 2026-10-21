@@ -14,21 +14,21 @@ interface ClientTableProps {
   clients: Client[];
   events: Event[];
   pendingPayments: PendingPaymentItem[];
+  canDelete: boolean;
 
   onEdit?: (
     id: string,
     data: Partial<Client>
   ) => Promise<void>;
 
-  onDelete?: (
-    id: string
-  ) => Promise<void>;
+  onDelete?: (id: string) => Promise<void>;
 }
 
 export function ClientTable({
   clients,
   events,
   pendingPayments,
+  canDelete,
   onEdit,
   onDelete,
 }: ClientTableProps) {
@@ -42,6 +42,7 @@ export function ClientTable({
             clients={clients}
             events={events}
             pendingPayments={pendingPayments}
+            canDelete={canDelete}
             onEdit={onEdit}
             onDelete={onDelete}
           />

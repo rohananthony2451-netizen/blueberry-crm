@@ -1,3 +1,4 @@
+
 import { createClient } from "@/lib/supabase/client";
 
 import {
@@ -318,193 +319,72 @@ export async function getQuotations(): Promise<
   ).map(mapQuotation);
 }
 
+/**
+ * Creates a quotation and its items
+ * through one atomic database function.
+ *
+ * If an item fails, the database rolls
+ * back the entire quotation creation.
+ */
 export async function createQuotation(
   quotation: QuotationInput
 ): Promise<Quotation> {
   const supabase = createClient();
 
+  await validateQuotationRelationships(quotation);
+
+  const payload = {
+    client_id: quotation.clientId || null,
+    lead_id: quotation.leadId || null,
+
+    prospect_name: quotation.prospectName,
+    prospect_phone: quotation.prospectPhone || null,
+    prospect_email: quotation.prospectEmail || null,
+    prospect_address: quotation.prospectAddress || null,
+
+    event_name: quotation.eventName,
+    event_type: quotation.eventType,
+    event_date: quotation.eventDate || null,
+    venue: quotation.venue,
+    guest_count: quotation.guestCount,
+
+    quotation_date: quotation.quotationDate,
+    valid_until: quotation.validUntil || null,
+
+    discount: quotation.discount,
+    tax: quotation.tax,
+    notes: quotation.notes || null,
+
+    items: quotation.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unit_price: item.unitPrice,
+      amount: item.amount,
+      our_expense: item.ourExpense,
+    })),
+  };
+
   const {
-    data: organizationId,
-    error: organizationError,
+    data: quotationId,
+    error,
   } = await supabase.rpc(
-    "get_user_organization_id"
+    "create_quotation_atomically",
+    {
+      p_payload: payload,
+    }
   );
 
-  if (organizationError) {
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!quotationId) {
     throw new Error(
-      organizationError.message
+      "Quotation creation did not return an ID."
     );
   }
 
-  if (!organizationId) {
-    throw new Error(
-      "No organization found for the current user."
-    );
-  }
-
-  await validateQuotationRelationships(
-    quotation
-  );
-
-  const {
-    data: quotationNumber,
-    error: quotationNumberError,
-  } = await supabase.rpc(
-    "generate_quotation_number"
-  );
-
-  if (quotationNumberError) {
-    throw new Error(
-      quotationNumberError.message
-    );
-  }
-
-  if (!quotationNumber) {
-    throw new Error(
-      "Failed to generate quotation number."
-    );
-  }
-
-  const subtotal =
-    quotation.items.reduce(
-      (sum, item) =>
-        sum + item.amount,
-      0
-    );
-
-  const total =
-    subtotal -
-    quotation.discount +
-    quotation.tax;
-
-  if (total < 0) {
-    throw new Error(
-      "Quotation total cannot be negative."
-    );
-  }
-
-  const {
-    data: quotationData,
-    error: quotationError,
-  } = await supabase
-    .from("quotations")
-    .insert({
-      organization_id:
-        organizationId,
-
-      quotation_number:
-        quotationNumber,
-
-      client_id:
-        quotation.clientId || null,
-
-      lead_id:
-        quotation.leadId || null,
-
-      prospect_name:
-        quotation.prospectName,
-
-      prospect_phone:
-        quotation.prospectPhone || null,
-
-      prospect_email:
-        quotation.prospectEmail || null,
-
-      prospect_address:
-        quotation.prospectAddress || null,
-
-      event_name:
-        quotation.eventName,
-
-      event_type:
-        quotation.eventType,
-
-      event_date:
-        quotation.eventDate,
-
-      venue:
-        quotation.venue,
-
-      guest_count:
-        quotation.guestCount,
-
-      quotation_date:
-        quotation.quotationDate,
-
-      valid_until:
-        quotation.validUntil || null,
-
-      status:
-        "Draft",
-
-      subtotal,
-
-      discount:
-        quotation.discount,
-
-      tax:
-        quotation.tax,
-
-      total,
-
-      notes:
-        quotation.notes || null,
-    })
-    .select("id")
-    .single();
-
-  if (quotationError) {
-    throw new Error(
-      quotationError.message
-    );
-  }
-
-  const quotationId =
-    quotationData.id;
-
-  const items =
-    quotation.items.map(
-      (item) => ({
-        quotation_id:
-          quotationId,
-
-        description:
-          item.description,
-
-        quantity:
-          item.quantity,
-
-        unit_price:
-          item.unitPrice,
-
-        amount:
-          item.amount,
-
-        our_expense:
-          item.ourExpense,
-      })
-    );
-
-  const {
-    error: itemsError,
-  } = await supabase
-    .from("quotation_items")
-    .insert(items);
-
-  if (itemsError) {
-    await supabase
-      .from("quotations")
-      .delete()
-      .eq("id", quotationId);
-
-    throw new Error(
-      itemsError.message
-    );
-  }
-
-  return getQuotationById(
-    quotationId
-  );
+  return getQuotationById(quotationId);
 }
 
 export async function updateQuotation(
@@ -520,10 +400,13 @@ export async function updateQuotation(
     0
   );
 
-  const total = subtotal - quotation.discount + quotation.tax;
+  const total =
+    subtotal - quotation.discount + quotation.tax;
 
   if (total < 0) {
-    throw new Error("Quotation total cannot be negative.");
+    throw new Error(
+      "Quotation total cannot be negative."
+    );
   }
 
   const payload = {

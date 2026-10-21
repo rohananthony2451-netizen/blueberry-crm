@@ -17,6 +17,7 @@ import {
 
 interface EventRowProps {
   event: Event;
+    canDelete: boolean;
   onEdit?: (
     id: string,
     data: Partial<Event>
@@ -65,6 +66,7 @@ export function EventRow({
   event,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
 }: EventRowProps) {
   const [financials, setFinancials] =
@@ -95,6 +97,7 @@ export function EventRow({
       event={event}
       onEdit={onEdit}
       onDelete={onDelete}
+       canDelete={canDelete}
       onStatusChange={onStatusChange}
     >
       <tr className="cursor-pointer border-t border-slate-100 text-sm transition-colors hover:bg-blue-50/40">

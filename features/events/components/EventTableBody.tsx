@@ -3,6 +3,7 @@ import { EventRow } from "./EventRow";
 
 interface EventTableBodyProps {
   events: Event[];
+  canDelete: boolean;
 
   onEdit?: (
     id: string,
@@ -21,6 +22,7 @@ export function EventTableBody({
   events,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
 }: EventTableBodyProps) {
   if (events.length === 0) {
@@ -46,6 +48,7 @@ export function EventTableBody({
           event={event}
           onEdit={onEdit}
           onDelete={onDelete}
+          canDelete={canDelete}
           onStatusChange={
             onStatusChange
           }

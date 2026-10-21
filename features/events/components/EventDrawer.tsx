@@ -20,6 +20,7 @@ import { EventForm } from "./EventForm";
 interface EventDrawerProps {
   event: Event;
   children: React.ReactNode;
+  canDelete: boolean;
 
   onEdit?: (
     id: string,
@@ -39,6 +40,7 @@ export function EventDrawer({
   children,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
 }: EventDrawerProps) {
   const [open, setOpen] = useState(false);
@@ -141,6 +143,7 @@ export function EventDrawer({
             event={event}
             onEdit={() => setEditing(true)}
             onDelete={handleDelete}
+            canDelete={canDelete}
             onStatusChange={handleStatusChange}
             statusUpdating={statusUpdating}
           />

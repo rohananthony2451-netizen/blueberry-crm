@@ -6,6 +6,7 @@ import { EventTableBody } from "./EventTableBody";
 
 interface EventTableProps {
   events: Event[];
+  canDelete: boolean;
   onEdit?: (
     id: string,
     data: Partial<Event>
@@ -21,6 +22,7 @@ export function EventTable({
   events,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
 }: EventTableProps) {
   return (
@@ -33,6 +35,7 @@ export function EventTable({
             onEdit={onEdit}
             onDelete={onDelete}
             onStatusChange={onStatusChange}
+            canDelete={canDelete}
           />
         </table>
       </div>

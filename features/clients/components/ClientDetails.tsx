@@ -47,12 +47,15 @@ interface ClientDetailsProps {
   onDelete?: (
     id: string
   ) => Promise<void>;
+
+  canDelete: boolean;
 }
 
 export function ClientDetails({
   client,
   onEdit,
   onDelete,
+  canDelete,
 }: ClientDetailsProps) {
   const [confirmDelete, setConfirmDelete] =
     useState(false);
@@ -745,7 +748,7 @@ const [selectedQuotation, setSelectedQuotation] =
         </section>
 
         {/* Danger zone */}
-        <section className="border-t border-slate-200 pt-8">
+        {canDelete && ( <section className="border-t border-slate-200 pt-8">
           {!confirmDelete ? (
             <div className="flex justify-end">
               <Button
@@ -800,7 +803,9 @@ const [selectedQuotation, setSelectedQuotation] =
             </div>
           )}
         </section>
+        )}
       </div>
+      
 
       <EventDialog
         open={eventDialogOpen}

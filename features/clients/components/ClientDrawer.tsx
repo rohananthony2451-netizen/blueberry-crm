@@ -17,6 +17,8 @@ import type { ClientFormValues } from "../validation";
 interface ClientDrawerProps {
   client: Client;
   children: React.ReactNode;
+  canDelete: boolean;
+
 
   onEdit?: (
     id: string,
@@ -33,6 +35,7 @@ export function ClientDrawer({
   children,
   onEdit,
   onDelete,
+  canDelete,
 }: ClientDrawerProps) {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -111,6 +114,7 @@ export function ClientDrawer({
               client={client}
               onEdit={() => setEditing(true)}
               onDelete={handleDelete}
+              canDelete={canDelete}
             />
           )}
         </div>

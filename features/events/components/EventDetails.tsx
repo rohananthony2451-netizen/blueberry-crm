@@ -25,6 +25,7 @@ interface EventDetailsProps {
   event: Event;
   onEdit?: () => void;
   onDelete?: () => void;
+  canDelete: boolean;
   onStatusChange?: (
     status: Event["status"]
   ) => Promise<void>;
@@ -85,6 +86,7 @@ export function EventDetails({
   event,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
   statusUpdating = false,
 }: EventDetailsProps) {
@@ -299,18 +301,20 @@ export function EventDetails({
       </section>
 
       <div className="flex flex-col-reverse justify-between gap-3 border-t border-slate-200 pt-5 sm:flex-row">
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={onDelete}
-        >
-          Delete Event
-        </Button>
+  {canDelete && (
+    <Button
+      type="button"
+      variant="destructive"
+      onClick={onDelete}
+    >
+      Delete Event
+    </Button>
+  )}
 
-        <Button type="button" onClick={onEdit}>
-          Edit Event
-        </Button>
-      </div>
+  <Button type="button" onClick={onEdit}>
+    Edit Event
+  </Button>
+</div>
     </div>
   );
 }

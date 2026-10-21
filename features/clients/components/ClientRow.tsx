@@ -13,6 +13,7 @@ interface ClientRowProps {
   client: Client;
   events: Event[];
   pendingPayments: PendingPaymentItem[];
+  canDelete: boolean;
 
   onEdit?: (
     id: string,
@@ -46,6 +47,7 @@ export function ClientRow({
   client,
   events,
   pendingPayments,
+  canDelete,
   onEdit,
   onDelete,
 }: ClientRowProps) {
@@ -79,6 +81,7 @@ export function ClientRow({
   return (
     <ClientDrawer
       client={client}
+      canDelete={canDelete}
       onEdit={onEdit}
       onDelete={onDelete}
     >

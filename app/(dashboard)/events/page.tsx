@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { PageHeader } from "@/components/design-system/PageHeader";
 
@@ -12,10 +11,59 @@ import { useEvents } from "@/features/events/hooks/useEvents";
 
 import type { Event } from "@/features/events/types";
 import type { EventFormValues } from "@/features/events/validation";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 export default function EventsPage() {
   const [search, setSearch] =
     useState("");
+
+    const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      if (error) {
+        console.error("Failed to load user role:", error);
+        setUserRole(null);
+      } else {
+        setUserRole(profile?.role ?? null);
+      }
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
+
 
  const {
   events,
@@ -134,10 +182,9 @@ export default function EventsPage() {
         <EventTable
   events={filteredEvents}
   onEdit={handleEditEvent}
-  onDelete={handleDeleteEvent}
-  onStatusChange={
-    handleStatusChange
-  }
+  onDelete={canDeleteRecords ? handleDeleteEvent : undefined}
+  onStatusChange={handleStatusChange}
+  canDelete={canDeleteRecords}
 />
       )}
     </PageContainer>
