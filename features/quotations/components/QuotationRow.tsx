@@ -17,6 +17,7 @@ import { QuotationStatusBadge } from "./QuotationStatusBadge";
 
 interface QuotationRowProps {
   quotation: Quotation;
+  canDelete: boolean;
   onView?: (quotation: Quotation) => void;
   onEdit?: (quotation: Quotation) => void;
   onDelete?: (quotation: Quotation) => void;
@@ -49,6 +50,7 @@ function formatCurrency(value: number) {
 
 export function QuotationRow({
   quotation,
+  canDelete,
   onView,
   onEdit,
   onDelete,
@@ -187,17 +189,17 @@ export function QuotationRow({
             <Download size={16} />
           </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              onDelete?.(quotation)
-            }
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
-            aria-label="Delete quotation"
-            title="Delete quotation"
-          >
-            <Trash2 size={16} />
-          </button>
+          {canDelete && (
+  <button
+    type="button"
+    onClick={() => onDelete?.(quotation)}
+    className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
+    aria-label="Delete quotation"
+    title="Delete quotation"
+  >
+    <Trash2 size={16} />
+  </button>
+)}
         </div>
       </td>
     </tr>

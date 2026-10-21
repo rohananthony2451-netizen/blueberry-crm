@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect,useMemo, useState } from "react";
 
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { PageHeader } from "@/components/design-system/PageHeader";
@@ -12,6 +12,7 @@ import { QuotationEditDialog } from "@/features/quotations/components/QuotationE
 import { QuotationDeleteDialog } from "@/features/quotations/components/QuotationDeleteDialog";
 
 import { useQuotations } from "@/features/quotations/hooks/useQuotations";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 import { QUOTATION_STATUSES } from "@/features/quotations/constants";
 
@@ -58,6 +59,54 @@ export default function QuotationsPage() {
     updateQuotationStatus,
     deleteQuotation,
   } = useQuotations();
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!active) return;
+
+      if (error) {
+        console.error("Failed to load user role:", error);
+        setUserRole(null);
+      } else {
+        setUserRole(profile?.role ?? null);
+      }
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
 
   const filteredQuotations =
     useMemo(() => {
@@ -407,25 +456,14 @@ export default function QuotationsPage() {
 
       {!loading && !error && (
         <QuotationTable
-          quotations={
-            filteredQuotations
-          }
-          onView={
-            handleViewQuotation
-          }
-          onEdit={
-            handleEditQuotation
-          }
-          onDelete={
-            handleDeleteQuotation
-          }
-          onStatusChange={
-            handleStatusChange
-          }
-          statusActionLoadingId={
-            statusActionLoadingId
-          }
-        />
+  quotations={filteredQuotations}
+  onView={handleViewQuotation}
+  onEdit={handleEditQuotation}
+  onDelete={canDeleteRecords ? handleDeleteQuotation : undefined}
+  onStatusChange={handleStatusChange}
+  statusActionLoadingId={statusActionLoadingId}
+  canDelete={canDeleteRecords}
+/>
       )}
     </PageContainer>
   );

@@ -10,6 +10,7 @@ interface QuotationTableProps {
   onView?: (quotation: Quotation) => void;
   onEdit?: (quotation: Quotation) => void;
   onDelete?: (quotation: Quotation) => void;
+  canDelete: boolean;
   onStatusChange?: (
     quotation: Quotation,
     status: QuotationStatus
@@ -22,6 +23,7 @@ export function QuotationTable({
   onView,
   onEdit,
   onDelete,
+  canDelete,
   onStatusChange,
   statusActionLoadingId,
 }: QuotationTableProps) {
@@ -76,6 +78,7 @@ export function QuotationTable({
             statusActionLoadingId={
               statusActionLoadingId
             }
+             canDelete={canDelete}
           />
         </table>
       </div>
