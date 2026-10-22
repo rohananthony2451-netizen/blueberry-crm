@@ -105,38 +105,55 @@ export default function EventsPage() {
     });
   }
 
+  
   async function handleDeleteEvent(id: string) {
     setDeleteWarning(null);
 
     try {
       await removeEvent(id);
     } catch (err) {
-      const message = err instanceof Error ? err.message.toLowerCase() : "";
+      const message =
+        err instanceof Error ? err.message.toLowerCase() : "";
 
-      if (message.includes("linked payments")) {
+      if (
+        message.includes("payment") ||
+        message.includes("payments") ||
+        message.includes("event_id_fkey")
+      ) {
         setDeleteWarning(
-          "This event cannot be deleted because it has linked payments. Resolve its payment history first."
+          "This event has linked payments and can't be deleted. Preserve or resolve its payment history first."
         );
-      } else if (message.includes("vendor entries")) {
+      } else if (
+        message.includes("vendor") ||
+        message.includes("vendor_entries") ||
+        message.includes("vendor entry")
+      ) {
         setDeleteWarning(
-          "This event cannot be deleted because it has vendor entries. Resolve those entries first."
+          "This event has linked vendor entries and can't be deleted. Resolve those entries first."
         );
-      } else if (message.includes("quotation")) {
+      } else if (
+        message.includes("quotation") ||
+        message.includes("quotation_id_fkey")
+      ) {
         setDeleteWarning(
-          "This event cannot be deleted because it has linked quotations. Resolve those quotations first."
+          "This event has linked quotations and can't be deleted. Resolve those quotations first."
         );
-      } else if (message.includes("cost obligation")) {
+      } else if (
+        message.includes("cost obligation") ||
+        message.includes("cost_obligation")
+      ) {
         setDeleteWarning(
-          "This event cannot be deleted because it has linked cost obligations. Resolve those obligations first."
+          "This event has linked cost obligations and can't be deleted. Resolve those obligations first."
         );
       } else {
         console.error("Event deletion failed:", err);
         setDeleteWarning(
-          "We couldn't delete this event right now. Please try again. If the problem continues, contact support."
+          "We couldn't delete this event because of a restriction or an unexpected problem. Your event and its linked records have been kept safe. Please try again or contact support."
         );
       }
     }
   }
+
 
   async function handleStatusChange(
     id: string,
