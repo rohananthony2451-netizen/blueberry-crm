@@ -5,6 +5,7 @@ import { PaymentTableBody } from "./PaymentTableBody";
 interface PaymentTableProps {
   payments: Payment[];
   balanceByQuotation: Record<string, number>;
+    canDelete: boolean;
   onEdit?: (payment: Payment) => void;
   onDelete?: (payment: Payment) => void;
 }
@@ -12,6 +13,7 @@ interface PaymentTableProps {
 export function PaymentTable({
   payments,
   balanceByQuotation,
+  canDelete,
   onEdit,
   onDelete,
 }: PaymentTableProps) {
@@ -58,6 +60,7 @@ export function PaymentTable({
         <PaymentTableBody
           payments={payments}
           balanceByQuotation={balanceByQuotation}
+           canDelete={canDelete}
           onEdit={onEdit}
           onDelete={onDelete}
         />

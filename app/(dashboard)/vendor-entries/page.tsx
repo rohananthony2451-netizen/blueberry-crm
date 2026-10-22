@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ChevronDown,
   Eye,
@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { Button } from "@/components/ui/button";
 import {
@@ -322,6 +323,48 @@ export default function VendorEntriesPage() {
     removeEntry,
   } = useVendorEntries();
 
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (active) setUserRole(profile?.role ?? null);
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [formOpen, setFormOpen] = useState(false);
@@ -381,18 +424,19 @@ export default function VendorEntriesPage() {
   }
 
   async function confirmDelete() {
-    if (!deleting) return;
+  if (!canDeleteRecords || !deleting) return;
 
-    setDeleteError("");
-    try {
-      await removeEntry(deleting.id);
-      setDeleting(null);
-    } catch (error) {
-      setDeleteError(
-        error instanceof Error ? error.message : "Could not delete entry."
-      );
-    }
+  setDeleteError("");
+
+  try {
+    await removeEntry(deleting.id);
+    setDeleting(null);
+  } catch (error) {
+    setDeleteError(
+      error instanceof Error ? error.message : "Could not delete entry."
+    );
   }
+}
 
   function openEdit(entry: VendorEntry) {
     setViewing(null);
@@ -578,17 +622,20 @@ export default function VendorEntriesPage() {
                           >
                             <Pencil size={16} />
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteError("");
-                              setDeleting(entry);
-                            }}
-                            className="flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600"
-                            aria-label={`Delete ${entry.vendorName} entry`}
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          {canDeleteRecords && (
+  <button
+    type="button"
+    onClick={() => {
+      setDeleteError("");
+      setDeleting(entry);
+    }}
+    className="flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600"
+    aria-label={`Delete ${entry.vendorName} entry`}
+    title="Delete vendor entry"
+  >
+    <Trash2 size={15} />
+  </button>
+)}
                         </div>
                       </td>
                     </tr>
@@ -666,7 +713,9 @@ export default function VendorEntriesPage() {
             )}
           </DialogContent>
         </Dialog>
-
+{canDeleteRecords && (
+  <>
+    {
         <Dialog open={Boolean(deleting)} onOpenChange={(open) => {
           if (!open) setDeleting(null);
         }}>
@@ -694,7 +743,9 @@ export default function VendorEntriesPage() {
               </Button>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog>}
+  </>
+)}
       </main>
     </PageContainer>
   );

@@ -6,6 +6,7 @@ import { PaymentMethodBadge } from "./PaymentMethodBadge";
 interface PaymentRowProps {
   payment: Payment;
   balance?: number;
+   canDelete: boolean;
   onEdit?: (payment: Payment) => void;
   onDelete?: (payment: Payment) => void;
 }
@@ -33,6 +34,7 @@ function formatCurrency(value: number) {
 export function PaymentRow({
   payment,
   balance,
+  canDelete,
   onEdit,
   onDelete,
 }: PaymentRowProps) {
@@ -95,15 +97,17 @@ export function PaymentRow({
             <Pencil size={14} />
           </button>
 
-          <button
-            type="button"
-            onClick={() => onDelete?.(payment)}
-            className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-            aria-label={`Delete ${payment.paymentNumber}`}
-            title="Delete payment"
-          >
-            <Trash2 size={14} />
-          </button>
+          {canDelete && (
+  <button
+    type="button"
+    onClick={() => onDelete?.(payment)}
+    className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+    aria-label={`Delete ${payment.paymentNumber}`}
+    title="Delete payment"
+  >
+    <Trash2 size={14} />
+  </button>
+)}
         </div>
       </td>
     </tr>

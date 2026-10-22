@@ -1,8 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
-import {
+import { useEffect, useMemo, useState } from "react";import {
   ArrowDownLeft,
   CalendarDays,
   Clock3,
@@ -10,6 +9,7 @@ import {
   ReceiptText,
   Wallet,
 } from "lucide-react";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { PaymentDialog } from "@/features/payments/components/PaymentDialog";
@@ -44,6 +44,48 @@ export default function PaymentsPage() {
   } = usePayments();
 
   const { quotations } = useQuotations();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (active) {
+        setUserRole(profile?.role ?? null);
+      }
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [pendingDialogOpen, setPendingDialogOpen] = useState(false);
@@ -285,6 +327,7 @@ export default function PaymentsPage() {
           <PaymentTable
             payments={payments}
             balanceByQuotation={balanceByQuotation}
+              canDelete={canDeleteRecords}
             onEdit={handleEditPayment}
             onDelete={handleDeletePayment}
           />

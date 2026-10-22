@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Eye,
@@ -10,6 +10,8 @@ import {
   Tag,
   Trash2,
 } from "lucide-react";
+
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { Button } from "@/components/ui/button";
@@ -366,6 +368,47 @@ export default function ExpensesPage() {
     removeExpense,
   } = useManualExpenses();
 
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (active) setUserRole(profile?.role ?? null);
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
+
   const [filter, setFilter] = useState<FilterType>("All");
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -488,19 +531,22 @@ export default function ExpensesPage() {
   }
 
   async function confirmDelete() {
-    if (!deleteTarget) return;
-    setSaving(true);
-    setPageError("");
+  if (!canDeleteRecords || !deleteTarget) return;
 
-    try {
-      await removeExpense(deleteTarget.id);
-      setDeleteTarget(null);
-    } catch (err) {
-      setPageError(err instanceof Error ? err.message : "Could not delete expense.");
-    } finally {
-      setSaving(false);
-    }
+  setSaving(true);
+  setPageError("");
+
+  try {
+    await removeExpense(deleteTarget.id);
+    setDeleteTarget(null);
+  } catch (err) {
+    setPageError(
+      err instanceof Error ? err.message : "Could not delete expense."
+    );
+  } finally {
+    setSaving(false);
   }
+}
 
   return (
     <PageContainer>
@@ -672,16 +718,19 @@ export default function ExpensesPage() {
                           >
                             <Pencil size={16} />
                           </button>
-                          {row.manual && (
+                          
+                          {row.manual && canDeleteRecords && (
                             <button
                               type="button"
                               onClick={() => setDeleteTarget(row.manual!)}
                               aria-label="Delete expense"
+                              title="Delete expense"
                               className="flex size-8 items-center justify-center rounded-md text-slate-400 hover:bg-red-50 hover:text-red-600"
                             >
                               <Trash2 size={15} />
                             </button>
                           )}
+
                         </div>
                       </td>
                     </tr>
@@ -796,24 +845,41 @@ export default function ExpensesPage() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={Boolean(deleteTarget)} onOpenChange={(open) => {
-          if (!open) setDeleteTarget(null);
-        }}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Delete this expense?</DialogTitle>
-              <DialogDescription>
-                This permanently deletes the manually logged expense. Quotation-generated obligations cannot be deleted here.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-end gap-2 pt-3">
-              <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
-              <Button className="bg-red-600 text-white hover:bg-red-700" onClick={() => void confirmDelete()} disabled={saving}>
-                {saving ? "Deleting…" : "Delete Expense"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+
+        {canDeleteRecords && (
+          <Dialog
+            open={Boolean(deleteTarget)}
+            onOpenChange={(open) => {
+              if (!open) setDeleteTarget(null);
+            }}
+          >
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Delete this expense?</DialogTitle>
+                <DialogDescription>
+                  This permanently deletes the manually logged expense.
+                  Quotation-generated obligations cannot be deleted here.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end gap-2 pt-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setDeleteTarget(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-red-600 text-white hover:bg-red-700"
+                  onClick={() => void confirmDelete()}
+                  disabled={saving}
+                >
+                  {saving ? "Deleting…" : "Delete Expense"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
       </div>
     </PageContainer>
   );

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect,useMemo, useState } from "react";
 import {
   Building2,
   ChevronDown,
@@ -25,6 +25,7 @@ import { useVendors } from "@/features/vendors/hooks/useVendors";
 import { VENDOR_CATEGORIES } from "@/features/vendors/types";
 import type { Vendor, VendorFormValues } from "@/features/vendors/types";
 import { vendorSchema } from "@/features/vendors/validation";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 
 const emptyForm: VendorFormValues = {
   name: "",
@@ -166,11 +167,13 @@ function VendorForm({
 
 function VendorCard({
   vendor,
+  canDelete,
   onView,
   onEdit,
   onDelete,
 }: {
   vendor: Vendor;
+  canDelete: boolean;
   onView: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -195,8 +198,18 @@ function VendorCard({
             <div className="absolute right-0 top-9 z-20 w-32 rounded-lg border border-slate-200 bg-white p-1 shadow-lg">
               <button type="button" onClick={() => { setActionsOpen(false); onView(); }} className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-slate-50">View</button>
               <button type="button" onClick={() => { setActionsOpen(false); onEdit(); }} className="w-full rounded-md px-3 py-2 text-left text-sm hover:bg-slate-50">Edit</button>
-              <button type="button" onClick={() => { setActionsOpen(false); onDelete(); }} className="w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">Delete</button>
-            </div>
+{canDelete && (
+  <button
+    type="button"
+    onClick={() => {
+      setActionsOpen(false);
+      onDelete();
+    }}
+    className="w-full rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+  >
+    Delete
+  </button>
+)}            </div>
           )}
         </div>
       </div>
@@ -235,6 +248,47 @@ export default function VendorsPage() {
     const matchesSearch = !query || [vendor.name, vendor.category, vendor.contactPerson, vendor.phone, vendor.email, vendor.city].some((value) => value.toLowerCase().includes(query));
     return matchesSearch && (category === "All" || vendor.category === category);
   }), [vendors, search, category]);
+
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+useEffect(() => {
+  let active = true;
+
+  async function loadUserRole() {
+    try {
+      const supabase = createSupabaseClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        if (active) setUserRole(null);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (active) setUserRole(profile?.role ?? null);
+    } catch (error) {
+      console.error("Failed to load user role:", error);
+      if (active) setUserRole(null);
+    }
+  }
+
+  void loadUserRole();
+
+  return () => {
+    active = false;
+  };
+}, []);
+
+const canDeleteRecords = userRole === "admin";
 
   async function saveVendor(values: VendorFormValues) {
     setSaving(true);
@@ -314,7 +368,14 @@ export default function VendorsPage() {
         ) : (
           <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {filteredVendors.map((vendor) => (
-              <VendorCard key={vendor.id} vendor={vendor} onView={() => setViewing(vendor)} onEdit={() => openEdit(vendor)} onDelete={() => setDeleting(vendor)} />
+              <VendorCard
+  key={vendor.id}
+  vendor={vendor}
+  canDelete={canDeleteRecords}
+  onView={() => setViewing(vendor)}
+  onEdit={() => openEdit(vendor)}
+  onDelete={() => setDeleting(vendor)}
+/>
             ))}
           </section>
         )}
@@ -360,7 +421,7 @@ export default function VendorsPage() {
           </DialogContent>
         </Dialog>
 
-        <Dialog open={Boolean(deleting)} onOpenChange={(open) => { if (!open) setDeleting(null); }}>
+       {canDeleteRecords && ( <Dialog open={Boolean(deleting)} onOpenChange={(open) => { if (!open) setDeleting(null); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle>Delete vendor?</DialogTitle>
@@ -371,7 +432,7 @@ export default function VendorsPage() {
               <Button className="bg-red-600 text-white hover:bg-red-700" onClick={() => void confirmDelete()}><Trash2 size={14} className="mr-2" /> Delete Vendor</Button>
             </div>
           </DialogContent>
-        </Dialog>
+        </Dialog>)}
       </main>
     </PageContainer>
   );
