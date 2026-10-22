@@ -54,12 +54,12 @@ export function ClientDrawer({
     setEditing(false);
   }
 
-  async function handleDelete(id: string) {
-    if (!onDelete) return;
+ async function handleDelete(id: string) {
+  if (!onDelete) return;
 
-    await onDelete(id);
-    setOpen(false);
-  }
+  await onDelete(id);
+  setOpen(false);
+}
 
   function handleDrawerChange(value: boolean) {
     setOpen(value);

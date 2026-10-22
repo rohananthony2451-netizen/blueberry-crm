@@ -1,10 +1,7 @@
+
 "use client";
 
-import {
-  useMemo,
-  useState,
-} from "react";
-
+import { useMemo, useState } from "react";
 import {
   CalendarDays,
   CheckCircle2,
@@ -21,33 +18,24 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
 import { Client } from "../types";
 import { useClient360 } from "../hooks/useClient360";
-
 import { EventDialog } from "@/features/events/components/EventDialog";
 import { createEvent } from "@/features/events/services/event.service";
 import type { EventFormValues } from "@/features/events/validation";
-
 import { QuotationDialog } from "@/features/quotations/components/QuotationDialog";
 import { createQuotation } from "@/features/quotations/services/quotation.service";
 import type { QuotationFormValues } from "@/features/quotations/types";
 import { QuotationViewDialog } from "@/features/quotations/components/QuotationViewDialog";
 import type { Quotation } from "@/features/quotations/types";
-
 import { PaymentDialog } from "@/features/payments/components/PaymentDialog";
 import { createPayment } from "@/features/payments/services/payment.service";
 import type { PaymentFormValues } from "@/features/payments/types";
 
 interface ClientDetailsProps {
   client: Client;
-
   onEdit?: () => void;
-
-  onDelete?: (
-    id: string
-  ) => Promise<void>;
-
+  onDelete?: (id: string) => Promise<void>;
   canDelete: boolean;
 }
 
@@ -57,137 +45,128 @@ export function ClientDetails({
   onDelete,
   canDelete,
 }: ClientDetailsProps) {
-  const [confirmDelete, setConfirmDelete] =
-    useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteWarning, setDeleteWarning] = useState<string | null>(null);
 
-  const [deleting, setDeleting] =
-    useState(false);
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [quotationDialogOpen, setQuotationDialogOpen] = useState(false);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const [quotationViewOpen, setQuotationViewOpen] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] =
+    useState<Quotation | null>(null);
 
-  const [eventDialogOpen, setEventDialogOpen] =
-    useState(false);
+  const { data, loading, error, refresh } = useClient360(client.id);
 
-  const [quotationDialogOpen, setQuotationDialogOpen] =
-    useState(false);
+  const eventInitialValues = useMemo<Partial<EventFormValues>>(
+    () => ({
+      eventName: "",
+      clientId: client.id,
+      eventType: "",
+      eventDate: "",
+      venue: "",
+      guestCount: "",
+    }),
+    [client.id]
+  );
 
-  const [paymentDialogOpen, setPaymentDialogOpen] =
-    useState(false);
+  const quotationInitialValues = useMemo<QuotationFormValues>(
+    () => ({
+      clientId: client.id,
+      leadId: "",
+      prospectName: client.name,
+      prospectPhone: client.phone,
+      prospectEmail: client.email,
+      prospectAddress: client.address,
+      eventName: "",
+      eventType: "",
+      eventDate: "",
+      venue: "",
+      guestCount: "",
+      quotationDate: new Date().toISOString().split("T")[0],
+      validUntil: "",
+      discount: "0",
+      tax: "0",
+      notes: "",
+      items: [
+        {
+          description: "",
+          quantity: "1",
+          unitPrice: "0",
+          ourExpense: false,
+        },
+      ],
+    }),
+    [
+      client.id,
+      client.name,
+      client.phone,
+      client.email,
+      client.address,
+    ]
+  );
 
+  const paymentInitialValues = useMemo<PaymentFormValues>(
+    () => ({
+      clientId: client.id,
+      eventId: "",
+      quotationId: "",
+      paymentDate: new Date().toISOString().split("T")[0],
+      amount: "",
+      paymentMethod: "Cash",
+      referenceNumber: "",
+      notes: "",
+    }),
+    [client.id]
+  );
 
-    const [quotationViewOpen, setQuotationViewOpen] =
-  useState(false);
-
-const [selectedQuotation, setSelectedQuotation] =
-  useState<Quotation | null>(null);
-
-  const {
-    data,
-    loading,
-    error,
-    refresh,
-  } = useClient360(client.id);
-
-  const eventInitialValues =
-    useMemo<Partial<EventFormValues>>(
-      () => ({
-        eventName: "",
-        clientId: client.id,
-        eventType: "",
-        eventDate: "",
-        venue: "",
-        guestCount: "",
-      }),
-      [client.id]
-    );
-
-  const quotationInitialValues =
-    useMemo<QuotationFormValues>(
-      () => ({
-        clientId: client.id,
-        leadId: "",
-
-        prospectName: client.name,
-        prospectPhone: client.phone,
-        prospectEmail: client.email,
-        prospectAddress: client.address,
-
-        eventName: "",
-        eventType: "",
-        eventDate: "",
-        venue: "",
-        guestCount: "",
-
-        quotationDate:
-          new Date()
-            .toISOString()
-            .split("T")[0],
-
-        validUntil: "",
-
-        discount: "0",
-        tax: "0",
-
-        notes: "",
-
-        items: [
-          {
-            description: "",
-            quantity: "1",
-            unitPrice: "0",
-            ourExpense: false,
-          },
-        ],
-      }),
-      [
-        client.id,
-        client.name,
-        client.phone,
-        client.email,
-        client.address,
-      ]
-    );
-
-  const paymentInitialValues =
-    useMemo<PaymentFormValues>(
-      () => ({
-        clientId: client.id,
-        eventId: "",
-        quotationId: "",
-
-        paymentDate:
-          new Date()
-            .toISOString()
-            .split("T")[0],
-
-        amount: "",
-        paymentMethod: "Cash",
-        referenceNumber: "",
-        notes: "",
-      }),
-      [client.id]
-    );
-
-    function handleViewQuotation(
-  quotation: Quotation
-) {
-  setSelectedQuotation(quotation);
-  setQuotationViewOpen(true);
-}
+  function handleViewQuotation(quotation: Quotation) {
+    setSelectedQuotation(quotation);
+    setQuotationViewOpen(true);
+  }
 
   async function handleDelete() {
-    if (!onDelete) return;
+    if (!onDelete || !canDelete || deleting) return;
 
     setDeleting(true);
+    setDeleteWarning(null);
 
     try {
       await onDelete(client.id);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message.toLowerCase() : "";
+
+      if (
+        message.includes("events_client_id_fkey") ||
+        message.includes("linked events") ||
+        message.includes("foreign key constraint")
+      ) {
+        setDeleteWarning(
+          "This client can't be deleted because they have linked events. Resolve or reassign those events first."
+        );
+      } else if (
+        message.includes("quotation") ||
+        message.includes("payment") ||
+        message.includes("vendor")
+      ) {
+        setDeleteWarning(
+          "This client still has linked business records. Resolve those records before deleting the client."
+        );
+      } else {
+        console.error("Client deletion failed:", err);
+        setDeleteWarning(
+          "We couldn't delete this client right now. Please try again."
+        );
+      }
+
+      setConfirmDelete(false);
     } finally {
       setDeleting(false);
     }
   }
 
-  async function handleCreateEvent(
-    formData: EventFormValues
-  ) {
+  async function handleCreateEvent(formData: EventFormValues) {
     await createEvent({
       eventName: formData.eventName,
       clientId: formData.clientId,
@@ -197,129 +176,68 @@ const [selectedQuotation, setSelectedQuotation] =
       guestCount: Number(formData.guestCount),
       status: "Upcoming",
     });
-
     await refresh();
   }
 
-  async function handleCreateQuotation(
-    formData: QuotationFormValues
-  ) {
+  async function handleCreateQuotation(formData: QuotationFormValues) {
     await createQuotation({
       clientId: formData.clientId,
       leadId: formData.leadId,
+      prospectName: formData.prospectName,
+      prospectPhone: formData.prospectPhone,
+      prospectEmail: formData.prospectEmail,
+      prospectAddress: formData.prospectAddress,
+      eventName: formData.eventName,
+      eventType: formData.eventType,
+      eventDate: formData.eventDate,
+      venue: formData.venue,
+      guestCount: Number(formData.guestCount),
+      quotationDate: formData.quotationDate,
+      validUntil: formData.validUntil || null,
+      discount: Number(formData.discount),
+      tax: Number(formData.tax),
+      notes: formData.notes,
+      items: formData.items.map((item) => {
+        const quantity = Number(item.quantity);
+        const unitPrice = Number(item.unitPrice);
 
-      prospectName:
-        formData.prospectName,
-
-      prospectPhone:
-        formData.prospectPhone,
-
-      prospectEmail:
-        formData.prospectEmail,
-
-      prospectAddress:
-        formData.prospectAddress,
-
-      eventName:
-        formData.eventName,
-
-      eventType:
-        formData.eventType,
-
-      eventDate:
-        formData.eventDate,
-
-      venue:
-        formData.venue,
-
-      guestCount:
-        Number(formData.guestCount),
-
-      quotationDate:
-        formData.quotationDate,
-
-      validUntil:
-        formData.validUntil || null,
-
-      discount:
-        Number(formData.discount),
-
-      tax:
-        Number(formData.tax),
-
-      notes:
-        formData.notes,
-
-      items:
-        formData.items.map((item) => {
-          const quantity =
-            Number(item.quantity);
-
-          const unitPrice =
-            Number(item.unitPrice);
-
-          return {
-            description:
-              item.description,
-
-            quantity,
-
-            unitPrice,
-
-            amount:
-              quantity * unitPrice,
-
-            ourExpense:
-              item.ourExpense,
-          };
-        }),
+        return {
+          description: item.description,
+          quantity,
+          unitPrice,
+          amount: quantity * unitPrice,
+          ourExpense: item.ourExpense,
+        };
+      }),
     });
-
     await refresh();
   }
 
-  async function handleCreatePayment(
-    formData: PaymentFormValues
-  ) {
+  async function handleCreatePayment(formData: PaymentFormValues) {
     await createPayment({
       clientId: formData.clientId,
       eventId: formData.eventId || null,
-      quotationId:
-        formData.quotationId || null,
-
-      paymentDate:
-        formData.paymentDate,
-
-      amount:
-        Number(formData.amount),
-
-      paymentMethod:
-        formData.paymentMethod,
-
-      referenceNumber:
-        formData.referenceNumber,
-
-      notes:
-        formData.notes,
+      quotationId: formData.quotationId || null,
+      paymentDate: formData.paymentDate,
+      amount: Number(formData.amount),
+      paymentMethod: formData.paymentMethod,
+      referenceNumber: formData.referenceNumber,
+      notes: formData.notes,
     });
-
     await refresh();
   }
 
   return (
     <div className="mx-auto max-w-5xl">
-      {/* Header */}
       <header className="border-b border-slate-200 px-6 py-7 sm:px-8 lg:px-10">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">
               Client workspace
             </p>
-
             <h2 className="mt-2 truncate text-3xl font-semibold tracking-tight text-slate-950">
               {client.name}
             </h2>
-
             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
               {client.phone && (
                 <span className="inline-flex items-center gap-1.5">
@@ -327,7 +245,6 @@ const [selectedQuotation, setSelectedQuotation] =
                   {client.phone}
                 </span>
               )}
-
               {client.email && (
                 <span className="inline-flex items-center gap-1.5">
                   <Mail size={14} />
@@ -336,7 +253,6 @@ const [selectedQuotation, setSelectedQuotation] =
               )}
             </div>
           </div>
-
           <Button
             type="button"
             variant="outline"
@@ -349,13 +265,11 @@ const [selectedQuotation, setSelectedQuotation] =
       </header>
 
       <div className="space-y-8 px-6 py-7 sm:px-8 lg:px-10">
-        {/* Business snapshot */}
         <section>
           <div className="mb-4">
             <p className="text-sm font-semibold text-slate-950">
               Business snapshot
             </p>
-
             <p className="mt-1 text-sm text-slate-500">
               Everything you need to know about this client at a glance.
             </p>
@@ -363,25 +277,19 @@ const [selectedQuotation, setSelectedQuotation] =
 
           {loading ? (
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {Array.from({ length: 4 }).map(
-                (_, index) => (
-                  <div
-                    key={index}
-                    className="h-24 animate-pulse rounded-2xl bg-slate-100"
-                  />
-                )
-              )}
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-24 animate-pulse rounded-2xl bg-slate-100"
+                />
+              ))}
             </div>
           ) : error ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
               <p className="font-medium text-red-900">
                 Could not load client activity
               </p>
-
-              <p className="mt-1 text-sm text-red-700">
-                {error}
-              </p>
-
+              <p className="mt-1 text-sm text-red-700">{error}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -395,80 +303,56 @@ const [selectedQuotation, setSelectedQuotation] =
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 label="Events"
-                value={String(
-                  data.summary.eventCount
-                )}
+                value={String(data.summary.eventCount)}
                 icon={CalendarDays}
               />
-
               <MetricCard
                 label="Total quoted"
-                value={formatCurrency(
-                  data.summary.totalQuoted
-                )}
+                value={formatCurrency(data.summary.totalQuoted)}
                 icon={FileText}
               />
-
               <MetricCard
                 label="Received"
-                value={formatCurrency(
-                  data.summary.totalReceived
-                )}
+                value={formatCurrency(data.summary.totalReceived)}
                 icon={Wallet}
               />
-
               <MetricCard
                 label="Outstanding"
-                value={formatCurrency(
-                  data.summary.remaining
-                )}
+                value={formatCurrency(data.summary.remaining)}
                 icon={CreditCard}
               />
             </div>
           ) : null}
         </section>
 
-        {/* Quick actions */}
         <section className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="font-semibold text-slate-950">
-                Quick actions
-              </p>
-
+              <p className="font-semibold text-slate-950">Quick actions</p>
               <p className="mt-1 text-sm text-slate-500">
                 Add something to this client's workspace.
               </p>
             </div>
-
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
-                onClick={() =>
-                  setEventDialogOpen(true)
-                }
+                onClick={() => setEventDialogOpen(true)}
               >
                 <Plus size={16} />
                 Event
               </Button>
-
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setQuotationDialogOpen(true)
-                }
+                onClick={() => setQuotationDialogOpen(true)}
               >
                 <FileText size={16} />
                 Quotation
               </Button>
-
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setPaymentDialogOpen(true)
-                }
+                onClick={() => setPaymentDialogOpen(true)}
               >
                 <Wallet size={16} />
                 Payment
@@ -477,7 +361,6 @@ const [selectedQuotation, setSelectedQuotation] =
           </div>
         </section>
 
-        {/* Events */}
         <section>
           <SectionHeading
             title="Events"
@@ -486,16 +369,13 @@ const [selectedQuotation, setSelectedQuotation] =
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setEventDialogOpen(true)
-                }
+                onClick={() => setEventDialogOpen(true)}
               >
                 <Plus size={16} />
                 Add Event
               </Button>
             }
           />
-
           {loading ? (
             <LoadingList />
           ) : data?.events.length ? (
@@ -506,7 +386,6 @@ const [selectedQuotation, setSelectedQuotation] =
                 <span>Venue</span>
                 <span>Status</span>
               </div>
-
               <div className="divide-y divide-slate-100">
                 {data.events.map((event) => (
                   <div
@@ -517,26 +396,20 @@ const [selectedQuotation, setSelectedQuotation] =
                       <p className="font-semibold text-slate-950">
                         {event.eventName}
                       </p>
-
                       <p className="mt-1 text-sm text-slate-500">
                         {event.eventType}
                       </p>
                     </div>
-
                     <div className="text-sm text-slate-600">
                       {formatDate(event.eventDate)}
                     </div>
-
                     <div className="flex items-center gap-1.5 text-sm text-slate-600">
                       <MapPin size={14} />
                       <span className="truncate">
                         {event.venue || "No venue"}
                       </span>
                     </div>
-
-                    <StatusPill
-                      status={event.status}
-                    />
+                    <StatusPill status={event.status} />
                   </div>
                 ))}
               </div>
@@ -547,14 +420,11 @@ const [selectedQuotation, setSelectedQuotation] =
               title="No events yet"
               description="Create the first event for this client."
               actionLabel="Create Event"
-              onAction={() =>
-                setEventDialogOpen(true)
-              }
+              onAction={() => setEventDialogOpen(true)}
             />
           )}
         </section>
 
-        {/* Quotations */}
         <section>
           <SectionHeading
             title="Quotations"
@@ -563,65 +433,50 @@ const [selectedQuotation, setSelectedQuotation] =
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setQuotationDialogOpen(true)
-                }
+                onClick={() => setQuotationDialogOpen(true)}
               >
                 <Plus size={16} />
                 New Quotation
               </Button>
             }
           />
-
           {loading ? (
             <LoadingList />
           ) : data?.quotations.length ? (
             <div className="divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200">
-             {data.quotations.map((quotation) => (
-  <button
-    key={quotation.id}
-    type="button"
-    onClick={() =>
-      handleViewQuotation(quotation)
-    }
-    className="group flex w-full flex-col gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
-  >
-    <div className="min-w-0">
-      <div className="flex items-center gap-2">
-        <p className="font-semibold text-slate-950">
-          {quotation.quotationNumber}
-        </p>
-
-        <Eye
-          size={15}
-          className="text-slate-400 opacity-0 transition-opacity group-hover:opacity-100"
-        />
-      </div>
-
-      <p className="mt-1 text-sm text-slate-500">
-        {quotation.eventName ||
-          quotation.proposedEventName ||
-          "No event linked"}
-        {" · "}
-        {formatDate(
-          quotation.quotationDate
-        )}
-      </p>
-    </div>
-
-    <div className="flex items-center gap-4">
-      <p className="font-semibold text-slate-950">
-        {formatCurrency(
-          quotation.total
-        )}
-      </p>
-
-      <StatusPill
-        status={quotation.status}
-      />
-    </div>
-  </button>
-))}
+              {data.quotations.map((quotation) => (
+                <button
+                  key={quotation.id}
+                  type="button"
+                  onClick={() => handleViewQuotation(quotation)}
+                  className="group flex w-full flex-col gap-3 px-5 py-4 text-left transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-slate-950">
+                        {quotation.quotationNumber}
+                      </p>
+                      <Eye
+                        size={15}
+                        className="text-slate-400 opacity-0 transition-opacity group-hover:opacity-100"
+                      />
+                    </div>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {quotation.eventName ||
+                        quotation.proposedEventName ||
+                        "No event linked"}
+                      {" · "}
+                      {formatDate(quotation.quotationDate)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="font-semibold text-slate-950">
+                      {formatCurrency(quotation.total)}
+                    </p>
+                    <StatusPill status={quotation.status} />
+                  </div>
+                </button>
+              ))}
             </div>
           ) : (
             <EmptyState
@@ -629,14 +484,11 @@ const [selectedQuotation, setSelectedQuotation] =
               title="No quotations yet"
               description="Create a quotation for this client."
               actionLabel="Create Quotation"
-              onAction={() =>
-                setQuotationDialogOpen(true)
-              }
+              onAction={() => setQuotationDialogOpen(true)}
             />
           )}
         </section>
 
-        {/* Payments */}
         <section>
           <SectionHeading
             title="Payments"
@@ -645,16 +497,13 @@ const [selectedQuotation, setSelectedQuotation] =
               <Button
                 type="button"
                 variant="outline"
-                onClick={() =>
-                  setPaymentDialogOpen(true)
-                }
+                onClick={() => setPaymentDialogOpen(true)}
               >
                 <Plus size={16} />
                 Record Payment
               </Button>
             }
           />
-
           {loading ? (
             <LoadingList />
           ) : data?.payments.length ? (
@@ -668,26 +517,19 @@ const [selectedQuotation, setSelectedQuotation] =
                     <p className="font-semibold text-slate-950">
                       {payment.paymentNumber}
                     </p>
-
                     <p className="mt-1 text-sm text-slate-500">
-                      {formatDate(
-                        payment.paymentDate
-                      )}
+                      {formatDate(payment.paymentDate)}
                       {" · "}
                       {payment.paymentMethod}
                     </p>
-
                     {payment.quotationNumber && (
                       <p className="mt-1 text-xs text-slate-400">
                         {payment.quotationNumber}
                       </p>
                     )}
                   </div>
-
                   <p className="font-semibold text-emerald-700">
-                    {formatCurrency(
-                      payment.amount
-                    )}
+                    {formatCurrency(payment.amount)}
                   </p>
                 </div>
               ))}
@@ -698,114 +540,111 @@ const [selectedQuotation, setSelectedQuotation] =
               title="No payments yet"
               description="Record the first payment for this client."
               actionLabel="Record Payment"
-              onAction={() =>
-                setPaymentDialogOpen(true)
-              }
+              onAction={() => setPaymentDialogOpen(true)}
             />
           )}
         </section>
 
-        {/* Client information */}
         <section>
           <SectionHeading
             title="Client information"
             description="Contact and additional information."
           />
-
           <div className="grid gap-4 sm:grid-cols-2">
             <InfoCard
               icon={Phone}
               label="Phone"
-              value={
-                client.phone || "Not provided"
-              }
+              value={client.phone || "Not provided"}
             />
-
             <InfoCard
               icon={Mail}
               label="Email"
-              value={
-                client.email || "Not provided"
-              }
+              value={client.email || "Not provided"}
             />
-
             <InfoCard
               icon={MapPin}
               label="Address"
-              value={
-                client.address || "Not provided"
-              }
+              value={client.address || "Not provided"}
             />
-
             <InfoCard
               icon={FileText}
               label="Notes"
-              value={
-                client.notes || "No notes added"
-              }
+              value={client.notes || "No notes added"}
             />
           </div>
         </section>
 
-        {/* Danger zone */}
-        {canDelete && ( <section className="border-t border-slate-200 pt-8">
-          {!confirmDelete ? (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() =>
-                  setConfirmDelete(true)
-                }
-                className="text-red-600 hover:bg-red-50 hover:text-red-700"
+        {canDelete && (
+          <section className="border-t border-slate-200 pt-8">
+            {deleteWarning && (
+              <div
+                role="alert"
+                className="mb-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 shadow-sm"
               >
-                <Trash2 size={16} />
-                Delete Client
-              </Button>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-              <div>
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-amber-100 font-semibold">
+                  !
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold">Client can't be deleted</p>
+                  <p className="mt-1 leading-5">{deleteWarning}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDeleteWarning(null)}
+                  className="rounded-md px-2 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            {!confirmDelete ? (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setDeleteWarning(null);
+                    setConfirmDelete(true);
+                  }}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  <Trash2 size={16} />
+                  Delete Client
+                </Button>
+              </div>
+            ) : (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
                 <p className="font-semibold text-red-950">
                   Delete this client?
                 </p>
-
                 <p className="mt-1 text-sm text-red-700">
-                  This action cannot be undone. The client
-                  will be permanently removed from your
-                  workspace.
+                  This action cannot be undone. The client will be permanently
+                  removed from your workspace.
                 </p>
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setConfirmDelete(false)}
+                    disabled={deleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => void handleDelete()}
+                    disabled={deleting}
+                  >
+                    {deleting ? "Deleting..." : "Delete Client"}
+                  </Button>
+                </div>
               </div>
-
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    setConfirmDelete(false)
-                  }
-                  disabled={deleting}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                >
-                  {deleting
-                    ? "Deleting..."
-                    : "Delete Client"}
-                </Button>
-              </div>
-            </div>
-          )}
-        </section>
+            )}
+          </section>
         )}
       </div>
-      
 
       <EventDialog
         open={eventDialogOpen}
@@ -829,18 +668,14 @@ const [selectedQuotation, setSelectedQuotation] =
         onSave={handleCreatePayment}
       />
 
-<QuotationViewDialog
-  quotation={selectedQuotation}
-  open={quotationViewOpen}
-  onOpenChange={(open) => {
-    setQuotationViewOpen(open);
-
-    if (!open) {
-      setSelectedQuotation(null);
-    }
-  }}
-/>
-
+      <QuotationViewDialog
+        quotation={selectedQuotation}
+        open={quotationViewOpen}
+        onOpenChange={(open) => {
+          setQuotationViewOpen(open);
+          if (!open) setSelectedQuotation(null);
+        }}
+      />
     </div>
   );
 }
@@ -848,17 +683,10 @@ const [selectedQuotation, setSelectedQuotation] =
 interface MetricCardProps {
   label: string;
   value: string;
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
 }
 
-function MetricCard({
-  label,
-  value,
-  icon: Icon,
-}: MetricCardProps) {
+function MetricCard({ label, value, icon: Icon }: MetricCardProps) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="flex items-start justify-between gap-3">
@@ -866,12 +694,10 @@ function MetricCard({
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
             {label}
           </p>
-
           <p className="mt-2 text-xl font-semibold tracking-tight text-slate-950">
             {value}
           </p>
         </div>
-
         <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
           <Icon size={17} />
         </div>
@@ -886,23 +712,15 @@ interface SectionHeadingProps {
   action?: React.ReactNode;
 }
 
-function SectionHeading({
-  title,
-  description,
-  action,
-}: SectionHeadingProps) {
+function SectionHeading({ title, description, action }: SectionHeadingProps) {
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
         <h3 className="text-lg font-semibold tracking-tight text-slate-950">
           {title}
         </h3>
-
-        <p className="mt-1 text-sm text-slate-500">
-          {description}
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
       </div>
-
       {action}
     </div>
   );
@@ -912,19 +730,15 @@ interface StatusPillProps {
   status: string;
 }
 
-function StatusPill({
-  status,
-}: StatusPillProps) {
-  const normalized =
-    status.toLowerCase();
+function StatusPill({ status }: StatusPillProps) {
+  const normalized = status.toLowerCase();
 
   const className =
     normalized.includes("complete") ||
     normalized.includes("paid") ||
     normalized.includes("accept")
       ? "bg-emerald-50 text-emerald-700"
-      : normalized.includes("cancel") ||
-          normalized.includes("reject")
+      : normalized.includes("cancel") || normalized.includes("reject")
         ? "bg-red-50 text-red-700"
         : "bg-blue-50 text-blue-700";
 
@@ -939,31 +753,22 @@ function StatusPill({
 }
 
 interface InfoCardProps {
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   value: string;
 }
 
-function InfoCard({
-  icon: Icon,
-  label,
-  value,
-}: InfoCardProps) {
+function InfoCard({ icon: Icon, label, value }: InfoCardProps) {
   return (
     <div className="rounded-2xl border border-slate-200 p-4">
       <div className="flex gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
           <Icon size={16} />
         </div>
-
         <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
             {label}
           </p>
-
           <p className="mt-1 break-words text-sm font-medium text-slate-800">
             {value}
           </p>
@@ -974,10 +779,7 @@ function InfoCard({
 }
 
 interface EmptyStateProps {
-  icon: React.ComponentType<{
-    size?: number;
-    className?: string;
-  }>;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
   title: string;
   description: string;
   actionLabel: string;
@@ -996,15 +798,8 @@ function EmptyState({
       <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
         <Icon size={18} />
       </div>
-
-      <p className="mt-3 font-semibold text-slate-950">
-        {title}
-      </p>
-
-      <p className="mt-1 text-sm text-slate-500">
-        {description}
-      </p>
-
+      <p className="mt-3 font-semibold text-slate-950">{title}</p>
+      <p className="mt-1 text-sm text-slate-500">{description}</p>
       <Button
         type="button"
         variant="outline"
@@ -1020,44 +815,30 @@ function EmptyState({
 function LoadingList() {
   return (
     <div className="space-y-2">
-      {Array.from({ length: 3 }).map(
-        (_, index) => (
-          <div
-            key={index}
-            className="h-[60px] animate-pulse rounded-2xl bg-slate-100"
-          />
-        )
-      )}
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div
+          key={index}
+          className="h-[60px] animate-pulse rounded-2xl bg-slate-100"
+        />
+      ))}
     </div>
   );
 }
 
-function formatCurrency(
-  amount: number
-): string {
-  return new Intl.NumberFormat(
-    "en-IN",
-    {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }
-  ).format(amount);
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
-function formatDate(
-  value: string
-): string {
+function formatDate(value: string): string {
   if (!value) return "No date";
 
-  return new Intl.DateTimeFormat(
-    "en-IN",
-    {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }
-  ).format(
-    new Date(`${value}T00:00:00`)
-  );
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(`${value}T00:00:00`));
 }

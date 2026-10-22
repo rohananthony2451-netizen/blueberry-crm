@@ -142,30 +142,28 @@ export function useEvents() {
     }
   }
 
-  async function removeEvent(
-    id: string
-  ) {
+  
+  async function removeEvent(id: string) {
     try {
-      setError(null);
-
       await deleteEventService(id);
 
       setEvents((current) =>
-        current.filter(
-          (event) => event.id !== id
-        )
+        current.filter((event) => event.id !== id)
       );
+
+      setError(null);
     } catch (err) {
       const message =
         err instanceof Error
           ? err.message
-          : "Failed to delete event.";
+          : "We couldn't delete this event. Please try again.";
 
-      setError(message);
-
+      // Do not set the shared page error for a deletion failure.
+      // The page handles this failure with its deletion warning.
       throw new Error(message);
     }
   }
+
 
   return {
     events,
