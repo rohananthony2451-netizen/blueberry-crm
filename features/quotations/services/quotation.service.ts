@@ -501,71 +501,53 @@ export async function acceptQuotation(
  * acceptQuotation() because acceptance
  * creates the confirmed Client/Event.
  */
+
 export async function updateQuotationStatus(
   id: string,
   nextStatus: QuotationStatus
 ): Promise<Quotation> {
   const supabase = createClient();
 
-  if (
-    nextStatus === "Accepted"
-  ) {
+  if (nextStatus === "Accepted") {
     return acceptQuotation(id);
   }
 
-  const currentQuotation =
-    await getQuotationById(id);
-
-  const currentStatus =
-    currentQuotation.status;
+  const currentQuotation = await getQuotationById(id);
+  const currentStatus = currentQuotation.status;
 
   const allowedTransitions: Record<
     QuotationStatus,
     QuotationStatus[]
   > = {
     Draft: ["Sent"],
-
-    Sent: [
-      "Rejected",
-    ],
-
+    Sent: ["Rejected"],
     Accepted: [],
-
     Rejected: [],
   };
 
-  const allowedNextStatuses =
-    allowedTransitions[
-      currentStatus
-    ];
+  const allowedNextStatuses = allowedTransitions[currentStatus];
 
-  if (
-    !allowedNextStatuses.includes(
-      nextStatus
-    )
-  ) {
+  if (!allowedNextStatuses?.includes(nextStatus)) {
     throw new Error(
       `Quotation cannot move from ${currentStatus} to ${nextStatus}.`
     );
   }
 
-  const {
-    error,
-  } = await supabase
+  const { data, error } = await supabase
     .from("quotations")
-    .update({
-      status:
-        nextStatus,
-    })
+    .update({ status: nextStatus })
     .eq("id", id)
-    .eq(
-      "status",
-      currentStatus
-    );
+    .eq("status", currentStatus)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
     throw new Error(
-      error.message
+      "The quotation status changed before your update could be saved. Refresh the page and try again."
     );
   }
 
