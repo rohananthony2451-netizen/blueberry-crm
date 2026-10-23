@@ -526,29 +526,32 @@ export async function updatePayment(
   );
 }
 
+
 export async function deletePayment(
   id: string
 ): Promise<void> {
-  const supabase =
-    createClient();
+  const supabase = createClient();
 
-  const organizationId =
-    await getOrganizationId();
+  const organizationId = await getOrganizationId();
 
   const {
+    data,
     error,
   } = await supabase
     .from("payments")
     .delete()
     .eq("id", id)
-    .eq(
-      "organization_id",
-      organizationId
-    );
+    .eq("organization_id", organizationId)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
     throw new Error(
-      error.message
+      "Payment was not deleted. It may no longer exist, or you may not have permission to delete it."
     );
   }
 }

@@ -578,15 +578,22 @@ export async function deleteQuotation(
   const supabase = createClient();
 
   const {
+    data,
     error,
   } = await supabase
     .from("quotations")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
 
   if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
     throw new Error(
-      error.message
+      "Quotation was not deleted. It may no longer exist, or you may not have permission to delete it."
     );
   }
 }

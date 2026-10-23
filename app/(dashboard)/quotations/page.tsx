@@ -51,14 +51,16 @@ export default function QuotationsPage() {
   ] = useState<string | null>(null);
 
   const {
-    quotations,
-    loading,
-    error,
-    createQuotation,
-    updateQuotation,
-    updateQuotationStatus,
-    deleteQuotation,
-  } = useQuotations();
+  quotations,
+  loading,
+  loadError,
+  actionError,
+  clearActionError,
+  createQuotation,
+  updateQuotation,
+  updateQuotationStatus,
+  deleteQuotation,
+} = useQuotations();
 
   const [userRole, setUserRole] = useState<string | null>(null);
 
@@ -447,24 +449,48 @@ const canDeleteRecords = userRole === "admin";
         </div>
       )}
 
-      {error && (
+      {loadError && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-10 text-center text-sm text-red-600">
           Failed to load quotations:{" "}
-          {error}
+          {loadError}
         </div>
       )}
 
-      {!loading && !error && (
-        <QuotationTable
-  quotations={filteredQuotations}
-  onView={handleViewQuotation}
-  onEdit={handleEditQuotation}
-  onDelete={canDeleteRecords ? handleDeleteQuotation : undefined}
-  onStatusChange={handleStatusChange}
-  statusActionLoadingId={statusActionLoadingId}
-  canDelete={canDeleteRecords}
-/>
+      {actionError && (
+        <div
+          role="alert"
+          className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <p>{actionError}</p>
+
+            <button
+              type="button"
+              onClick={clearActionError}
+              className="shrink-0 font-medium underline"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
       )}
+
+      {!loading && !loadError && (
+        <QuotationTable
+          quotations={filteredQuotations}
+          onView={handleViewQuotation}
+          onEdit={handleEditQuotation}
+          onDelete={
+            canDeleteRecords
+              ? handleDeleteQuotation
+              : undefined
+          }
+          onStatusChange={handleStatusChange}
+          statusActionLoadingId={statusActionLoadingId}
+          canDelete={canDeleteRecords}
+        />
+      )}
+
     </PageContainer>
   );
 }

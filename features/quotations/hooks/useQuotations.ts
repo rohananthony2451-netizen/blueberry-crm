@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -26,22 +27,27 @@ export function useQuotations() {
   ] = useState(true);
 
   const [
-    error,
-    setError,
+    loadError,
+    setLoadError,
+  ] = useState<string | null>(null);
+
+  const [
+    actionError,
+    setActionError,
   ] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadQuotations() {
       try {
         setLoading(true);
-        setError(null);
+        setLoadError(null);
 
         const data =
           await getQuotations();
 
         setQuotations(data);
       } catch (err) {
-        setError(
+        setLoadError(
           err instanceof Error
             ? err.message
             : "Failed to load quotations."
@@ -58,7 +64,7 @@ export function useQuotations() {
     quotation: QuotationInput
   ) {
     try {
-      setError(null);
+      setActionError(null);
 
       const createdQuotation =
         await createQuotationService(
@@ -77,7 +83,7 @@ export function useQuotations() {
           ? err.message
           : "Failed to create quotation.";
 
-      setError(message);
+      setActionError(message);
 
       throw new Error(message);
     }
@@ -88,7 +94,7 @@ export function useQuotations() {
     quotation: QuotationInput
   ) {
     try {
-      setError(null);
+      setActionError(null);
 
       const updatedQuotation =
         await updateQuotationService(
@@ -111,7 +117,7 @@ export function useQuotations() {
           ? err.message
           : "Failed to update quotation.";
 
-      setError(message);
+      setActionError(message);
 
       throw new Error(message);
     }
@@ -122,7 +128,7 @@ export function useQuotations() {
     status: QuotationStatus
   ) {
     try {
-      setError(null);
+      setActionError(null);
 
       const updatedQuotation =
         await updateQuotationStatusService(
@@ -145,7 +151,7 @@ export function useQuotations() {
           ? err.message
           : "Failed to update quotation status.";
 
-      setError(message);
+      setActionError(message);
 
       throw new Error(message);
     }
@@ -155,7 +161,7 @@ export function useQuotations() {
     id: string
   ) {
     try {
-      setError(null);
+      setActionError(null);
 
       await deleteQuotationService(id);
 
@@ -171,7 +177,7 @@ export function useQuotations() {
           ? err.message
           : "Failed to delete quotation.";
 
-      setError(message);
+      setActionError(message);
 
       throw new Error(message);
     }
@@ -180,7 +186,9 @@ export function useQuotations() {
   return {
     quotations,
     loading,
-    error,
+    loadError,
+    actionError,
+    clearActionError: () => setActionError(null),
     createQuotation,
     updateQuotation,
     updateQuotationStatus,
