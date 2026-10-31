@@ -330,7 +330,7 @@ export function ClientDetails({
             <div>
               <p className="font-semibold text-slate-950">Quick actions</p>
               <p className="mt-1 text-sm text-slate-500">
-                Add something to this client's workspace.
+                Add something to this client&apos;s workspace.
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -585,7 +585,7 @@ export function ClientDetails({
                   !
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold">Client can't be deleted</p>
+                  <p className="font-semibold">Client can&apos;t be deleted</p>
                   <p className="mt-1 leading-5">{deleteWarning}</p>
                 </div>
                 <button

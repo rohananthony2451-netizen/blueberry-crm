@@ -6,6 +6,7 @@ export interface TeamMember {
   email: string;
   role: TeamRole;
   createdAt: string;
+  isDisabled: boolean;
 }
 
 export interface PendingInvitation {

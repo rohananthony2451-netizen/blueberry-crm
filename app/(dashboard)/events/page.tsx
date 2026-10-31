@@ -180,8 +180,7 @@ export default function EventsPage() {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="font-semibold">Event can't be deleted</p>
-        <p className="mt-1 leading-5 text-amber-900/90">
+<p className="font-semibold">Event can&apos;t be deleted</p>        <p className="mt-1 leading-5 text-amber-900/90">
           {deleteWarning}
         </p>
       </div>

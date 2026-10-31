@@ -206,6 +206,7 @@ export default function TeamPage({
 
           <TeamMembersTable
             members={members}
+              onMemberUpdated={loadTeam}
           />
         </>
       )}

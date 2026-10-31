@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useEffect,
   useState,
 } from "react";
 
@@ -23,17 +22,15 @@ export default function LeadsPage() {
   const [sortBy, setSortBy] = useState("");
   const PAGE_SIZE = 8;
 
-const [currentPage, setCurrentPage] =
+  const [currentPage, setCurrentPage] =
   useState(1);
 
-  useEffect(() => {
-  setCurrentPage(1);
-}, [
-  search,
-  status,
-  source,
-  sortBy,
-]);
+  function resetPagination<T>(setter: (value: T) => void) {
+  return (value: T) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+}
 
   const {
     leads,
@@ -193,20 +190,20 @@ const paginatedLeads =
       {/* Search + filters */}
       <div className="mb-4 flex min-h-[58px] items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 shadow-sm">
         <LeadToolbar
-          search={search}
-          onSearchChange={setSearch}
-        />
+  search={search}
+  onSearchChange={resetPagination(setSearch)}
+/>
 
-        <LeadFilters
-          search={search}
-          status={status}
-          source={source}
-          sortBy={sortBy}
-          onSearchChange={setSearch}
-          onStatusChange={setStatus}
-          onSourceChange={setSource}
-          onSortChange={setSortBy}
-        />
+<LeadFilters
+  search={search}
+  status={status}
+  source={source}
+  sortBy={sortBy}
+  onSearchChange={resetPagination(setSearch)}
+  onStatusChange={resetPagination(setStatus)}
+  onSourceChange={resetPagination(setSource)}
+  onSortChange={resetPagination(setSortBy)}
+/>
       </div>
 
       {/* Table */}

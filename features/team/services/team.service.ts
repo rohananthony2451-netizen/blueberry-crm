@@ -12,6 +12,8 @@ type ProfileRow = {
   email: string | null;
   role: string | null;
   created_at: string;
+  is_disabled: boolean;
+
 };
 
 type InvitationRow = {
@@ -34,6 +36,8 @@ function mapMember(row: ProfileRow): TeamMember {
         ? "admin"
         : "staff",
     createdAt: row.created_at,
+        isDisabled: row.is_disabled,
+
   };
 }
 
@@ -63,7 +67,7 @@ export async function getTeamMembers(): Promise<
   const { data, error } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, email, role, created_at"
+      "id, full_name, email, role, created_at, is_disabled"
     )
     .order("created_at", {
       ascending: true,
@@ -197,4 +201,28 @@ export async function cancelInvitation(
   }
 
   return data;
-} 
+
+}
+export async function setStaffDisabled(
+  memberId: string,
+  disabled: boolean
+): Promise<void> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase.rpc("set_staff_disabled", {
+    p_member_id: memberId,
+    p_disabled: disabled,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+if (
+  !data ||
+  typeof data !== "object" ||
+  !("success" in data) ||
+  data.success !== true
+) {    throw new Error("Could not update staff access.");
+  }
+}

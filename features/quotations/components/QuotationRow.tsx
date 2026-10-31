@@ -1,12 +1,13 @@
+
 import {
   Eye,
   Pencil,
-  Download,
   Trash2,
   Send,
   Check,
   X,
 } from "lucide-react";
+
 
 import type {
   Quotation,
@@ -160,15 +161,12 @@ export function QuotationRow({
 
           <button
             type="button"
-            onClick={() =>
-              onView?.(quotation)
-            }
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label="View quotation"
-            title="View quotation"
-          >
-            <Eye size={16} />
-          </button>
+            onClick={() => onView?.(quotation)}
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-blue-50 hover:text-blue-700"
+             aria-label="Preview quotation"
+              title="Preview quotation">
+                  <Eye size={16} />
+                  </button>
 
           <button
   type="button"
@@ -179,15 +177,6 @@ export function QuotationRow({
 >
   <Pencil size={16} />
 </button>
-
-          <button
-            type="button"
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Download quotation"
-            title="Download quotation"
-          >
-            <Download size={16} />
-          </button>
 
           {canDelete && (
   <button

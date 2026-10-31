@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
 
@@ -152,14 +153,16 @@ export function PaymentForm({
       name: "amount",
     });
 
-  const clientEvents =
+  const clientEvents = useMemo(
+  () =>
     selectedClientId
       ? events.filter(
           (event) =>
-            event.clientId ===
-            selectedClientId
+            event.clientId === selectedClientId
         )
-      : [];
+      : [],
+  [events, selectedClientId]
+);
 
   const clientQuotations =
     selectedClientId
@@ -211,53 +214,36 @@ export function PaymentForm({
    * Quotation selection establishes
    * the client and event.
    */
-  useEffect(() => {
+    useEffect(() => {
     if (!selectedQuotationId) {
-      setFinancialSummary(null);
       return;
     }
 
-    const quotation =
-      quotations.find(
-        (item) =>
-          item.id ===
-          selectedQuotationId
-      );
+    const quotation = quotations.find(
+      (item) => item.id === selectedQuotationId
+    );
 
     if (!quotation) {
-      setFinancialSummary(null);
       return;
     }
 
     if (
-  quotation.clientId &&
-  quotation.clientId !== selectedClientId
-) {
-  setValue(
-    "clientId",
-    quotation.clientId,
-    {
-      shouldValidate: true,
-      shouldDirty: true,
-    }
-  );
-}
-
-    const quotationEventId =
-      quotation.eventId ?? "";
-
-    if (
-      quotationEventId !==
-      selectedEventId
+      quotation.clientId &&
+      quotation.clientId !== selectedClientId
     ) {
-      setValue(
-        "eventId",
-        quotationEventId,
-        {
-          shouldValidate: true,
-          shouldDirty: true,
-        }
-      );
+      setValue("clientId", quotation.clientId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+
+    const quotationEventId = quotation.eventId ?? "";
+
+    if (quotationEventId !== selectedEventId) {
+      setValue("eventId", quotationEventId, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
   }, [
     selectedQuotationId,
@@ -403,10 +389,10 @@ export function PaymentForm({
     let cancelled = false;
 
     async function loadFinancialSummary() {
-      if (!selectedQuotationId) {
-        setFinancialSummary(null);
-        return;
-      }
+     if (!selectedQuotationId) {
+  setFinancialSummary(null);
+  return;
+}
 
       setFinancialLoading(true);
       setOverpaymentConfirmed(false);

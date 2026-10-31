@@ -2,9 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,15 +12,12 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => {
             request.cookies.set(name, value);
           });
 
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          supabaseResponse = NextResponse.next({ request });
 
           cookiesToSet.forEach(({ name, value, options }) => {
             supabaseResponse.cookies.set(name, value, options);
@@ -32,44 +27,69 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  /*
-   * IMPORTANT:
-   * Do not put application logic between creating the
-   * Supabase client and checking the authenticated user.
-   */
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const pathname = request.nextUrl.pathname;
 
   const isAuthRoute =
-  pathname.startsWith("/login") ||
-  pathname.startsWith("/auth");
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/auth");
 
-const isInvitationRoute =
-  pathname.startsWith("/invite");
+  const isInvitationRoute = pathname.startsWith("/invite");
 
-const isPublicRoute =
-  pathname === "/" ||
-  isAuthRoute ||
-  isInvitationRoute;
+  const isPublicRoute =
+    pathname === "/" || isAuthRoute || isInvitationRoute;
 
-  if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone();
+  function redirectWithCookies(url: URL) {
+    const response = NextResponse.redirect(url);
 
-    url.pathname = "/login";
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      response.cookies.set(cookie);
+    });
 
-    return NextResponse.redirect(url);
+    return response;
   }
 
-  if (user && isAuthRoute) {
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  // An authentication error must never bypass protected-route checks.
+  if (authError || !user) {
+    if (!isPublicRoute) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return redirectWithCookies(url);
+    }
+
+    return supabaseResponse;
+  }
+
+  // Verify account status before allowing an authenticated request.
+  const { data: isDisabled, error: statusError } =
+    await supabase.rpc("is_current_user_disabled");
+
+  // Fail closed if account status cannot be verified.
+ if (statusError || typeof isDisabled !== "boolean") {
+  return new NextResponse(
+    "Unable to verify account access. Please try again shortly.",
+    { status: 503 }
+  );
+}
+
+  if (isDisabled) {
+    await supabase.auth.signOut();
+
     const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    url.searchParams.set("reason", "access_disabled");
 
+    return redirectWithCookies(url);
+  }
+
+  if (isAuthRoute) {
+    const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
-
-    return NextResponse.redirect(url);
+    return redirectWithCookies(url);
   }
 
   return supabaseResponse;
