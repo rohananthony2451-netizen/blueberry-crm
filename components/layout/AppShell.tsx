@@ -1,12 +1,13 @@
 
 "use client";
 
-import { ReactNode, useState } from "react";
+import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { CurrentUser } from "@/app/(dashboard)/layout";
+import type { CurrentUser } from "@/app/(dashboard)/layout";
+import { CurrentUserProvider } from "./CurrentUserContext";
 
 interface AppShellProps {
   children: ReactNode;
@@ -37,25 +38,27 @@ export default function AppShell({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-slate-50">
-      <Sidebar
-        currentUser={currentUser}
-        mobileOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
-
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Header
-          title={getPageTitle(pathname)}
-          onToggleSidebar={() =>
-            setMobileMenuOpen((open) => !open)
-          }
+    <CurrentUserProvider currentUser={currentUser}>
+      <div className="flex h-dvh overflow-hidden bg-slate-50">
+        <Sidebar
+          currentUser={currentUser}
+          mobileOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
         />
 
-        <main className="min-h-0 flex-1 overflow-y-auto">
-          <div className="min-w-0">{children}</div>
-        </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Header
+            title={getPageTitle(pathname)}
+            onToggleSidebar={() =>
+              setMobileMenuOpen((open) => !open)
+            }
+          />
+
+          <main className="min-h-0 flex-1 overflow-y-auto">
+            <div className="min-w-0">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </CurrentUserProvider>
   );
 }

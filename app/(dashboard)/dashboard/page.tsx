@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilePlus2 } from "lucide-react";
 
 import { PageContainer } from "@/components/design-system/PageContainer";
 import { QuotationDialog } from "@/features/quotations/components/QuotationDialog";
 import { useQuotations } from "@/features/quotations/hooks/useQuotations";
 import type { QuotationFormValues } from "@/features/quotations/types";
+import { useCurrentUser } from "@/components/layout/CurrentUserContext";
 
 import { DashboardContent } from "@/features/dashboard/components/DashboardContent";
 
@@ -15,6 +16,34 @@ export default function DashboardPage() {
     useState(false);
 
   const { createQuotation } = useQuotations();
+  const currentUser = useCurrentUser();
+const firstName =
+  currentUser.fullName.trim().split(/\s+/)[0] === "User"
+    ? ""
+    : currentUser.fullName.trim().split(/\s+/)[0];
+
+const [greeting, setGreeting] = useState("Good morning");
+
+useEffect(() => {
+  function updateGreeting() {
+    const hour = new Date().getHours();
+
+    if (hour >= 5 && hour < 12) {
+      setGreeting("Good morning");
+    } else if (hour >= 12 && hour < 17) {
+      setGreeting("Good afternoon");
+    } else if (hour >= 17 && hour < 22) {
+      setGreeting("Good evening");
+    } else {
+      setGreeting("Still working this late");
+    }
+  }
+
+  updateGreeting();
+
+  const interval = window.setInterval(updateGreeting, 60_000);
+  return () => window.clearInterval(interval);
+}, []);
 
   async function handleCreateQuotation(
     data: QuotationFormValues
@@ -67,8 +96,10 @@ export default function DashboardPage() {
             </p>
 
             <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-[34px]">
-              Good morning
-            </h1>
+              {greeting === "Still working this late"
+                  ? `${greeting}, ${firstName}?`
+                      : `${greeting}, ${firstName} 👋`}
+                      </h1>
 
             <p className="mt-1.5 max-w-xl text-sm text-slate-500">
               Here&apos;s what&apos;s happening across your
